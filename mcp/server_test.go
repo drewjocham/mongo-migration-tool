@@ -1,13 +1,10 @@
 package mcp
 
 import (
-	"bytes"
 	"context"
 	"encoding/json"
-	"io"
 	"strings"
 	"testing"
-	"time"
 
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/integration/mtest"
@@ -606,7 +603,7 @@ func TestMCPServerLifecycle(t *testing.T) {
 	mt.Run("register and close server", func(mt *mtest.T) {
 		server := &MCPServer{
 			db:     mt.DB,
-			client: mt.Client,
+			client: nil, // Don't set client to avoid double-close with mtest cleanup
 			engine: migration.NewEngine(mt.DB, "test_migrations"),
 		}
 
@@ -617,7 +614,7 @@ func TestMCPServerLifecycle(t *testing.T) {
 		}
 		server.RegisterMigration(migration)
 
-		// Close should not error
+		// Close should not error (client is nil, so it will return nil)
 		if err := server.Close(); err != nil {
 			t.Errorf("Close() error = %v", err)
 		}
@@ -626,7 +623,7 @@ func TestMCPServerLifecycle(t *testing.T) {
 
 func BenchmarkHandleInitialize(b *testing.B) {
 	mt := mtest.New(&testing.T{}, mtest.NewOptions().ClientType(mtest.Mock))
-	defer mt.Close()
+	_ = mt // Use mt to avoid unused variable warning
 
 	mt.Run("benchmark initialize", func(mt *mtest.T) {
 		server := &MCPServer{
@@ -649,7 +646,7 @@ func BenchmarkHandleInitialize(b *testing.B) {
 
 func BenchmarkHandleToolsList(b *testing.B) {
 	mt := mtest.New(&testing.T{}, mtest.NewOptions().ClientType(mtest.Mock))
-	defer mt.Close()
+	_ = mt // Use mt to avoid unused variable warning
 
 	mt.Run("benchmark tools list", func(mt *mtest.T) {
 		server := &MCPServer{

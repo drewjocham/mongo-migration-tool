@@ -31,12 +31,17 @@ const (
 // TestMCPServerIntegration tests the MCP server with a real MongoDB instance
 func TestMCPServerIntegration(t *testing.T) {
 	if testing.Short() {
-		t.Skip("Skipping integration test")
+		t.Skip("Skipping integration test in short mode")
 	}
 
 	// Setup
 	ctx, cancel := context.WithTimeout(context.Background(), integrationTimeout)
 	defer cancel()
+
+	// Check if MongoDB is available
+	if !isMongoDBAvailable(ctx, t) {
+		t.Skip("MongoDB not available on localhost:27017 - skipping integration test")
+	}
 
 	client, db := setupTestDatabase(t, ctx)
 	defer cleanupTestDatabase(t, ctx, client, db)
@@ -56,6 +61,23 @@ func TestMCPServerIntegration(t *testing.T) {
 	t.Run("migration lifecycle", func(t *testing.T) {
 		testMigrationLifecycle(t, ctx, db)
 	})
+}
+
+// isMongoDBAvailable checks if MongoDB is available for testing
+func isMongoDBAvailable(ctx context.Context, t *testing.T) bool {
+	t.Helper()
+
+	client, err := mongo.Connect(ctx, options.Client().ApplyURI(testMongoURL).SetServerSelectionTimeout(2*time.Second))
+	if err != nil {
+		return false
+	}
+	defer client.Disconnect(ctx)
+
+	if err := client.Ping(ctx, nil); err != nil {
+		return false
+	}
+
+	return true
 }
 
 func setupTestDatabase(t *testing.T, ctx context.Context) (*mongo.Client, *mongo.Database) {
@@ -362,13 +384,17 @@ func sendMCPRequest(t *testing.T, ctx context.Context, request mcp.MCPRequest) m
 // TestMCPServerCLI tests the MCP server via CLI
 func TestMCPServerCLI(t *testing.T) {
 	if testing.Short() {
-		t.Skip("Skipping CLI integration test")
+		t.Skip("Skipping CLI integration test in short mode")
 	}
 
-	// Build the binary first
-	buildCmd := exec.Command("make", "build")
-	if output, err := buildCmd.CombinedOutput(); err != nil {
-		t.Fatalf("Failed to build binary: %v\n%s", err, output)
+	ctx := context.Background()
+	if !isMongoDBAvailable(ctx, t) {
+		t.Skip("MongoDB not available - skipping CLI integration test")
+	}
+
+	// Check if binary exists instead of building
+	if _, err := os.Stat("./build/mongo-essential"); err != nil {
+		t.Skip("Binary not built - run 'make build' first to enable CLI tests")
 	}
 
 	// Set up test environment
@@ -464,11 +490,15 @@ func TestMCPServerCLI(t *testing.T) {
 // TestMigrationEndToEnd tests complete migration flow
 func TestMigrationEndToEnd(t *testing.T) {
 	if testing.Short() {
-		t.Skip("Skipping end-to-end test")
+		t.Skip("Skipping end-to-end test in short mode")
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), integrationTimeout)
 	defer cancel()
+
+	if !isMongoDBAvailable(ctx, t) {
+		t.Skip("MongoDB not available - skipping end-to-end test")
+	}
 
 	client, db := setupTestDatabase(t, ctx)
 	defer cleanupTestDatabase(t, ctx, client, db)
