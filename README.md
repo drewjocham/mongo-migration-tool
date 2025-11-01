@@ -129,6 +129,19 @@ mongo-essential cert fix --apply
 
 ### 4. AI Assistant Integration (MCP)
 
+**Quick Install:**
+```bash
+# Automated installation
+./install-mcp.sh
+
+# Or via npm
+npm install -g mongo-essential-mcp
+
+# Or via Smithery
+smithery install mongo-essential
+```
+
+**Start the MCP Server:**
 ```bash
 # Start MCP server for AI assistants like Ollama, Claude, Goose
 mongo-essential mcp
@@ -140,9 +153,9 @@ mongo-essential mcp --with-examples
 make mcp-test
 ```
 
-Then configure your AI assistant to use the MCP server:
+**Configure your AI assistant:**
+- **Claude Desktop**: Add to `~/Library/Application Support/Claude/claude_desktop_config.json`
 - **Ollama**: Add to `~/.config/ollama/mcp-config.json`
-- **Claude Desktop**: Add to Claude Desktop configuration
 - **Goose**: Use with `--mcp-config` flag
 
 See [MCP Integration Guide](MCP.md) for detailed setup instructions.

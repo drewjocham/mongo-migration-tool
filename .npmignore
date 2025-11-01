@@ -1,0 +1,41 @@
+# Source files
+*.go
+cmd/
+migration/
+config/
+internal/
+
+# Build artifacts
+*.test
+*.out
+coverage.txt
+
+# Development
+.git/
+.github/
+.vscode/
+.idea/
+
+# Temporary files
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Testing
+test/
+*.test
+
+# Documentation sources (keep generated docs)
+docs/
+
+# Keep these
+!build/
+!mcp/
+!examples/
+!README.md
+!MCP.md
+!LICENSE
+!package.json
+!smithery.json
+!install-mcp.sh

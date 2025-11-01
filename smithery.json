@@ -1,0 +1,97 @@
+{
+  "$schema": "https://smithery.ai/protocol/mcp-server.json",
+  "name": "mongo-essential",
+  "displayName": "MongoDB Migration Manager",
+  "description": "A comprehensive MongoDB migration tool with MCP support. Manage database schema changes, track versions, and execute migrations through AI assistants.",
+  "version": "1.0.0",
+  "author": {
+    "name": "Drew Jocham",
+    "url": "https://github.com/drewjocham"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/drewjocham/mongo-essential"
+  },
+  "homepage": "https://github.com/drewjocham/mongo-essential#readme",
+  "keywords": [
+    "mongodb",
+    "migrations",
+    "database",
+    "schema-management",
+    "versioning",
+    "ai-assistant",
+    "mcp-server"
+  ],
+  "categories": [
+    "database",
+    "development-tools"
+  ],
+  "runtime": {
+    "type": "binary",
+    "command": "./build/mongo-essential",
+    "args": ["mcp"]
+  },
+  "installation": {
+    "type": "script",
+    "script": "./install-mcp.sh"
+  },
+  "configuration": {
+    "required": [
+      "MONGO_DATABASE"
+    ],
+    "optional": [
+      "MONGO_URL",
+      "MONGO_USERNAME",
+      "MONGO_PASSWORD",
+      "MONGO_SSL_ENABLED",
+      "MIGRATIONS_COLLECTION"
+    ],
+    "defaults": {
+      "MONGO_URL": "mongodb://localhost:27017",
+      "MIGRATIONS_COLLECTION": "schema_migrations"
+    }
+  },
+  "capabilities": {
+    "tools": true,
+    "resources": false,
+    "prompts": false,
+    "sampling": false
+  },
+  "tools": [
+    {
+      "name": "migration_status",
+      "description": "Get the status of all migrations - shows which migrations are applied and when",
+      "category": "query"
+    },
+    {
+      "name": "migration_up",
+      "description": "Apply migrations up to a specific version or all pending migrations",
+      "category": "action"
+    },
+    {
+      "name": "migration_down",
+      "description": "Roll back migrations down to a specific version or roll back the last migration",
+      "category": "action"
+    },
+    {
+      "name": "migration_create",
+      "description": "Create a new migration file with a given name and description",
+      "category": "action"
+    },
+    {
+      "name": "migration_list",
+      "description": "List all registered migrations with their versions and descriptions",
+      "category": "query"
+    }
+  ],
+  "documentation": {
+    "quickStart": "README.md",
+    "fullDocs": "MCP.md",
+    "examples": "examples/README.md"
+  },
+  "support": {
+    "issues": "https://github.com/drewjocham/mongo-essential/issues",
+    "discussions": "https://github.com/drewjocham/mongo-essential/discussions"
+  }
+}

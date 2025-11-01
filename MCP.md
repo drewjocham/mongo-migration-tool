@@ -6,11 +6,51 @@ This document explains how to use mongo-essential as a Model Context Protocol (M
 
 The Model Context Protocol (MCP) is an open standard that enables AI assistants to securely connect to external data sources and tools. By implementing MCP, mongo-essential can be controlled by AI assistants, allowing you to manage MongoDB migrations using natural language.
 
-## Quick Start
+## Installation
 
-### 1. Build the Tool
+### Option 1: Automated Installation (Recommended)
+
+Run the installation script:
+```bash
+./install-mcp.sh
+```
+
+This will:
+- Check Go installation and version
+- Build the binary
+- Display configuration instructions
+- Show AI assistant integration examples
+
+### Option 2: npm/npx Installation
+
+```bash
+# Install globally
+npm install -g mongo-essential-mcp
+
+# Or use npx to run without installing
+npx mongo-essential-mcp mcp
+```
+
+### Option 3: Manual Build
+
 ```bash
 make build
+```
+
+### Option 4: Smithery Registry
+
+Install via [Smithery MCP Registry](https://smithery.ai):
+```bash
+smithery install mongo-essential
+```
+
+## Quick Start
+
+### 1. Configure Environment
+```bash
+export MONGO_URL="mongodb://localhost:27017"
+export MONGO_DATABASE="your_database"
+export MIGRATIONS_COLLECTION="schema_migrations"
 ```
 
 ### 2. Test MCP Server
@@ -22,14 +62,7 @@ make mcp-test
 make mcp-client-test
 ```
 
-### 3. Configure Environment
-```bash
-export MONGO_URI="mongodb://localhost:27017"
-export MONGO_DATABASE="your_database"
-export MIGRATIONS_COLLECTION="schema_migrations"
-```
-
-### 4. Start MCP Server
+### 3. Start MCP Server
 ```bash
 # Start with your own migrations
 ./build/mongo-essential mcp

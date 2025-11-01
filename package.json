@@ -1,0 +1,59 @@
+{
+  "name": "mongo-essential-mcp",
+  "version": "1.0.0",
+  "description": "Model Context Protocol (MCP) server for MongoDB migration management - enables AI assistants to manage database migrations",
+  "type": "module",
+  "main": "build/mongo-essential",
+  "bin": {
+    "mongo-essential-mcp": "./build/mongo-essential"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "mongodb",
+    "migrations",
+    "database",
+    "ai-assistant",
+    "claude",
+    "ollama",
+    "goose"
+  ],
+  "author": "Drew Jocham",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/drewjocham/mongo-essential.git"
+  },
+  "bugs": {
+    "url": "https://github.com/drewjocham/mongo-essential/issues"
+  },
+  "homepage": "https://github.com/drewjocham/mongo-essential#readme",
+  "scripts": {
+    "build": "make build",
+    "install": "make build",
+    "test": "make test",
+    "mcp": "./build/mongo-essential mcp",
+    "mcp-with-examples": "./build/mongo-essential mcp --with-examples"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "mcp": {
+    "server": {
+      "command": "./build/mongo-essential",
+      "args": ["mcp"],
+      "env": {
+        "MONGO_URL": "mongodb://localhost:27017",
+        "MONGO_DATABASE": "${MONGO_DATABASE}"
+      }
+    }
+  },
+  "files": [
+    "build/mongo-essential",
+    "mcp/",
+    "examples/",
+    "README.md",
+    "MCP.md",
+    "LICENSE"
+  ]
+}
