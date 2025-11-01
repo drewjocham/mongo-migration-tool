@@ -27,7 +27,7 @@ func TestRootCommandHelp(t *testing.T) {
 	versionCmd := &cobra.Command{
 		Use:   "version",
 		Short: "Print version information",
-		Run: func(cmd *cobra.Command, args []string) {
+		Run: func(cmd *cobra.Command, _ []string) {
 			cmd.Println("mongo-essential version test")
 		},
 	}
@@ -71,7 +71,7 @@ func TestVersionCommand(t *testing.T) {
 	versionCmd := &cobra.Command{
 		Use:   "version",
 		Short: "Print version information",
-		Run: func(cmd *cobra.Command, args []string) {
+		Run: func(cmd *cobra.Command, _ []string) {
 			cmd.Println("version test")
 		},
 	}
@@ -100,7 +100,7 @@ func TestInvalidCommand(t *testing.T) {
 	cmd := &cobra.Command{
 		Use:  "mongo-essential",
 		Args: cobra.NoArgs,
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: func(cmd *cobra.Command, _ []string) error {
 			return cmd.Help()
 		},
 	}

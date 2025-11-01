@@ -12,6 +12,12 @@ import (
 	"github.com/jocham/mongo-essential/migration"
 )
 
+const (
+	jsonRPCVersion = "2.0"
+	testVersion1   = "20240101_001"
+	testVersion2   = "20240101_002"
+)
+
 // TestMigration is a simple test migration
 type TestMigration struct {
 	version      string
@@ -46,12 +52,12 @@ func TestMCPRequest(t *testing.T) {
 	}{
 		{
 			name:     "valid initialize request",
-			jsonData: `{"jsonrpc":"2.0","id":1,"method":"initialize","params":{}}`,
+			jsonData: `{"jsonrpc":"` + jsonRPCVersion + `","id":1,"method":"initialize","params":{}}`,
 			wantErr:  false,
 		},
 		{
 			name:     "valid tools/list request",
-			jsonData: `{"jsonrpc":"2.0","id":2,"method":"tools/list"}`,
+			jsonData: `{"jsonrpc":"` + jsonRPCVersion + `","id":2,"method":"tools/list"}`,
 			wantErr:  false,
 		},
 		{
@@ -80,7 +86,7 @@ func TestMCPResponse(t *testing.T) {
 		{
 			name: "success response",
 			response: MCPResponse{
-				JSONRPC: "2.0",
+				JSONRPC: jsonRPCVersion,
 				ID:      1,
 				Result:  map[string]interface{}{"status": "ok"},
 			},
@@ -88,7 +94,7 @@ func TestMCPResponse(t *testing.T) {
 		{
 			name: "error response",
 			response: MCPResponse{
-				JSONRPC: "2.0",
+				JSONRPC: jsonRPCVersion,
 				ID:      1,
 				Error: &MCPError{
 					Code:    -32600,
@@ -110,8 +116,8 @@ func TestMCPResponse(t *testing.T) {
 				t.Fatalf("Failed to unmarshal response: %v", err)
 			}
 
-			if decoded.JSONRPC != "2.0" {
-				t.Errorf("Expected JSONRPC 2.0, got %s", decoded.JSONRPC)
+			if decoded.JSONRPC != jsonRPCVersion {
+				t.Errorf("Expected JSONRPC %s, got %s", jsonRPCVersion, decoded.JSONRPC)
 			}
 		})
 	}
@@ -127,7 +133,7 @@ func TestHandleInitialize(t *testing.T) {
 		}
 
 		request := &MCPRequest{
-			JSONRPC: "2.0",
+			JSONRPC: jsonRPCVersion,
 			ID:      1,
 			Method:  "initialize",
 		}
@@ -168,7 +174,7 @@ func TestHandleToolsList(t *testing.T) {
 		}
 
 		request := &MCPRequest{
-			JSONRPC: "2.0",
+			JSONRPC: jsonRPCVersion,
 			ID:      2,
 			Method:  "tools/list",
 		}
@@ -254,7 +260,7 @@ func TestHandleRequest_UnknownMethod(t *testing.T) {
 		}
 
 		request := &MCPRequest{
-			JSONRPC: "2.0",
+			JSONRPC: jsonRPCVersion,
 			ID:      3,
 			Method:  "unknown_method",
 		}
@@ -286,8 +292,8 @@ func TestCreateErrorResponse(t *testing.T) {
 
 		response := server.createErrorResponse(1, -32600, "Invalid Request", "Additional data")
 
-		if response.JSONRPC != "2.0" {
-			t.Errorf("Expected JSONRPC 2.0, got %s", response.JSONRPC)
+		if response.JSONRPC != jsonRPCVersion {
+			t.Errorf("Expected JSONRPC %s, got %s", jsonRPCVersion, response.JSONRPC)
 		}
 
 		if response.ID != 1 {
@@ -323,8 +329,8 @@ func TestCreateSuccessResponse(t *testing.T) {
 
 		response := server.createSuccessResponse(1, "test result")
 
-		if response.JSONRPC != "2.0" {
-			t.Errorf("Expected JSONRPC 2.0, got %s", response.JSONRPC)
+		if response.JSONRPC != jsonRPCVersion {
+			t.Errorf("Expected JSONRPC %s, got %s", jsonRPCVersion, response.JSONRPC)
 		}
 
 		if response.ID != 1 {
@@ -480,7 +486,7 @@ func TestHandleToolsCall_InvalidParams(t *testing.T) {
 		}
 
 		request := &MCPRequest{
-			JSONRPC: "2.0",
+			JSONRPC: jsonRPCVersion,
 			ID:      4,
 			Method:  "tools/call",
 			Params:  json.RawMessage(`{invalid json}`),
@@ -525,25 +531,33 @@ func TestExecuteTool_UnknownTool(t *testing.T) {
 	})
 }
 
+// setupTestMigrations is a helper to set up test migrations and reduce duplication
+func setupTestMigrations(t *testing.T, mt *mtest.T) (*MCPServer, context.Context) {
+	t.Helper()
+	server := &MCPServer{
+		db:     mt.DB,
+		engine: migration.NewEngine(mt.DB, "test_migrations"),
+	}
+
+	// Register test migrations
+	server.RegisterMigrations(
+		&TestMigration{version: testVersion1, description: "Test migration 1"},
+		&TestMigration{version: testVersion2, description: "Test migration 2"},
+	)
+
+	ctx := context.Background()
+
+	// Mock the collection operations
+	mt.AddMockResponses(mtest.CreateCursorResponse(1, "test.test_migrations", mtest.FirstBatch))
+
+	return server, ctx
+}
+
 func TestGetMigrationStatus(t *testing.T) {
 	mt := mtest.New(t, mtest.NewOptions().ClientType(mtest.Mock))
 
 	mt.Run("formats status correctly", func(mt *mtest.T) {
-		server := &MCPServer{
-			db:     mt.DB,
-			engine: migration.NewEngine(mt.DB, "test_migrations"),
-		}
-
-		// Register test migrations
-		server.RegisterMigrations(
-			&TestMigration{version: "20240101_001", description: "Test migration 1"},
-			&TestMigration{version: "20240101_002", description: "Test migration 2"},
-		)
-
-		ctx := context.Background()
-
-		// Mock the collection operations
-		mt.AddMockResponses(mtest.CreateCursorResponse(1, "test.test_migrations", mtest.FirstBatch))
+		server, ctx := setupTestMigrations(t, mt)
 
 		result, err := server.getMigrationStatus(ctx)
 
@@ -555,7 +569,7 @@ func TestGetMigrationStatus(t *testing.T) {
 			t.Error("Result should contain 'Migration Status'")
 		}
 
-		if !strings.Contains(result, "20240101_001") {
+		if !strings.Contains(result, testVersion1) {
 			t.Error("Result should contain migration version")
 		}
 	})
@@ -565,21 +579,7 @@ func TestListMigrations(t *testing.T) {
 	mt := mtest.New(t, mtest.NewOptions().ClientType(mtest.Mock))
 
 	mt.Run("lists migrations correctly", func(mt *mtest.T) {
-		server := &MCPServer{
-			db:     mt.DB,
-			engine: migration.NewEngine(mt.DB, "test_migrations"),
-		}
-
-		// Register test migrations
-		server.RegisterMigrations(
-			&TestMigration{version: "20240101_001", description: "Test migration 1"},
-			&TestMigration{version: "20240101_002", description: "Test migration 2"},
-		)
-
-		ctx := context.Background()
-
-		// Mock the collection operations
-		mt.AddMockResponses(mtest.CreateCursorResponse(1, "test.test_migrations", mtest.FirstBatch))
+		server, ctx := setupTestMigrations(t, mt)
 
 		result, err := server.listMigrations(ctx)
 
@@ -655,7 +655,7 @@ func BenchmarkHandleToolsList(b *testing.B) {
 		}
 
 		request := &MCPRequest{
-			JSONRPC: "2.0",
+			JSONRPC: jsonRPCVersion,
 			ID:      2,
 			Method:  "tools/list",
 		}
@@ -689,16 +689,16 @@ func TestMCPProtocolCompliance(t *testing.T) {
 			name    string
 			request *MCPRequest
 		}{
-			{"initialize", &MCPRequest{JSONRPC: "2.0", ID: 1, Method: "initialize"}},
-			{"tools/list", &MCPRequest{JSONRPC: "2.0", ID: 2, Method: "tools/list"}},
-			{"unknown", &MCPRequest{JSONRPC: "2.0", ID: 3, Method: "unknown"}},
+			{"initialize", &MCPRequest{JSONRPC: jsonRPCVersion, ID: 1, Method: "initialize"}},
+			{"tools/list", &MCPRequest{JSONRPC: jsonRPCVersion, ID: 2, Method: "tools/list"}},
+			{"unknown", &MCPRequest{JSONRPC: jsonRPCVersion, ID: 3, Method: "unknown"}},
 		}
 
 		for _, tc := range testCases {
 			t.Run(tc.name, func(t *testing.T) {
 				response := server.handleRequest(tc.request)
-				if response.JSONRPC != "2.0" {
-					t.Errorf("Expected JSONRPC 2.0, got %s", response.JSONRPC)
+				if response.JSONRPC != jsonRPCVersion {
+					t.Errorf("Expected JSONRPC %s, got %s", jsonRPCVersion, response.JSONRPC)
 				}
 				if response.ID != tc.request.ID {
 					t.Errorf("Expected ID %v, got %v", tc.request.ID, response.ID)
@@ -709,7 +709,7 @@ func TestMCPProtocolCompliance(t *testing.T) {
 }
 
 // Helper function to create a test server with in-memory processing
-func createTestServer(t *testing.T, mt *mtest.T) *MCPServer {
+func createTestServer(_ *testing.T, mt *mtest.T) *MCPServer {
 	return &MCPServer{
 		db:     mt.DB,
 		client: mt.Client,
@@ -725,7 +725,7 @@ func TestJSONRPCFlow(t *testing.T) {
 		server := createTestServer(t, mt)
 
 		// Create request
-		reqData := `{"jsonrpc":"2.0","id":1,"method":"initialize","params":{}}`
+		reqData := `{"jsonrpc":"` + jsonRPCVersion + `","id":1,"method":"initialize","params":{}}`
 		var request MCPRequest
 		if err := json.Unmarshal([]byte(reqData), &request); err != nil {
 			t.Fatalf("Failed to unmarshal request: %v", err)

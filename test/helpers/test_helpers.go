@@ -1,3 +1,4 @@
+// Package helpers provides common test utilities and helpers for testing the mongo-essential application.
 package helpers
 
 import (
@@ -13,6 +14,11 @@ import (
 	"github.com/jocham/mongo-essential/migration"
 )
 
+const (
+	// retryDelayMillis is the delay between MongoDB connection retries
+	retryDelayMillis = 100
+)
+
 // TestHelper provides common test utilities
 type TestHelper struct {
 	T              *testing.T
@@ -25,11 +31,6 @@ type TestHelper struct {
 // NewTestHelper creates a new test helper
 func NewTestHelper(t *testing.T) *TestHelper {
 	t.Helper()
-
-	mongoURL := os.Getenv("MONGO_URL")
-	if mongoURL == "" {
-		mongoURL = "mongodb://localhost:27017"
-	}
 
 	dbName := fmt.Sprintf("test_%s_%d", t.Name(), time.Now().Unix())
 	collName := "test_migrations"
@@ -125,11 +126,10 @@ func (h *TestHelper) AssertContains(haystack, needle string) {
 }
 
 func getMongoURL() string {
-	url := os.Getenv("MONGO_URL")
-	if url == "" {
-		url = "mongodb://localhost:27017"
+	if url := os.Getenv("MONGO_URL"); url != "" {
+		return url
 	}
-	return url
+	return "mongodb://localhost:27017"
 }
 
 func contains(haystack, needle string) bool {
@@ -199,14 +199,19 @@ func WaitForMongo(ctx context.Context, maxWait time.Duration) error {
 	if err != nil {
 		return err
 	}
-	defer client.Disconnect(ctx)
+	defer func() {
+		if disconnectErr := client.Disconnect(ctx); disconnectErr != nil {
+			// Log but don't fail on disconnect error during cleanup
+			fmt.Printf("Warning: failed to disconnect MongoDB client: %v\n", disconnectErr)
+		}
+	}()
 
 	deadline := time.Now().Add(maxWait)
 	for time.Now().Before(deadline) {
 		if err := client.Ping(ctx, nil); err == nil {
 			return nil
 		}
-		time.Sleep(100 * time.Millisecond)
+		time.Sleep(retryDelayMillis * time.Millisecond)
 	}
 
 	return fmt.Errorf("MongoDB not available after %v", maxWait)
@@ -219,15 +224,21 @@ func SetTestEnv(t *testing.T, vars map[string]string) func() {
 	oldVars := make(map[string]string)
 	for key, value := range vars {
 		oldVars[key] = os.Getenv(key)
-		os.Setenv(key, value)
+		if err := os.Setenv(key, value); err != nil {
+			t.Logf("Warning: failed to set env var %s: %v", key, err)
+		}
 	}
 
 	return func() {
 		for key, oldValue := range oldVars {
 			if oldValue == "" {
-				os.Unsetenv(key)
+				if err := os.Unsetenv(key); err != nil {
+					t.Logf("Warning: failed to unset env var %s: %v", key, err)
+				}
 			} else {
-				os.Setenv(key, oldValue)
+				if err := os.Setenv(key, oldValue); err != nil {
+					t.Logf("Warning: failed to restore env var %s: %v", key, err)
+				}
 			}
 		}
 	}
