@@ -1,8 +1,26 @@
 version: '3.8'
 
 services:
+  mongo:
+    image: mongo:7.0
+    container_name: mongo-dev-db
+    ports:
+      - "27017:27017"
+    environment:
+      - MONGO_INITDB_DATABASE=test_db
+    volumes:
+      # Persist data across restarts
+      - mongo_data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 10s
+
   mongo-migrate:
     build: .
+    container_name: mongo-migration-tool
     environment:
       - MONGO_URL=mongodb://mongo:27017
       - MONGO_DATABASE=test_db
@@ -10,21 +28,13 @@ services:
       - MIGRATIONS_COLLECTION=schema_migrations
       - MONGO_TIMEOUT=30
     volumes:
-      # Mount local migrations directory if you want to use local files
       - ./migrations:/app/migrations
+      # Mount the entire current directory. useful for context
+      - .:/app
     depends_on:
-      - mongo
-    command: ["status"]
-  mongo:
-    image: mongo:7.0
-    ports:
-      - "27017:27017"
-    environment:
-      - MONGO_INITDB_ROOT_USERNAME=admin
-      - MONGO_INITDB_ROOT_PASSWORD=password
-      - MONGO_INITDB_DATABASE=test_db
-    volumes:
-      - mongo_data:/data/db
+      mongo:
+        condition: service_healthy
+    command: ["tail", "-f", "/dev/null"]
 
 volumes:
   mongo_data:

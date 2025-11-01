@@ -1,3 +1,4 @@
+//go:build integration
 // +build integration
 
 package integration
@@ -22,9 +23,9 @@ import (
 )
 
 const (
-	testMongoURL      = "mongodb://localhost:27017"
-	testDatabase      = "test_mcp_integration"
-	testCollection    = "test_migrations"
+	testMongoURL       = "mongodb://localhost:27017"
+	testDatabase       = "test_mcp_integration"
+	testCollection     = "test_migrations"
 	integrationTimeout = 30 * time.Second
 )
 
@@ -345,14 +346,8 @@ func testMigrationLifecycle(t *testing.T, ctx context.Context, db *mongo.Databas
 	})
 }
 
-func sendMCPRequest(t *testing.T, ctx context.Context, request mcp.MCPRequest) mcp.MCPResponse {
+func sendMCPRequest(t *testing.T, ctx context.Context, request mcp.MCPRequest) *mcp.MCPResponse {
 	t.Helper()
-
-	// Marshal request
-	requestData, err := json.Marshal(request)
-	if err != nil {
-		t.Fatalf("Failed to marshal request: %v", err)
-	}
 
 	// For integration testing, we'll create a server instance directly
 	server, err := mcp.NewMCPServer()
@@ -361,22 +356,8 @@ func sendMCPRequest(t *testing.T, ctx context.Context, request mcp.MCPRequest) m
 	}
 	defer server.Close()
 
-	// Process request through server's internal handler
-	// This simulates what would happen via stdio
-	var req mcp.MCPRequest
-	if err := json.Unmarshal(requestData, &req); err != nil {
-		t.Fatalf("Failed to unmarshal request: %v", err)
-	}
-
-	// Use reflection or create a test helper in the mcp package
-	// For now, we'll return a mock response
-	// In a real integration test, you'd want to expose a HandleRequest method
-
-	response := mcp.MCPResponse{
-		JSONRPC: "2.0",
-		ID:      request.ID,
-		Result:  map[string]interface{}{"status": "ok"},
-	}
+	// Use the exported HandleRequest method for testing
+	response := server.HandleRequest(&request)
 
 	return response
 }

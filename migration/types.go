@@ -82,7 +82,7 @@ func (d Direction) String() string {
 }
 
 // MigrationStatus represents the status of a migration.
-//
+
 // This shows whether a migration has been applied and when.
 type MigrationStatus struct { //nolint:revive // MigrationStatus is clearer than Status in this context
 	Version     string     `json:"version"`

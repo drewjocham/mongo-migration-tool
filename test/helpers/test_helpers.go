@@ -135,7 +135,7 @@ func getMongoURL() string {
 func contains(haystack, needle string) bool {
 	return len(haystack) >= len(needle) &&
 		(haystack == needle || len(needle) == 0 ||
-		indexOf(haystack, needle) >= 0)
+			indexOf(haystack, needle) >= 0)
 }
 
 func indexOf(haystack, needle string) int {
@@ -149,12 +149,12 @@ func indexOf(haystack, needle string) int {
 
 // TestMigration is a migration implementation for testing
 type TestMigration struct {
-	VersionStr   string
-	DescStr      string
-	UpFunc       func(ctx context.Context, db *mongo.Database) error
-	DownFunc     func(ctx context.Context, db *mongo.Database) error
-	UpCalled     bool
-	DownCalled   bool
+	VersionStr string
+	DescStr    string
+	UpFunc     func(ctx context.Context, db *mongo.Database) error
+	DownFunc   func(ctx context.Context, db *mongo.Database) error
+	UpCalled   bool
+	DownCalled bool
 }
 
 // Version returns the migration version

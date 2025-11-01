@@ -62,12 +62,12 @@ Features:
 			SetServerSelectionTimeout(time.Duration(cfg.Timeout) * time.Second).
 			SetConnectTimeout(time.Duration(cfg.Timeout) * time.Second)
 
-	if cfg.SSLEnabled {
-		tlsConfig := &tls.Config{
-			InsecureSkipVerify: cfg.SSLInsecure, // #nosec G402 -- user-configurable for dev environments
+		if cfg.SSLEnabled {
+			tlsConfig := &tls.Config{
+				InsecureSkipVerify: cfg.SSLInsecure, // #nosec G402 -- user-configurable for dev environments
+			}
+			clientOpts.SetTLSConfig(tlsConfig)
 		}
-		clientOpts.SetTLSConfig(tlsConfig)
-	}
 
 		client, err := mongo.Connect(ctx, clientOpts)
 		if err != nil {

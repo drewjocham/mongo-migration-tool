@@ -4,8 +4,8 @@ services:
   mongodb-test:
     image: mongo:7.0
     container_name: mongo-essential-test-db
-    ports:
-      - "27018:27017"
+    # Removing host port mapping (27018:27017) as it's not needed for internal tests.
+    # The test-runner uses the service name and internal port (mongodb-test:27017).
     environment:
       MONGO_INITDB_DATABASE: test_db
     volumes:
@@ -15,7 +15,7 @@ services:
       interval: 5s
       timeout: 3s
       retries: 5
-      start_period: 10s
+      start_period: 10s # Gives MongoDB a little longer to spin up
     networks:
       - test-network
 
@@ -24,6 +24,7 @@ services:
       context: .
       dockerfile: Dockerfile.test
     container_name: mongo-essential-test-runner
+    # Ensure this condition is met before starting tests
     depends_on:
       mongodb-test:
         condition: service_healthy
@@ -31,10 +32,12 @@ services:
       MONGO_URL: mongodb://mongodb-test:27017
       MONGO_DATABASE: test_db
       MIGRATIONS_COLLECTION: test_migrations
+      # Set GO_ENV environment variable, useful for Go code logic
       GO_ENV: test
     volumes:
       - .:/app
       - go-mod-cache:/go/pkg/mod
+      # Use $GOCACHE or a more generic path if the user inside the container isn't root
       - go-build-cache:/root/.cache/go-build
     networks:
       - test-network

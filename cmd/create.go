@@ -1,4 +1,3 @@
-// Package cmd provides command-line interface commands for the mongo-essential tool.
 package cmd
 
 import (
@@ -79,7 +78,7 @@ func (m *Migration_%s) Up(ctx context.Context, db *mongo.Database) error {
 	// TODO: Implement your migration logic here
 	// Example:
 	// collection := db.Collection("your_collection")
-	// 
+	//
 	// // Create indexes, insert data, etc.
 	// index := mongo.IndexModel{
 	//     Keys:    bson.D{{"field_name", 1}},

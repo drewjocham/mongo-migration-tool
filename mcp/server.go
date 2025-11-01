@@ -1,4 +1,3 @@
-// Package mcp implements the Model Context Protocol server for MongoDB migrations.
 package mcp
 
 import (
@@ -145,6 +144,11 @@ func (s *MCPServer) Start() error {
 	}
 
 	return nil
+}
+
+// HandleRequest handles an MCP request (exported for testing)
+func (s *MCPServer) HandleRequest(request *MCPRequest) *MCPResponse {
+	return s.handleRequest(request)
 }
 
 // handleRequest handles an MCP request
