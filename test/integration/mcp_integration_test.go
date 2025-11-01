@@ -359,7 +359,19 @@ func sendMCPRequest(t *testing.T, ctx context.Context, request mcp.MCPRequest) *
 	// Use the exported HandleRequest method for testing
 	response := server.HandleRequest(&request)
 
-	return response
+	// To simulate JSON round-tripping (which happens in real usage),
+	// marshal and unmarshal the response to convert types properly
+	responseJSON, err := json.Marshal(response)
+	if err != nil {
+		t.Fatalf("Failed to marshal response: %v", err)
+	}
+
+	var unmarshaledResponse mcp.MCPResponse
+	if err := json.Unmarshal(responseJSON, &unmarshaledResponse); err != nil {
+		t.Fatalf("Failed to unmarshal response: %v", err)
+	}
+
+	return &unmarshaledResponse
 }
 
 // TestMCPServerCLI tests the MCP server via CLI
