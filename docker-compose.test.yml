@@ -1,0 +1,50 @@
+version: '3.8'
+
+services:
+  mongodb-test:
+    image: mongo:7.0
+    container_name: mongo-essential-test-db
+    ports:
+      - "27018:27017"
+    environment:
+      MONGO_INITDB_DATABASE: test_db
+    volumes:
+      - mongodb-test-data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 10s
+    networks:
+      - test-network
+
+  test-runner:
+    build:
+      context: .
+      dockerfile: Dockerfile.test
+    container_name: mongo-essential-test-runner
+    depends_on:
+      mongodb-test:
+        condition: service_healthy
+    environment:
+      MONGO_URL: mongodb://mongodb-test:27017
+      MONGO_DATABASE: test_db
+      MIGRATIONS_COLLECTION: test_migrations
+      GO_ENV: test
+    volumes:
+      - .:/app
+      - go-mod-cache:/go/pkg/mod
+      - go-build-cache:/root/.cache/go-build
+    networks:
+      - test-network
+    command: make test-all
+
+volumes:
+  mongodb-test-data:
+  go-mod-cache:
+  go-build-cache:
+
+networks:
+  test-network:
+    driver: bridge

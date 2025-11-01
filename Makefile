@@ -51,19 +51,69 @@ clean: ## Clean build artifacts
 	rm -rf $(BUILD_DIR)
 	go clean
 
-test: ## Run tests
-	@echo "$(GREEN)Running tests...$(NC)"
-	go test -v $(shell go list ./... | grep -v /examples)
+test: ## Run unit tests
+	@echo "$(GREEN)Running unit tests...$(NC)"
+	go test -v -short $(shell go list ./... | grep -v /examples | grep -v /test/integration)
+
+test-unit: test ## Alias for test
+
+test-mcp: ## Run MCP server tests
+	@echo "$(GREEN)Running MCP server tests...$(NC)"
+	go test -v -short ./mcp/...
+
+test-migration: ## Run migration engine tests
+	@echo "$(GREEN)Running migration engine tests...$(NC)"
+	go test -v -short ./migration/...
+
+test-config: ## Run config tests
+	@echo "$(GREEN)Running config tests...$(NC)"
+	go test -v -short ./config/...
+
+test-cmd: ## Run CLI command tests
+	@echo "$(GREEN)Running CLI command tests...$(NC)"
+	go test -v -short ./cmd/...
+
+test-integration: ## Run integration tests (requires MongoDB)
+	@echo "$(GREEN)Running integration tests...$(NC)"
+	@echo "$(YELLOW)Note: This requires MongoDB running on localhost:27017$(NC)"
+	go test -v -tags=integration ./test/integration/...
+
+test-integration-docker: ## Run integration tests in Docker
+	@echo "$(GREEN)Running integration tests in Docker...$(NC)"
+	docker-compose -f docker-compose.test.yml up --build --abort-on-container-exit
+	docker-compose -f docker-compose.test.yml down -v
+
+test-all: test test-integration ## Run all tests (unit + integration)
+	@echo "$(GREEN)All tests completed!$(NC)"
 
 test-library: ## Run library-specific tests
 	@echo "$(GREEN)Running library tests...$(NC)"
-	go test -v ./migration ./config
+	go test -v -short ./migration ./config
 
 test-coverage: ## Run tests with coverage
 	@echo "$(GREEN)Running tests with coverage...$(NC)"
-	go test -v -coverprofile=coverage.out $(shell go list ./... | grep -v /examples)
+	go test -v -short -coverprofile=coverage.out -covermode=atomic $(shell go list ./... | grep -v /examples | grep -v /test/integration)
 	go tool cover -html=coverage.out -o coverage.html
 	@echo "Coverage report generated: coverage.html"
+	@echo "$(GREEN)Coverage summary:$(NC)"
+	@go tool cover -func=coverage.out | tail -1
+
+test-coverage-full: ## Run all tests with coverage (including integration)
+	@echo "$(GREEN)Running all tests with coverage...$(NC)"
+	@echo "$(YELLOW)Note: This requires MongoDB running on localhost:27017$(NC)"
+	go test -v -tags=integration -coverprofile=coverage.out -covermode=atomic $(shell go list ./... | grep -v /examples)
+	go tool cover -html=coverage.out -o coverage.html
+	@echo "Coverage report generated: coverage.html"
+	@echo "$(GREEN)Coverage summary:$(NC)"
+	@go tool cover -func=coverage.out | tail -1
+
+test-race: ## Run tests with race detector
+	@echo "$(GREEN)Running tests with race detector...$(NC)"
+	go test -v -short -race $(shell go list ./... | grep -v /examples | grep -v /test/integration)
+
+test-bench: ## Run benchmark tests
+	@echo "$(GREEN)Running benchmark tests...$(NC)"
+	go test -v -short -bench=. -benchmem $(shell go list ./... | grep -v /examples | grep -v /test/integration)
 
 test-examples: ## Test the examples
 	@echo "$(GREEN)Testing examples...$(NC)"
@@ -72,6 +122,16 @@ test-examples: ## Test the examples
 	@echo "✅ Examples build successfully!"
 	@echo "  - CLI example: examples/example"
 	@echo "  - Library example: examples/library-example/library-example"
+
+test-watch: ## Watch and run tests on file changes (requires entr)
+	@echo "$(GREEN)Watching for changes...$(NC)"
+	@echo "$(YELLOW)Install entr: brew install entr (macOS) or apt-get install entr (Linux)$(NC)"
+	@find . -name '*.go' | entr -c make test
+
+test-clean: ## Clean test cache and coverage files
+	@echo "$(YELLOW)Cleaning test cache...$(NC)"
+	go clean -testcache
+	rm -f coverage.out coverage.html
 
 lint: ## Run golangci-lint
 	@echo "$(GREEN)Running linter...$(NC)"
@@ -149,7 +209,10 @@ deploy-prod: ## Deploy to production environment
 	@echo "$(GREEN)Deploying to production...$(NC)"
 	REQUIRE_SIGNED_IMAGES=true ./scripts/deploy-migrations.sh auto
 
-ci-test: deps vet lint test ## Run all CI tests
+ci-test: deps vet test-coverage test-race ## Run all CI tests
+	@echo "$(GREEN)All CI tests passed!$(NC)"
+
+ci-test-full: deps vet lint test-coverage-full test-race ## Run all CI tests with linting and integration
 	@echo "$(GREEN)All CI tests passed!$(NC)"
 
 ci-build: clean build-all test ## Build and test for CI

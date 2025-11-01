@@ -1,0 +1,28 @@
+FROM golang:1.24-alpine AS test
+
+# Install dependencies
+RUN apk add --no-cache \
+    git \
+    make \
+    bash \
+    gcc \
+    musl-dev
+
+# Set working directory
+WORKDIR /app
+
+# Copy go mod files
+COPY go.mod go.sum ./
+
+# Download dependencies
+RUN go mod download
+
+# Copy source code
+COPY . .
+
+# Set test environment
+ENV CGO_ENABLED=1
+ENV GO_ENV=test
+
+# Default command
+CMD ["make", "test-all"]
