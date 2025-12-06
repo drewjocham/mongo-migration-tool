@@ -47,9 +47,9 @@ mongo-essential version
 ### Docker
 
 ```bash
-# Pull and run
-docker pull ghcr.io/drewjocham/mongo-essential:latest
-docker run --rm -v $(pwd):/workspace ghcr.io/jocham/mongo-essential:latest --help
+  # Pull and run
+    docker pull ghcr.io/drewjocham/mongo-essential:latest
+    docker run --rm -v $(pwd):/workspace ghcr.io/jocham/mongo-essential:latest --help
 ```
 
 * Run this command in your project's root directory to create a simple, static key file for development:
@@ -64,7 +64,7 @@ docker run --rm -v $(pwd):/workspace ghcr.io/jocham/mongo-essential:latest --hel
 * Stop and starting the compose project
 * 
 ```bash
-    docker-compose down
+    docker-compose down &&  \
     docker compose up -d mongo-migrate
 ```
 
@@ -88,13 +88,19 @@ If you want to run mongo-essential on your local machine:
 * Check the staus and whether the library is installed
 ```shell
 # or if installed:
-mongo-essential status
+    mongo-essential status
 ```
-
-
+* Access the shell (using authentication):
+```shell
+    docker exec -it mongo-migration-tool--mongo-cli-1 mongosh -u admin -p password --authenticationDatabase admin
+```
+* Another way to access the shell:
+```shell
+  docker run --rm -it --network mongo-migration-tool-_cli-network alpine sh
+```
 ```bash
-# Add to your Go project
-go get github.com/drewjocham/mongo-essential@latest
+    # Add to your Go project
+    go get github.com/drewjocham/mongo-essential@latest
 ```
 
 ### Binary Download
@@ -104,7 +110,7 @@ Download pre-built binaries from [GitHub Releases](https://github.com/drewjocham
 ### Go Install (Development)
 
 ```bash
-go install github.com/drewjocham/mongo-essential@latest
+    go install github.com/drewjocham/mongo-essential@latest
 ```
 
 **📚 For detailed installation instructions, platform-specific guides, and troubleshooting, see [INSTALL.md](INSTALL.md)**

@@ -1,8 +1,9 @@
 services:
+  # Corrected mongo-migrate service
   mongo-migrate:
     build: .
     environment:
-      - MONGO_URL=mongodb://mongo-cli:27017
+      - MONGO_URL=mongodb://admin:password@mongo-cli:27017
       - MONGO_DATABASE=test_db
       - MIGRATIONS_PATH=/app/migrations
       - MIGRATIONS_COLLECTION=schema_migrations
@@ -25,11 +26,10 @@ services:
     ports:
       - "27017:27017"
     environment:
-     - MONGO_URL=mongodb://admin:password@mongo-cli:27017
-     - MONGO_DATABASE=test_db
-     - MIGRATIONS_PATH=/app/migrations
-     - MIGRATIONS_COLLECTION=schema_migrations
-     - MONGO_TIMEOUT=30
+      # CRITICAL FIX: These are the ONLY variables that matter for user creation
+      - MONGO_INITDB_ROOT_USERNAME=admin
+      - MONGO_INITDB_ROOT_PASSWORD=password
+      - MONGO_INITDB_DATABASE=test_db
     healthcheck:
       test: |
         echo 'db.runCommand("ping").ok' | mongosh --port 27017 --quiet

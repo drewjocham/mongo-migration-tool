@@ -104,11 +104,11 @@ docker-run: docker-build ## Run Docker container
 
 docker-compose-up: ## Start services with docker-compose
 	@echo "$(GREEN)Starting services with docker-compose...$(NC)"
-	docker-compose up -d
+	docker-compose up -d --remove-orphans
 
 docker-compose-down: ## Stop services with docker-compose
 	@echo "$(YELLOW)Stopping services with docker-compose...$(NC)"
-	docker-compose down
+	docker-compose down --remove-orphans -v
 
 create-migration: ## Create a new migration (usage: make create-migration DESC="description")
 ifndef DESC
@@ -167,7 +167,7 @@ release: clean ci-test build-all ## Create a release build
 
 db-up: ## Start local MongoDB for testing
 	@echo "$(GREEN)Starting local MongoDB...$(NC)"
-	docker run --name mongo-migration-test -p 27017:27017 -d mongo:7.0 || \
+	docker run --name mongo-migration-test -p 27017:27017 -d mongo:8.0 || \
 	docker start mongo-migration-test
 
 db-down: ## Stop local MongoDB
