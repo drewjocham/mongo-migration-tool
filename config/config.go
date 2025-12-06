@@ -12,15 +12,12 @@ import (
 
 // Config holds all configuration options for mongo-essential.
 type Config struct {
-	// MongoDB connection settings
 	MongoURL string `env:"MONGO_URL" envDefault:"mongodb://localhost:27017"`
 	Database string `env:"MONGO_DATABASE,required"`
 
-	// Migration settings
 	MigrationsPath       string `env:"MIGRATIONS_PATH" envDefault:"./migrations"`
 	MigrationsCollection string `env:"MIGRATIONS_COLLECTION" envDefault:"schema_migrations"`
 
-	// Authentication
 	Username string `env:"MONGO_USERNAME"`
 	Password string `env:"MONGO_PASSWORD"`
 
@@ -64,7 +61,6 @@ type Config struct {
 	GoogleDocsShareWithEmail string `env:"GOOGLE_DOCS_SHARE_WITH_EMAIL"`
 }
 
-// Load loads configuration from the specified .env files and environment variables.
 func Load(envFiles ...string) (*Config, error) {
 	for _, file := range envFiles {
 		if _, err := os.Stat(file); err == nil {
@@ -106,6 +102,16 @@ func (c *Config) GetConnectionString() string {
 				connStr = strings.Replace(c.MongoURL, "mongodb+srv://",
 					fmt.Sprintf("mongodb+srv://%s:%s@", c.Username, c.Password), 1)
 			}
+		}
+	}
+
+	// For local development, it's often easier to connect directly
+	// without replica set discovery.
+	if strings.Contains(connStr, "localhost") && !strings.Contains(connStr, "replicaSet") {
+		if !strings.Contains(connStr, "?") {
+			connStr += "?connect=direct"
+		} else {
+			connStr += "&connect=direct"
 		}
 	}
 

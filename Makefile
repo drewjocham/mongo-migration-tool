@@ -1,15 +1,8 @@
-BINARY_NAME=mongo-essential
-DOCKER_IMAGE=mongo-migration-tool
-DOCKER_TAG?=latest
-GO_VERSION=1.24.0
 
-BUILD_DIR=./build
-LDFLAGS=-ldflags "-X main.version=$(shell git describe --tags --always)"
+# Shared Variables
+include makefiles/variables/vars.mk
+include makefiles/variables/common.mk
 
-GREEN=\033[0;32m
-YELLOW=\033[1;33m
-RED=\033[0;31m
-NC=\033[0m # No Color
 
 .PHONY: help build clean test docker-build docker-run install deps lint format vet mcp mcp-examples mcp-test mcp-client-test
 
@@ -17,6 +10,18 @@ help: ## Show this help message
 	@echo "MongoDB Migration Tool - Available commands:"
 	@echo
 	@awk 'BEGIN {FS = ":.*?## "} /^[a-zA-Z_-]+:.*?## / {printf "  \033[36m%-15s\033[0m %s\n", $$1, $$2}' $(MAKEFILE_LIST)
+
+.PHONY: download-mockery
+_download-mockery:
+	@echo "Ensuring Mockery $(MOCKERY_VERSION) is installed..."
+	@GOFLAGS=-toolchain=local go install github.com/vektra/mockery/v2@"$(MOCKERY_VERSION)"
+	@echo "Mockery installation complete."
+
+.PHONY: download-mockery
+download-mockery:
+	@echo "Ensuring Mockery $(MOCKERY_VERSION) is installed..."
+	@GOFLAGS=-toolchain=local go install github.com/vektra/mockery/v2@"$(MOCKERY_VERSION)"
+	@echo "Mockery installation complete."
 
 deps: ## Download Go modules
 	@echo "$(GREEN)Downloading dependencies...$(NC)"
@@ -184,10 +189,17 @@ docs: ## Generate documentation
 		echo "Install godoc with: go install golang.org/x/tools/cmd/godoc@latest"; \
 	fi
 
+tidy: ## Tidy Go modules for all services
+	@echo "🧹 Tidying all workspace modules with Go $(GO_COMPAT_VERSION) compatibility..."
+	go mod tidy -go=$(GO_COMPAT_VERSION) && cd $(REPO_ROOT);
+	@echo "✅ All modules tidied"
+
 version: ## Show version information
 	@echo "Go version: $(shell go version)"
 	@echo "Git commit: $(shell git rev-parse --short HEAD)"
 	@echo "Build date: $(shell date -u '+%Y-%m-%d %H:%M:%S UTC')"
+
+.PHONY: tidy
 
 mcp: build ## Start MCP server for AI assistant integration
 	@echo "$(GREEN)Starting MCP server...$(NC)"

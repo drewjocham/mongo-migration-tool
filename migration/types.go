@@ -96,7 +96,6 @@ type ErrNotSupported struct {
 	Operation string
 }
 
-// Error returns the error message.
 func (e ErrNotSupported) Error() string {
 	return "operation not supported: " + e.Operation
 }

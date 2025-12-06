@@ -52,7 +52,45 @@ docker pull ghcr.io/drewjocham/mongo-essential:latest
 docker run --rm -v $(pwd):/workspace ghcr.io/jocham/mongo-essential:latest --help
 ```
 
-### Go Library
+* Run this command in your project's root directory to create a simple, static key file for development:
+```bash
+    echo "ThisIsADevKeyForInternalRSCommunication" > mongo_keyfile
+    # permissions for the MongoDB Key File
+    chmod 600 mongo_keyfile
+    # 2. Verify
+    ls -l mongo_keyfile
+```
+
+* Stop and starting the compose project
+* 
+```bash
+    docker-compose down
+    docker compose up -d mongo-migrate
+```
+
+```bash
+    # Delete the volume (ALL DATA WILL BE LOST)
+    docker volume rm mongo-migration-tool-_mongo_data
+```
+* Quick path to get it working
+* 
+```bash
+     docker compose up -d mongo-cli
+     docker compose run --rm mongo-migrate status
+```
+If you want to run mongo-essential on your local machine:
+*  Ensure Mongo is running via Docker (docker compose up -d mongo-cli).
+*  Set .env like above with localhost and credentials.
+
+```shell
+  go run . --config .env status
+```
+* Check the staus and whether the library is installed
+```shell
+# or if installed:
+mongo-essential status
+```
+
 
 ```bash
 # Add to your Go project
@@ -76,21 +114,25 @@ go install github.com/drewjocham/mongo-essential@latest
 ### 1. Database Migrations
 
 ```bash
-# Initialize configuration
-cp .env.example .env
-# Edit .env with your MongoDB connection details
-
-# Check migration status
-mongo-essential status
-
-# Create a new migration
-mongo-essential create add_user_indexes
-
-# Run pending migrations
-mongo-essential up
-
-# Rollback last migration
-mongo-essential down --target 20231201_001
+    # Initialize configuration
+    cp .env.example .env
+    # Edit .env with your MongoDB connection details
+```
+```bash
+    # Check migration status
+    mongo-essential status
+```
+```bash
+    # Create a new migration
+    mongo-essential create add_user_indexes
+```
+```bash
+    # Run pending migrations
+    mongo-essential up
+```
+```bash
+    # Rollback last migration
+    mongo-essential down --target 20231201_001
 ```
 
 ### 2. AI-Powered Analysis

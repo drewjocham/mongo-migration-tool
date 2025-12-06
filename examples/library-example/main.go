@@ -117,10 +117,7 @@ func main() {
 
 	// Create migration engine
 	db := client.Database(cfg.Database)
-	engine := migration.NewEngine(db, cfg.MigrationsCollection)
-
-	// Register migrations
-	engine.Register(&ExampleMigration{})
+	engine := migration.NewEngine(db, cfg.MigrationsCollection, migration.RegisteredMigrations())
 
 	// Show current status
 	fmt.Println("\n📊 Migration Status:")
@@ -169,7 +166,7 @@ func main() {
 	fmt.Println("\n🎉 Standalone example completed successfully!")
 	fmt.Println("\nNext steps:")
 	fmt.Println("- Create your own migration structs")
-	fmt.Println("- Register them with engine.Register() or engine.RegisterMany()")
+	fmt.Println("- Register them with migration.Register() in an init() function")
 	fmt.Println("- Use engine.Up(), engine.Down(), and engine.GetStatus() as needed")
 	fmt.Println("- See the documentation for more advanced features")
 }

@@ -1,30 +1,50 @@
-version: '3.8'
-
 services:
   mongo-migrate:
     build: .
     environment:
-      - MONGO_URL=mongodb://mongo:27017
+      - MONGO_URL=mongodb://mongo-cli:27017
       - MONGO_DATABASE=test_db
       - MIGRATIONS_PATH=/app/migrations
       - MIGRATIONS_COLLECTION=schema_migrations
       - MONGO_TIMEOUT=30
     volumes:
-      # Mount local migrations directory if you want to use local files
       - ./migrations:/app/migrations
     depends_on:
-      - mongo
+      mongo-cli:
+        condition: service_healthy
     command: ["status"]
-  mongo:
-    image: mongo:7.0
+    networks:
+      - cli-network
+
+  mongo-cli:
+    image: mongo:8.0
+    command: [
+      "--bind_ip_all",
+      "--port", "27017"
+    ]
     ports:
       - "27017:27017"
     environment:
-      - MONGO_INITDB_ROOT_USERNAME=admin
-      - MONGO_INITDB_ROOT_PASSWORD=password
-      - MONGO_INITDB_DATABASE=test_db
+     - MONGO_URL=mongodb://admin:password@mongo-cli:27017
+     - MONGO_DATABASE=test_db
+     - MIGRATIONS_PATH=/app/migrations
+     - MIGRATIONS_COLLECTION=schema_migrations
+     - MONGO_TIMEOUT=30
+    healthcheck:
+      test: |
+        echo 'db.runCommand("ping").ok' | mongosh --port 27017 --quiet
+      interval: 5s
+      timeout: 30s
+      start_period: 10s
+      start_interval: 1s
+      retries: 30
     volumes:
       - mongo_data:/data/db
-
+    networks:
+      - cli-network
 volumes:
   mongo_data:
+
+networks:
+  cli-network:
+    driver: bridge

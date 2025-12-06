@@ -12,7 +12,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 
 	"github.com/jocham/mongo-essential/config"
-	"github.com/jocham/mongo-essential/examples/examplemigrations"
+	_ "github.com/jocham/mongo-essential/examples/examplemigrations"
 	"github.com/jocham/mongo-essential/migration"
 )
 
@@ -43,13 +43,7 @@ func main() {
 	db := client.Database(cfg.Database)
 
 	// Create migration engine
-	engine := migration.NewEngine(db, cfg.MigrationsCollection)
-
-	engine.RegisterMany(
-		&examplemigrations.AddUserIndexesMigration{},
-		&examplemigrations.TransformUserDataMigration{},
-		&examplemigrations.CreateAuditCollectionMigration{},
-	)
+	engine := migration.NewEngine(db, cfg.MigrationsCollection, migration.RegisteredMigrations())
 
 	switch command {
 	case "up":

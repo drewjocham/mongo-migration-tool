@@ -92,7 +92,7 @@ func NewMCPServer() (*MCPServer, error) {
 	}
 
 	db := client.Database(cfg.Database)
-	engine := migration.NewEngine(db, cfg.MigrationsCollection)
+	engine := migration.NewEngine(db, cfg.MigrationsCollection, migration.RegisteredMigrations())
 
 	return &MCPServer{
 		engine: engine,
@@ -113,14 +113,16 @@ func (s *MCPServer) Close() error {
 	return nil
 }
 
-// RegisterMigration registers a migration with the engine
+// RegisterMigration registers a migration with the global registry and rebuilds the engine
 func (s *MCPServer) RegisterMigration(m migration.Migration) {
-	s.engine.Register(m)
+	migration.Register(m)
+	s.engine = migration.NewEngine(s.db, s.config.MigrationsCollection, migration.RegisteredMigrations())
 }
 
-// RegisterMigrations registers multiple migrations with the engine
+// RegisterMigrations registers multiple migrations with the global registry and rebuilds the engine
 func (s *MCPServer) RegisterMigrations(migrations ...migration.Migration) {
-	s.engine.RegisterMany(migrations...)
+	migration.Register(migrations...)
+	s.engine = migration.NewEngine(s.db, s.config.MigrationsCollection, migration.RegisteredMigrations())
 }
 
 // Start starts the MCP server
@@ -601,7 +603,7 @@ Next steps:
 4. Run the migration with: mongo-essential migrate up
 
 Example registration:
-engine.Register(&examplemigrations.%sMigration{})
+migration.Register(&examplemigrations.%sMigration{})
 `, filepath, version, name, description, filepath, toCamelCase(cleanName))
 }
 
@@ -617,8 +619,8 @@ func (s *MCPServer) listMigrations(ctx context.Context) (string, error) {
 	result.WriteString("================================================================================\n")
 
 	if len(status) == 0 {
-		result.WriteString("No migrations registered.\n")
-		result.WriteString("\nTo register migrations, use engine.Register() or engine.RegisterMany() in your application.\n")
+		result.WriteString("No migrations registered.\\n")
+		result.WriteString("\\nTo register migrations, use migration.Register() in an init() function in your migration files.\\n")
 	} else {
 		result.WriteString(fmt.Sprintf("Total migrations: %d\n\n", len(status)))
 		for i, s := range status {

@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/jocham/mongo-essential/cmd"
+	_ "github.com/jocham/mongo-essential/examples/examplemigrations"
 )
 
 // Version information set by GoReleaser
