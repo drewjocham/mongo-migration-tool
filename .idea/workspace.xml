@@ -4,7 +4,10 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="53a82f71-5517-487d-94b0-2d95ee8915ca" name="Changes" comment="CLI and mongo-migration-tool" />
+    <list default="true" id="53a82f71-5517-487d-94b0-2d95ee8915ca" name="Changes" comment="CLI and mongo-migration-tool">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Dockerfile" beforeDir="false" afterPath="$PROJECT_DIR$/Dockerfile" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -255,7 +258,7 @@
       <workItem from="1760027209597" duration="116000" />
       <workItem from="1760027337322" duration="693000" />
       <workItem from="1765016689431" duration="12725000" />
-      <workItem from="1765109189119" duration="22161000" />
+      <workItem from="1765109189119" duration="23106000" />
     </task>
     <task id="LOCAL-00001" summary="CLI and mongo-migration-tool">
       <option name="closed" value="true" />
@@ -401,7 +404,15 @@
       <option name="project" value="LOCAL" />
       <updated>1765143565455</updated>
     </task>
-    <option name="localTasksCounter" value="19" />
+    <task id="LOCAL-00019" summary="CLI and mongo-migration-tool">
+      <option name="closed" value="true" />
+      <created>1765143714056</created>
+      <option name="number" value="00019" />
+      <option name="presentableId" value="LOCAL-00019" />
+      <option name="project" value="LOCAL" />
+      <updated>1765143714056</updated>
+    </task>
+    <option name="localTasksCounter" value="20" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
