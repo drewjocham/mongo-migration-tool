@@ -22,6 +22,10 @@ jobs:
         with:
           go-version: ${{ matrix.go-version }}
 
+      # sometimes is needed for bad builds
+      - name: Clear Cache
+        run: make clear-cache
+
       - name: Cache dependencies
         uses: actions/cache@v4
         with:

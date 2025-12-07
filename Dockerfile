@@ -4,6 +4,7 @@ WORKDIR /app
 
 COPY go.mod go.sum ./
 RUN go mod download
+RUN go mod tidy # Add go mod tidy to ensure consistent module state
 
 # Copy source code (invalidates cache on change)
 COPY . .
@@ -21,6 +22,7 @@ WORKDIR /app
 COPY go.mod go.sum ./
 
 RUN go mod download
+RUN go mod tidy # Add go mod tidy to ensure consistent module state
 
 COPY . .
 
