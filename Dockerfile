@@ -19,10 +19,10 @@ WORKDIR /app
 
 COPY go.mod go.sum ./
 
+COPY . .
+
 RUN go mod download && \
     go mod tidy
-
-COPY . .
 
 # 3. Build the application
 RUN go build -v -o mongo-migration .
@@ -42,7 +42,6 @@ COPY examples/ examples/
 
 RUN adduser -D -s /bin/sh migration
 USER migration
-
 
 ENTRYPOINT ["./mongo-migration"]
 
