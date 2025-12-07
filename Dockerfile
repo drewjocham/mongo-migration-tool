@@ -3,14 +3,9 @@ FROM golang:1.25-alpine AS builder
 WORKDIR /app
 
 COPY go.mod go.sum ./
-RUN go mod download
-RUN go mod tidy # Add go mod tidy to ensure consistent module state
-
-# Copy source code (invalidates cache on change)
-COPY . .
-
-
-RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o mongo-essential .
+RUN go mod download && \
+    go mod tidy && \
+    CGO_ENABLED=0 GOOS=linux go build -v -a -installsuffix cgo -o mongo-essential .
 
 # -------------------------------
 # 2. PROFILING BUILD STAGE
@@ -20,13 +15,9 @@ FROM golang:1.25-alpine AS profiler_builder
 WORKDIR /app
 
 COPY go.mod go.sum ./
-
-RUN go mod download
-RUN go mod tidy # Add go mod tidy to ensure consistent module state
-
-COPY . .
-
-RUN go build -o mongo-essential-profile .
+RUN go mod download && \
+    go mod tidy && \
+    go build -v -o mongo-essential-profile .
 
 # -------------------------------
 #  PRODUCTION IMAGE
@@ -56,5 +47,4 @@ FROM production AS profiling
 
 COPY --from=profiler_builder /app/mongo-essential-profile .
 
-# Entrypoint change to run the profiling binary
 ENTRYPOINT ["./mongo-essential-profile"]
