@@ -3,6 +3,7 @@ package config
 
 import (
 	"fmt"
+	"net/url"
 	"os"
 	"strings"
 
@@ -18,8 +19,11 @@ type Config struct {
 	MigrationsPath       string `env:"MIGRATIONS_PATH" envDefault:"./migrations"`
 	MigrationsCollection string `env:"MIGRATIONS_COLLECTION" envDefault:"schema_migrations"`
 
+	// Use MONGO_USERNAME for the username.
 	Username string `env:"MONGO_USERNAME"`
 	Password string `env:"MONGO_PASSWORD"`
+	// AuthSource is the database where the user is defined, usually 'admin'.
+	MongoAuthSource string `env:"MONGO_AUTH_SOURCE" envDefault:"admin"`
 
 	// SSL/TLS settings - important for cloud providers like STACKIT
 	SSLEnabled           bool   `env:"MONGO_SSL_ENABLED" envDefault:"false"`
@@ -61,6 +65,8 @@ type Config struct {
 	GoogleDocsShareWithEmail string `env:"GOOGLE_DOCS_SHARE_WITH_EMAIL"`
 }
 
+// Load loads configuration from environment variables and, optionally, from .env files.
+// It layers configuration, with environment variables taking precedence over file-based ones.
 func Load(envFiles ...string) (*Config, error) {
 	for _, file := range envFiles {
 		if _, err := os.Stat(file); err == nil {
@@ -90,32 +96,33 @@ func LoadFromEnv() (*Config, error) {
 
 // GetConnectionString builds the MongoDB connection string with authentication.
 func (c *Config) GetConnectionString() string {
-	connStr := c.MongoURL
+	u, err := url.Parse(c.MongoURL)
+	if err != nil {
+		// If parsing fails, return the original URL as a fallback
+		return c.MongoURL
+	}
 
-	if c.Username != "" && c.Password != "" {
-		if c.MongoURL == "mongodb://localhost:27017" ||
-			(c.MongoURL != "" && !strings.Contains(c.MongoURL, "@")) {
-			if strings.HasPrefix(c.MongoURL, "mongodb://") {
-				connStr = strings.Replace(c.MongoURL, "mongodb://",
-					fmt.Sprintf("mongodb://%s:%s@", c.Username, c.Password), 1)
-			} else if strings.HasPrefix(c.MongoURL, "mongodb+srv://") {
-				connStr = strings.Replace(c.MongoURL, "mongodb+srv://",
-					fmt.Sprintf("mongodb+srv://%s:%s@", c.Username, c.Password), 1)
-			}
+	// Add user credentials if they are provided and not already in the URL
+	if c.Username != "" && c.Password != "" && u.User == nil {
+		u.User = url.UserPassword(c.Username, c.Password)
+	}
+
+	q := u.Query()
+
+	// For local development, add 'connect=direct' to avoid replica set issues
+	if strings.Contains(u.Host, "localhost") && !strings.Contains(u.RawQuery, "replicaSet") {
+		if q.Get("connect") == "" {
+			q.Set("connect", "direct")
 		}
 	}
 
-	// For local development, it's often easier to connect directly
-	// without replica set discovery.
-	if strings.Contains(connStr, "localhost") && !strings.Contains(connStr, "replicaSet") {
-		if !strings.Contains(connStr, "?") {
-			connStr += "?connect=direct"
-		} else {
-			connStr += "&connect=direct"
-		}
+	// Add authSource if it's provided and not already in the query
+	if c.MongoAuthSource != "" && q.Get("authSource") == "" {
+		q.Set("authSource", c.MongoAuthSource)
 	}
 
-	return connStr
+	u.RawQuery = q.Encode()
+	return u.String()
 }
 
 // Validate performs basic validation on the configuration.

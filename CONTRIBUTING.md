@@ -1,6 +1,6 @@
-# Contributing to mongo-essential
+# Contributing to mongo-migration
 
-Thank you for considering contributing to mongo-essential! This document provides guidelines and information for contributors.
+Thank you for considering contributing to mongo-migration! This document provides guidelines and information for contributors.
 
 ## Table of Contents
 
@@ -23,12 +23,12 @@ This project adheres to the [Contributor Covenant Code of Conduct](https://www.c
 ### Reporting Bugs
 
 Before reporting a bug:
-1. Check the [existing issues](https://github.com/jocham/mongo-essential/issues) to avoid duplicates
-2. Use the latest version of mongo-essential
+1. Check the [existing issues](https://github.com/jocham/mongo-migration/issues) to avoid duplicates
+2. Use the latest version of mongo-migration
 3. Include detailed information about your environment
 
 When reporting bugs, include:
-- **Version**: mongo-essential version and Go version
+- **Version**: mongo-migration version and Go version
 - **Environment**: OS, MongoDB version, deployment details
 - **Steps to Reproduce**: Clear, minimal reproduction steps
 - **Expected vs Actual**: What should happen vs what actually happens
@@ -66,11 +66,11 @@ We welcome pull requests for:
 
 ```bash
 # Fork the repository on GitHub, then clone your fork
-git clone https://github.com/YOUR_USERNAME/mongo-essential.git
-cd mongo-essential
+git clone https://github.com/YOUR_USERNAME/mongo-migration.git
+cd mongo-migration
 
 # Add the upstream remote
-git remote add upstream https://github.com/jocham/mongo-essential.git
+git remote add upstream https://github.com/jocham/mongo-migration.git
 
 # Install dependencies
 go mod tidy
@@ -87,10 +87,10 @@ go install github.com/goreleaser/goreleaser@latest
 make build
 
 # Or with go directly
-go build -o mongo-essential ./cmd/mongo-essential
+go build -o mongo-migration ./cmd/mongo-migration
 
 # Run the binary
-./mongo-essential version
+./mongo-migration version
 ```
 
 ### Running Tests
@@ -160,7 +160,7 @@ cp .env.example .env.dev
 
 # Edit the configuration
 MONGO_URL=mongodb://localhost:27017
-MONGO_DATABASE=mongo_essential_dev
+MONGO_DATABASE=mongo_migration_tool_dev
 MIGRATIONS_PATH=./test-migrations
 MIGRATIONS_COLLECTION=schema_migrations
 
@@ -177,11 +177,11 @@ GOOGLE_DOCS_ENABLED=false
 ## Project Structure
 
 ```
-mongo-essential/
+mongo-migration/
 ├── .github/                    # GitHub Actions workflows
 │   └── workflows/             
 ├── cmd/                        # CLI commands and main entry
-│   └── mongo-essential/       
+│   └── mongo-migration/       
 ├── internal/                   # Internal packages
 │   ├── config/                # Configuration management
 │   ├── migration/             # Migration engine
@@ -243,10 +243,10 @@ make lint
 
 # Build and test manually
 make build
-./mongo-essential --help
+./mongo-migration --help
 
 # Test with real MongoDB (if applicable)
-./mongo-essential status
+./mongo-migration status
 ```
 
 ### 4. Commit Changes
@@ -467,7 +467,7 @@ We use [Semantic Versioning](https://semver.org/):
    ```
 
 2. **Update Version Files**:
-   - Update version in `cmd/mongo-essential/version.go`
+   - Update version in `cmd/mongo-migration/version.go`
    - Update CHANGELOG.md
    - Update documentation if needed
 
@@ -528,4 +528,4 @@ Contributors are recognized in:
 - GitHub contributors page
 - Special thanks in release notes for significant contributions
 
-Thank you for contributing to mongo-essential! 🎉
+Thank you for contributing to mongo-migration! 🎉

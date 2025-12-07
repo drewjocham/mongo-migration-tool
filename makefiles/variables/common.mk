@@ -1,7 +1,4 @@
-VARS_DIR ?= $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
+# This file contains common, non-path-related make settings.
 
-# Repository root
-REPO_ROOT ?= $(abspath $(VARS_DIR)/../..)
-
- # Execute in one shell
+# Ensure that all commands in a recipe are executed in a single shell instance.
 .ONESHELL:

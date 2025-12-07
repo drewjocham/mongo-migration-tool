@@ -1,7 +1,7 @@
 package examplemigrations
 
 import (
-	"github.com/jocham/mongo-essential/migration"
+	"github.com/jocham/mongo-migration/migration"
 )
 
 func init() {

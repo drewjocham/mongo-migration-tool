@@ -1,11 +1,11 @@
 package main
 
-// This example shows how to use mongo-essential as a library
+// This example shows how to use mongo-migration as a library
 // in a standalone application outside of the main project.
 //
 // To use this in your own project:
 // 1. go mod init your-project
-// 2. go get github.com/jocham/mongo-essential@latest
+// 2. go get github.com/jocham/mongo-migration@latest
 // 3. Copy this code and adapt it to your needs
 
 import (
@@ -18,8 +18,8 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 
-	"github.com/jocham/mongo-essential/config"
-	"github.com/jocham/mongo-essential/migration"
+	"github.com/jocham/mongo-migration/config"
+	"github.com/jocham/mongo-migration/migration"
 )
 
 // ExampleMigration is a simple migration that can be used
@@ -39,7 +39,7 @@ func (m *ExampleMigration) Up(ctx context.Context, db *mongo.Database) error {
 
 	// Insert a sample document
 	_, err := collection.InsertOne(ctx, bson.M{
-		"message":    "Hello from mongo-essential!",
+		"message":    "Hello from mongo-migration!",
 		"created_at": time.Now(),
 	})
 	if err != nil {
@@ -75,7 +75,7 @@ func (m *ExampleMigration) Down(ctx context.Context, db *mongo.Database) error {
 }
 
 func main() {
-	fmt.Println("🚀 mongo-essential Standalone Example")
+	fmt.Println("🚀 mongo-migration Standalone Example")
 	fmt.Println("=====================================")
 
 	// Method 1: Use environment variables or .env file

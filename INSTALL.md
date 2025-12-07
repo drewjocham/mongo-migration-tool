@@ -1,6 +1,6 @@
 # Installation Guide
 
-This guide covers all the ways you can install and use mongo-essential: as a CLI tool via Homebrew, as a standalone binary, as a Docker container, or as a Go library.
+This guide covers all the ways you can install and use mongo-migration: as a CLI tool via Homebrew, as a standalone binary, as a Docker container, or as a Go library.
 
 ## Table of Contents
 
@@ -14,7 +14,7 @@ This guide covers all the ways you can install and use mongo-essential: as a CLI
 
 ## Homebrew Installation (macOS/Linux)
 
-The easiest way to install mongo-essential on macOS and Linux is via Homebrew.
+The easiest way to install mongo-migration on macOS and Linux is via Homebrew.
 
 ### Prerequisites
 
@@ -24,35 +24,35 @@ The easiest way to install mongo-essential on macOS and Linux is via Homebrew.
 
 ```bash
 # Add our custom Homebrew tap
-brew tap jocham/mongo-essential
+brew tap jocham/mongo-migration
 
-# Install mongo-essential
-brew install mongo-essential
+# Install mongo-migration
+brew install mongo-migration
 
 # Verify installation
-mongo-essential version
+mongo-migration version
 ```
 
 ### Upgrade
 
 ```bash
 # Upgrade to the latest version
-brew upgrade mongo-essential
+brew upgrade migration-tool
 ```
 
 ### Uninstall
 
 ```bash
-# Uninstall mongo-essential
-brew uninstall mongo-essential
+# Uninstall mongo-migration
+brew uninstall mongo-migration
 
 # Remove the tap (optional)
-brew untap jocham/mongo-essential
+brew untap jocham/mongo-migration
 ```
 
 ## Binary Installation
 
-Download pre-built binaries for your platform from our [GitHub Releases](https://github.com/jocham/mongo-essential/releases).
+Download pre-built binaries for your platform from our [GitHub Releases](https://github.com/jocham/mongo-migration/releases).
 
 ### Available Platforms
 
@@ -65,36 +65,36 @@ Download pre-built binaries for your platform from our [GitHub Releases](https:/
 
 ```bash
 # Download the latest release (adjust URL for your platform)
-curl -LO https://github.com/jocham/mongo-essential/releases/latest/download/mongo-essential_linux_amd64.tar.gz
+curl -LO https://github.com/jocham/mongo-migration/releases/latest/download/mongo-migration_linux_amd64.tar.gz
 
 # Extract the binary
-tar -xzf mongo-essential_linux_amd64.tar.gz
+tar -xzf mongo-migration_linux_amd64.tar.gz
 
 # Make executable and move to PATH
-chmod +x mongo-essential
-sudo mv mongo-essential /usr/local/bin/
+chmod +x mongo-migration
+sudo mv mongo-migration /usr/local/bin/
 
 # Verify installation
-mongo-essential version
+mongo-migration version
 ```
 
 ### Windows
 
-1. Download the Windows binary from the [releases page](https://github.com/jocham/mongo-essential/releases)
+1. Download the Windows binary from the [releases page](https://github.com/jocham/mongo-migration/releases)
 2. Extract the `.zip` file
 3. Add the binary location to your system PATH
-4. Open a new command prompt and verify: `mongo-essential version`
+4. Open a new command prompt and verify: `mongo-migration version`
 
 ### Installing Specific Versions
 
 ```bash
 # Install specific version (replace v1.2.3 with desired version)
-curl -LO https://github.com/jocham/mongo-essential/releases/download/v1.2.3/mongo-essential_linux_amd64.tar.gz
+curl -LO https://github.com/jocham/mongo-migration/releases/download/v1.2.3/mongo-migration_linux_amd64.tar.gz
 ```
 
 ## Docker Installation
 
-mongo-essential is available as a Docker image for containerized environments.
+mongo-migration is available as a Docker image for containerized environments.
 
 ### Available Images
 
@@ -105,21 +105,21 @@ mongo-essential is available as a Docker image for containerized environments.
 
 ```bash
 # Pull the latest image
-docker pull ghcr.io/jocham/mongo-essential:latest
+docker pull ghcr.io/jocham/mongo-migration:latest
 
 # Run migrations (mount your migrations directory)
 docker run --rm \
   -v $(pwd)/migrations:/migrations \
   -e MONGO_URL="mongodb://your-mongo-host:27017" \
   -e MONGO_DATABASE="your-database" \
-  ghcr.io/jocham/mongo-essential:latest \
+  ghcr.io/jocham/mongo-migration:latest \
   up
 
 # Run with custom configuration file
 docker run --rm \
   -v $(pwd)/.env:/app/.env \
   -v $(pwd)/migrations:/migrations \
-  ghcr.io/jocham/mongo-essential:latest \
+  ghcr.io/jocham/mongo-migration:latest \
   status
 ```
 
@@ -131,8 +131,8 @@ Create a `docker-compose.yml` file:
 version: '3.8'
 
 services:
-  mongo-essential:
-    image: ghcr.io/jocham/mongo-essential:latest
+  mongo-migration:
+    image: ghcr.io/jocham/mongo-migration:latest
     environment:
       - MONGO_URL=mongodb://mongodb:27017
       - MONGO_DATABASE=myapp
@@ -158,12 +158,12 @@ volumes:
 Run with:
 
 ```bash
-docker-compose up mongo-essential
+docker-compose up mongo-migration
 ```
 
 ## Go Library Installation
 
-Use mongo-essential as a library in your Go projects.
+Use mongo-migration as a library in your Go projects.
 
 ### Prerequisites
 
@@ -173,10 +173,10 @@ Use mongo-essential as a library in your Go projects.
 
 ```bash
 # Add to your Go project
-go get github.com/jocham/mongo-essential@latest
+go get github.com/jocham/mongo-migration@latest
 
 # Or install specific version
-go get github.com/jocham/mongo-essential@v1.2.3
+go get github.com/jocham/mongo-migration@v1.2.3
 ```
 
 ### Basic Usage
@@ -188,8 +188,8 @@ import (
     "context"
     "log"
     
-    "github.com/jocham/mongo-essential/config"
-    "github.com/jocham/mongo-essential/migration"
+    "github.com/jocham/mongo-migration/config"
+    "github.com/jocham/mongo-migration/migration"
     "go.mongodb.org/mongo-driver/mongo"
     "go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -227,7 +227,7 @@ For detailed library usage, see [LIBRARY.md](LIBRARY.md).
 
 ## Building from Source
 
-Build mongo-essential from source code.
+Build mongo-migration from source code.
 
 ### Prerequisites
 
@@ -238,17 +238,17 @@ Build mongo-essential from source code.
 
 ```bash
 # Clone the repository
-git clone https://github.com/jocham/mongo-essential.git
-cd mongo-essential
+git clone https://github.com/jocham/mongo-migration.git
+cd mongo-migration
 
 # Build for your current platform
-go build -o mongo-essential ./cmd/mongo-essential
+go build -o mongo-migration ./cmd/mongo-migration
 
 # Or use make
 make build
 
 # Install to GOPATH/bin
-go install ./cmd/mongo-essential
+go install ./cmd/mongo-migration
 
 # Build for all platforms (requires goreleaser)
 make build-all
@@ -258,7 +258,7 @@ make build-all
 
 ```bash
 # Build with debug information
-go build -ldflags "-X main.version=dev" -o mongo-essential ./cmd/mongo-essential
+go build -ldflags "-X main.version=dev" -o mongo-migration ./cmd/mongo-migration
 
 # Run tests
 make test
@@ -269,7 +269,7 @@ make lint
 
 ## Configuration
 
-mongo-essential can be configured through environment variables or configuration files.
+mongo-migration can be configured through environment variables or configuration files.
 
 ### Environment Variables
 
@@ -335,26 +335,26 @@ Configuration is loaded in the following order (later sources override earlier o
 
 ```bash
 # Check version
-mongo-essential version
+mongo-migration version
 
 # Check available commands
-mongo-essential help
+mongo-migration help
 
 # Test connection (requires configuration)
-mongo-essential status
+mongo-migration status
 ```
 
 ### Verify Docker Installation
 
 ```bash
 # Check Docker image
-docker run --rm ghcr.io/jocham/mongo-essential:latest version
+docker run --rm ghcr.io/jocham/mongo-migration:latest version
 
 # Test with sample configuration
 docker run --rm \
   -e MONGO_URL="mongodb://host.docker.internal:27017" \
   -e MONGO_DATABASE="test" \
-  ghcr.io/jocham/mongo-essential:latest \
+  ghcr.io/jocham/mongo-migration:latest \
   status
 ```
 
@@ -367,7 +367,7 @@ package main
 
 import (
     "fmt"
-    "github.com/jocham/mongo-essential/config"
+    "github.com/jocham/mongo-migration/config"
 )
 
 func main() {
@@ -383,7 +383,7 @@ Run it:
 
 ```bash
 go mod init test
-go get github.com/jocham/mongo-essential@latest
+go get github.com/jocham/mongo-migration@latest
 go run test.go
 ```
 
@@ -395,8 +395,8 @@ go run test.go
 
 ```bash
 # If tap already exists
-brew untap jocham/mongo-essential
-brew tap jocham/mongo-essential
+brew untap jocham/mongo-migration
+brew tap jocham/mongo-migration
 
 # Clear Homebrew cache
 brew cleanup
@@ -407,7 +407,7 @@ rm -rf $(brew --cache)
 
 ```bash
 # Make binary executable
-chmod +x mongo-essential
+chmod +x mongo-migration
 
 # If "command not found"
 echo $PATH
@@ -422,7 +422,7 @@ docker logout ghcr.io
 docker login ghcr.io
 
 # Check if image exists
-docker images | grep mongo-essential
+docker images | grep mongo-migration
 ```
 
 #### Go Module Issues
@@ -438,15 +438,15 @@ go mod download
 
 ### Getting Help
 
-- **Documentation**: [GitHub Repository](https://github.com/jocham/mongo-essential)
-- **Issues**: [GitHub Issues](https://github.com/jocham/mongo-essential/issues)
-- **Library Docs**: [pkg.go.dev](https://pkg.go.dev/github.com/jocham/mongo-essential)
+- **Documentation**: [GitHub Repository](https://github.com/jocham/mongo-migration)
+- **Issues**: [GitHub Issues](https://github.com/jocham/mongo-migration/issues)
+- **Library Docs**: [pkg.go.dev](https://pkg.go.dev/github.com/jocham/mongo-migration)
 
 ## Next Steps
 
 After installation, you might want to:
 
-1. **Create your first migration**: `mongo-essential create add_user_index`
+1. **Create your first migration**: `mongo-migration create add_user_index`
 2. **Set up your project**: Create migrations directory and configure environment
 3. **Explore examples**: Check the [examples directory](examples/) in the repository
 4. **Read the library documentation**: See [LIBRARY.md](LIBRARY.md) for Go library usage

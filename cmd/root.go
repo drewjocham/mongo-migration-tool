@@ -4,18 +4,25 @@ import (
 	"context"
 	"crypto/tls"
 	"fmt"
+	"log"
 	"time"
 
 	"github.com/spf13/cobra"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 
-	"github.com/jocham/mongo-essential/config"
-	"github.com/jocham/mongo-essential/migration"
+	"github.com/jocham/mongo-migration/config"
+	"github.com/jocham/mongo-migration/migration"
+)
+
+const (
+	// pingTimeout is the duration to wait for a ping to succeed.
+	pingTimeout = 2 * time.Second
 )
 
 var (
 	configFile string
+	debugMode  bool // Variable to hold the state of the debug flag
 	cfg        *config.Config
 	db         *mongo.Database
 	engine     *migration.Engine
@@ -50,6 +57,12 @@ Features:
 			return fmt.Errorf("failed to load configuration: %w", err)
 		}
 
+		if debugMode {
+			log.Printf("DEBUG: Loaded config.Username: '%s'\n", cfg.Username)
+			log.Printf("DEBUG: Loaded config.Password is set: %t\n", cfg.Password != "")
+			log.Printf("DEBUG: Connecting with URL: %s\n", cfg.GetConnectionString())
+		}
+
 		ctx, cancel := context.WithTimeout(context.Background(), time.Duration(cfg.Timeout)*time.Second)
 		defer cancel()
 
@@ -79,7 +92,7 @@ Features:
 		fmt.Println("Waiting for MongoDB Primary to be ready...")
 
 		for i := 0; i < maxRetries; i++ {
-			pingCtx, pingCancel := context.WithTimeout(context.Background(), 2*time.Second)
+			pingCtx, pingCancel := context.WithTimeout(context.Background(), pingTimeout)
 			defer pingCancel()
 
 			if err = client.Ping(pingCtx, nil); err == nil {
@@ -116,6 +129,8 @@ func Execute() error {
 
 // SetupRootCommand initializes all command flags and subcommands.
 func SetupRootCommand() {
+	// Add the --debug flag
+	rootCmd.PersistentFlags().BoolVar(&debugMode, "debug", false, "Enable debug logging")
 	rootCmd.PersistentFlags().StringVar(&configFile, "config", "", "config file (default is .env)")
 
 	// Setup subcommands

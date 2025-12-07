@@ -31,7 +31,7 @@ linters-settings:
   lll:
     line-length: 120
   goimports:
-    local-prefixes: github.com/jocham/mongo-essential
+    local-prefixes: github.com/jocham/mongo-migration
   gocritic:
     enabled-tags:
       - diagnostic
@@ -65,10 +65,10 @@ linters-settings:
           - "go.mongodb.org/mongo-driver/mongo/integration/mtest"
           - "github.com/caarlos0/env/v11"
           - "github.com/joho/godotenv"
-          - "github.com/jocham/mongo-essential/config"
-          - "github.com/jocham/mongo-essential/migration"
-          - "github.com/jocham/mongo-essential/mcp"
-          - "github.com/jocham/mongo-essential/examples/examplemigrations"
+          - "github.com/jocham/mongo-migration/config"
+          - "github.com/jocham/mongo-migration/migration"
+          - "github.com/jocham/mongo-migration/mcp"
+          - "github.com/jocham/mongo-migration/examples/examplemigrations"
 
 linters:
   disable-all: true

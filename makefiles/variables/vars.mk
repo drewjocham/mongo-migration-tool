@@ -1,30 +1,41 @@
-VARS_DIR ?= $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
+# This file is the single source of truth for all Makefile variables.
+# It dynamically calculates all paths relative to the project's root directory.
 
-# Repository root
-REPO_ROOT ?= $(abspath $(VARS_DIR)/../..)
+# Find the absolute path to this variables file.
+# $(lastword $(MAKEFILE_LIST)) is the path to the current makefile being processed.
+VARS_MK_PATH := $(abspath $(lastword $(MAKEFILE_LIST)))
 
- # Execute in one shell
-.ONESHELL:
+# The 'makefiles' directory is one level up from the 'variables' directory.
+MAKEFILES_DIR := $(abspath $(dir $(VARS_MK_PATH))/..)
+
+# The project root is one level up from the 'makefiles' directory.
+REPO_ROOT := $(abspath $(MAKEFILES_DIR)/..)
+
+# Go environment
+GOPATH ?= $(firstword $(subst :, ,$(shell go env GOPATH)))
+GOBIN ?= $(shell go env GOBIN)
+# If GOBIN is not set, use GOPATH/bin
+ifeq ($(GOBIN),)
+	GOBIN := $(GOPATH)/bin
+endif
 
 # Build options
-BINARY_NAME=mongo-essential
-DOCKER_IMAGE=mongo-migration-tool
-DOCKER_TAG?=latest
-
-GOOS=linux
-GOARCH=amd64
-
-BUILD_DIR=./build
+BINARY_NAME=mongo-migration
+BUILD_DIR?=$(REPO_ROOT)/build
 LDFLAGS=-ldflags "-X main.version=$(shell git describe --tags --always)"
+
+# Docker options
+DOCKER_IMAGE=mongo-migration
+DOCKER_TAG?=latest
 
 # Tooling & Versions
 GO_COMPAT_VERSION := 1.25
 GOLANGCI_VERSION := v2.6.1
 GOLANGCI_LOCAL_VERSION ?= v2.6.1
-GOLANGCI_BIN := $(HOME)/go/bin/golangci-lint
+GOLANGCI_BIN := $(GOBIN)/golangci-lint
 
 MOCKERY_VERSION ?= v2.53.5
-MOCKERY_BIN := $(HOME)/go/bin/mockery
+MOCKERY_BIN := $(GOBIN)/mockery
 
 
 GREEN=\033[0;32m

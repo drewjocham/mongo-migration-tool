@@ -22,7 +22,7 @@ bin/
 mongo-essential
 mongo-essential-*
 mongo-migrate
-mongo-migration-tool
+mongo-migration
 
 # Go specific
 *.test

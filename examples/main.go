@@ -11,9 +11,9 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 
-	"github.com/jocham/mongo-essential/config"
-	_ "github.com/jocham/mongo-essential/examples/examplemigrations"
-	"github.com/jocham/mongo-essential/migration"
+	"github.com/jocham/mongo-migration/config"
+	_ "github.com/jocham/mongo-migration/examples/examplemigrations"
+	"github.com/jocham/mongo-migration/migration"
 )
 
 func main() {

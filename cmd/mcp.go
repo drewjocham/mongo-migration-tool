@@ -5,8 +5,8 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/jocham/mongo-essential/examples/examplemigrations"
-	"github.com/jocham/mongo-essential/mcp"
+	"github.com/jocham/mongo-migration/examples/examplemigrations"
+	"github.com/jocham/mongo-migration/mcp"
 )
 
 var mcpCmd = &cobra.Command{

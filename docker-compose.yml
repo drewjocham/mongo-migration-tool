@@ -1,5 +1,4 @@
 services:
-  # Corrected mongo-migrate service
   mongo-migrate:
     build: .
     environment:
@@ -26,7 +25,6 @@ services:
     ports:
       - "27017:27017"
     environment:
-      # CRITICAL FIX: These are the ONLY variables that matter for user creation
       - MONGO_INITDB_ROOT_USERNAME=admin
       - MONGO_INITDB_ROOT_PASSWORD=password
       - MONGO_INITDB_DATABASE=test_db

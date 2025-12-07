@@ -14,8 +14,8 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 
-	"github.com/jocham/mongo-essential/config"
-	"github.com/jocham/mongo-essential/migration"
+	"github.com/jocham/mongo-migration/config"
+	"github.com/jocham/mongo-migration/migration"
 )
 
 // MCPServer implements the Model Context Protocol for MongoDB migrations
@@ -179,7 +179,7 @@ func (s *MCPServer) handleInitialize(request *MCPRequest) *MCPResponse {
 			"tools": map[string]interface{}{},
 		},
 		"serverInfo": map[string]interface{}{
-			"name":    "mongo-essential",
+			"name":    "mongo-migration",
 			"version": "1.0.0",
 		},
 	}
@@ -600,7 +600,7 @@ Next steps:
 1. Edit the file to implement your migration logic in the Up() method
 2. Implement the rollback logic in the Down() method
 3. Register the migration in your main application
-4. Run the migration with: mongo-essential migrate up
+4. Run the migration with: mongo-migration migrate up
 
 Example registration:
 migration.Register(&examplemigrations.%sMigration{})
@@ -619,8 +619,8 @@ func (s *MCPServer) listMigrations(ctx context.Context) (string, error) {
 	result.WriteString("================================================================================\n")
 
 	if len(status) == 0 {
-		result.WriteString("No migrations registered.\\n")
-		result.WriteString("\\nTo register migrations, use migration.Register() in an init() function in your migration files.\\n")
+		result.WriteString("No migrations registered.\n")
+		result.WriteString("To register migrations, use migration.Register() in an init() function.\n")
 	} else {
 		result.WriteString(fmt.Sprintf("Total migrations: %d\n\n", len(status)))
 		for i, s := range status {

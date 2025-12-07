@@ -5,9 +5,41 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="53a82f71-5517-487d-94b0-2d95ee8915ca" name="Changes" comment="CLI and mongo-migration-tool">
+      <change afterPath="$PROJECT_DIR$/makefiles/build.mk" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/makefiles/dev.mk" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/makefiles/docker.mk" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/makefiles/linter.mk" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/makefiles/mcp.mk" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/makefiles/migration.mk" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/makefiles/release.mk" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/migrations/20251207_100000_create_users_collection.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/migrations/main.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.dockerignore" beforeDir="false" afterPath="$PROJECT_DIR$/.dockerignore" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.golangci.yml" beforeDir="false" afterPath="$PROJECT_DIR$/.golangci.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.goreleaser.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/.goreleaser.yaml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/CONTRIBUTING.md" beforeDir="false" afterPath="$PROJECT_DIR$/CONTRIBUTING.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/INSTALL.md" beforeDir="false" afterPath="$PROJECT_DIR$/INSTALL.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/LIBRARY.md" beforeDir="false" afterPath="$PROJECT_DIR$/LIBRARY.md" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Makefile" beforeDir="false" afterPath="$PROJECT_DIR$/Makefile" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cmd/create.go" beforeDir="false" afterPath="$PROJECT_DIR$/cmd/create.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cmd/mcp.go" beforeDir="false" afterPath="$PROJECT_DIR$/cmd/mcp.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cmd/root.go" beforeDir="false" afterPath="$PROJECT_DIR$/cmd/root.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/config/config.go" beforeDir="false" afterPath="$PROJECT_DIR$/config/config.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/doc.go" beforeDir="false" afterPath="$PROJECT_DIR$/doc.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/docker-compose.yml" beforeDir="false" afterPath="$PROJECT_DIR$/docker-compose.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/examples/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/examples/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/examples/examplemigrations/main.go" beforeDir="false" afterPath="$PROJECT_DIR$/examples/examplemigrations/main.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/examples/library-example/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/examples/library-example/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/examples/library-example/main.go" beforeDir="false" afterPath="$PROJECT_DIR$/examples/library-example/main.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/examples/main.go" beforeDir="false" afterPath="$PROJECT_DIR$/examples/main.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/go.mod" beforeDir="false" afterPath="$PROJECT_DIR$/go.mod" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/go.sum" beforeDir="false" afterPath="$PROJECT_DIR$/go.sum" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/main.go" beforeDir="false" afterPath="$PROJECT_DIR$/main.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/makefiles/variables/common.mk" beforeDir="false" afterPath="$PROJECT_DIR$/makefiles/variables/common.mk" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/makefiles/variables/vars.mk" beforeDir="false" afterPath="$PROJECT_DIR$/makefiles/variables/vars.mk" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mcp/server.go" beforeDir="false" afterPath="$PROJECT_DIR$/mcp/server.go" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -43,10 +75,10 @@
   <component name="HighlightingSettingsPerFile">
     <setting file="file://$APPLICATION_CONFIG_DIR$/consoles/db/525de36f-734e-4a91-8afa-c1e2c19521b8/console.js" root0="SKIP_HIGHLIGHTING" root1="FORCE_HIGHLIGHTING" />
   </component>
-  <component name="KubernetesApiPersistence"><![CDATA[{}]]></component>
-  <component name="KubernetesApiProvider"><![CDATA[{
-  "isMigrated": true
-}]]></component>
+  <component name="KubernetesApiPersistence">{}</component>
+  <component name="KubernetesApiProvider">{
+  &quot;isMigrated&quot;: true
+}</component>
   <component name="MacroExpansionManager">
     <option name="directoryName" value="w14ZjFSk" />
   </component>
@@ -69,12 +101,19 @@
     "ACTIVE_CLOUD_PROJECT_ID": "sit-pim-agl-goog-lvzt-run-zx2l",
     "ACTIVE_CLOUD_PROJECT_NAME": "pim-agl-google-cloud lvzt",
     "ACTIVE_CLOUD_PROJECT_NUMBER": "208284802881",
+    "Docker.docker-compose.yml.mongo-cli: Compose Deployment.executor": "Run",
     "Docker.docker-compose.yml.mongo: Compose Deployment.executor": "Run",
+    "Go Build.go build main.go main.go.executor": "Run",
+    "Go Build.go build main.go.executor": "Run",
+    "Go Build.status.executor": "Run",
+    "Go Build.up.executor": "Run",
     "Makefile Target._download-mockery.executor": "Run",
+    "Makefile Target.build (1).executor": "Run",
     "Makefile Target.build-all.executor": "Run",
     "Makefile Target.build.executor": "Run",
     "Makefile Target.ci-build.executor": "Run",
     "Makefile Target.ci-test.executor": "Run",
+    "Makefile Target.clean.executor": "Run",
     "Makefile Target.create-migration.executor": "Run",
     "Makefile Target.db-up.executor": "Run",
     "Makefile Target.deps.executor": "Run",
@@ -109,7 +148,8 @@
     "RunOnceActivity.go.migrated.go.modules.settings": "true",
     "SHELLCHECK.PATH": "I do mind",
     "SONARLINT_PRECOMMIT_ANALYSIS": "true",
-    "com.google.cloudcode.ide_session_index": "20251206_0001",
+    "com.google.cloudcode.ide_session_index": "20251207_0002",
+    "configurable..is.expanded": "true",
     "dart.analysis.tool.window.visible": "false",
     "git-widget-placeholder": "setting-up-cli",
     "go.import.settings.migrated": "true",
@@ -119,14 +159,15 @@
     "node.js.selected.package.tslint": "(autodetect)",
     "nodejs_package_manager_path": "npm",
     "org.rust.cargo.project.model.impl.CargoExternalSystemProjectAware.subscribe.first.balloon": "",
-    "project.structure.last.edited": "Problems",
+    "project.structure.last.edited": "Facets",
     "project.structure.proportion": "0.15",
     "project.structure.side.proportion": "0.2",
-    "settings.editor.selected.configurable": "preferences.pluginManager",
+    "settings.editor.selected.configurable": "preferences.keymap",
     "vue.rearranger.settings.migration": "true"
   },
   "keyToStringList": {
     "DatabaseDriversLRU": [
+      "clickhouse",
       "mongo",
       "greenplum"
     ]
@@ -138,10 +179,11 @@
       <recent name="$PROJECT_DIR$/examples" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$" />
       <recent name="$PROJECT_DIR$/mcp/examples" />
     </key>
   </component>
-  <component name="RunManager" selected="Makefile Target.create-migration">
+  <component name="RunManager" selected="Makefile Target.vet">
     <configuration default="true" type="GoApplicationRunConfiguration" factoryName="Go Application">
       <module name="mongo-migration-tool" />
       <working_directory value="$PROJECT_DIR$" />
@@ -149,6 +191,25 @@
       <kind value="FILE" />
       <directory value="$PROJECT_DIR$" />
       <filePath value="$PROJECT_DIR$" />
+      <method v="2" />
+    </configuration>
+    <configuration name="up" type="GoApplicationRunConfiguration" factoryName="Go Application">
+      <module name="mongo-migration-tool-" />
+      <working_directory value="$PROJECT_DIR$" />
+      <parameters value="up" />
+      <EXTENSION ID="net.ashald.envfile">
+        <option name="IS_ENABLED" value="false" />
+        <option name="IS_SUBST" value="false" />
+        <option name="IS_PATH_MACRO_SUPPORTED" value="false" />
+        <option name="IS_IGNORE_MISSING_FILES" value="false" />
+        <option name="IS_ENABLE_EXPERIMENTAL_INTEGRATIONS" value="false" />
+        <ENTRIES>
+          <ENTRY IS_ENABLED="true" PARSER="runconfig" IS_EXECUTABLE="false" />
+        </ENTRIES>
+      </EXTENSION>
+      <kind value="FILE" />
+      <directory value="$PROJECT_DIR$" />
+      <filePath value="$PROJECT_DIR$/main.go" />
       <method v="2" />
     </configuration>
     <configuration default="true" type="GoTestRunConfiguration" factoryName="Go Test">
@@ -161,26 +222,26 @@
       <framework value="gotest" />
       <method v="2" />
     </configuration>
-    <configuration name="create-migration" type="MAKEFILE_TARGET_RUN_CONFIGURATION" factoryName="Makefile" temporary="true">
-      <makefile filename="$PROJECT_DIR$/Makefile" target="create-migration" workingDirectory="" arguments="">
+    <configuration name="build (1)" type="MAKEFILE_TARGET_RUN_CONFIGURATION" factoryName="Makefile" temporary="true">
+      <makefile filename="$PROJECT_DIR$/makefiles/build.mk" target="build" workingDirectory="" arguments="">
         <envs />
       </makefile>
       <method v="2" />
     </configuration>
-    <configuration name="db-up" type="MAKEFILE_TARGET_RUN_CONFIGURATION" factoryName="Makefile" temporary="true">
-      <makefile filename="$PROJECT_DIR$/Makefile" target="db-up" workingDirectory="" arguments="">
+    <configuration name="dev-setup" type="MAKEFILE_TARGET_RUN_CONFIGURATION" factoryName="Makefile" temporary="true">
+      <makefile filename="$PROJECT_DIR$/makefiles/dev.mk" target="dev-setup" workingDirectory="" arguments="">
         <envs />
       </makefile>
       <method v="2" />
     </configuration>
-    <configuration name="docker-compose-down" type="MAKEFILE_TARGET_RUN_CONFIGURATION" factoryName="Makefile" temporary="true">
-      <makefile filename="$PROJECT_DIR$/Makefile" target="docker-compose-down" workingDirectory="" arguments="">
+    <configuration name="docs" type="MAKEFILE_TARGET_RUN_CONFIGURATION" factoryName="Makefile" temporary="true">
+      <makefile filename="$PROJECT_DIR$/makefiles/dev.mk" target="docs" workingDirectory="" arguments="">
         <envs />
       </makefile>
       <method v="2" />
     </configuration>
-    <configuration name="docker-compose-up" type="MAKEFILE_TARGET_RUN_CONFIGURATION" factoryName="Makefile" temporary="true">
-      <makefile filename="$PROJECT_DIR$/Makefile" target="docker-compose-up" workingDirectory="" arguments="">
+    <configuration name="vet" type="MAKEFILE_TARGET_RUN_CONFIGURATION" factoryName="Makefile" temporary="true">
+      <makefile filename="$PROJECT_DIR$/makefiles/linter.mk" target="vet" workingDirectory="" arguments="">
         <envs />
       </makefile>
       <method v="2" />
@@ -189,16 +250,26 @@
       <method v="2" />
     </configuration>
     <configuration default="true" type="docker-deploy" factoryName="docker-compose.yml" temporary="true">
-      <deployment type="docker-compose.yml" />
+      <deployment type="docker-compose.yml">
+        <settings />
+      </deployment>
       <method v="2" />
     </configuration>
+    <list>
+      <item itemvalue="Go Build.up" />
+      <item itemvalue="Makefile Target.build (1)" />
+      <item itemvalue="Makefile Target.dev-setup" />
+      <item itemvalue="Makefile Target.docs" />
+      <item itemvalue="Makefile Target.vet" />
+      <item itemvalue="Node.js.console.js" />
+    </list>
     <recent_temporary>
       <list>
-        <item itemvalue="Makefile Target.create-migration" />
+        <item itemvalue="Makefile Target.vet" />
         <item itemvalue="Node.js.console.js" />
-        <item itemvalue="Makefile Target.docker-compose-up" />
-        <item itemvalue="Makefile Target.docker-compose-down" />
-        <item itemvalue="Makefile Target.db-up" />
+        <item itemvalue="Makefile Target.build (1)" />
+        <item itemvalue="Makefile Target.dev-setup" />
+        <item itemvalue="Makefile Target.docs" />
       </list>
     </recent_temporary>
   </component>
@@ -219,7 +290,8 @@
       <workItem from="1759997280333" duration="5264000" />
       <workItem from="1760027209597" duration="116000" />
       <workItem from="1760027337322" duration="693000" />
-      <workItem from="1765016689431" duration="11314000" />
+      <workItem from="1765016689431" duration="12725000" />
+      <workItem from="1765109189119" duration="16238000" />
     </task>
     <task id="LOCAL-00001" summary="CLI and mongo-migration-tool">
       <option name="closed" value="true" />
@@ -277,7 +349,15 @@
       <option name="project" value="LOCAL" />
       <updated>1765026847080</updated>
     </task>
-    <option name="localTasksCounter" value="8" />
+    <task id="LOCAL-00008" summary="CLI and mongo-migration-tool">
+      <option name="closed" value="true" />
+      <created>1765041490902</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1765041490902</updated>
+    </task>
+    <option name="localTasksCounter" value="9" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
