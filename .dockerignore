@@ -19,10 +19,6 @@ bin/
 *.dll
 *.so
 *.dylib
-mongo-essential
-mongo-essential-*
-mongo-migrate
-mongo-migration
 
 # Go specific
 *.test
