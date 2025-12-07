@@ -12,17 +12,9 @@
 # Output of the go coverage tool, specifically when used with LiteIDE
 *.out
 
-# Dependency directories (remove the comment below to include it)
-# vendor/
-
-# Go workspace file
-go.work
-
 # Build artifacts
 /build/
 /dist/
-mongo-essential
-mongo-migrate
 *.tar.gz
 *.zip
 
@@ -158,9 +150,6 @@ local.db
 dev.db
 test.db
 
-# Migration testing
-migrations/test_*
-migrations/dev_*
 
 # Go workspace
 go.work.sum
