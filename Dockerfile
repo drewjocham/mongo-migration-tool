@@ -3,25 +3,31 @@ FROM golang:1.25-alpine AS builder
 WORKDIR /app
 
 COPY go.mod go.sum ./
-RUN go mod download && \
-    go mod tidy && \
-    CGO_ENABLED=0 GOOS=linux go build -v -a -installsuffix cgo -o mongo-migration .
 
-# -------------------------------
-# 2. PROFILING BUILD STAGE
-# -------------------------------
+RUN go mod download && \
+    go mod tidy
+
+COPY . .
+
+RUN CGO_ENABLED=0 GOOS=linux go build -v -a -installsuffix cgo -o mongo-migration .
+
+
+# PROFILING BUILD STAGE
 FROM golang:1.25-alpine AS profiler_builder
 
 WORKDIR /app
 
 COPY go.mod go.sum ./
-RUN go mod download && \
-    go mod tidy && \
-    go build -v -o mongo-migration .
 
-# -------------------------------
+RUN go mod download && \
+    go mod tidy
+
+COPY . .
+
+# 3. Build the application
+RUN go build -v -o mongo-migration .
+
 #  PRODUCTION IMAGE
-# ------------------------------
 FROM alpine:3.19 AS production
 
 RUN apk --no-cache add ca-certificates tzdata
@@ -40,9 +46,7 @@ USER migration
 
 ENTRYPOINT ["./mongo-migration"]
 
-# --------------------------------
 #  For debugging
-# --------------------------------
 FROM production AS profiling
 
 COPY --from=profiler_builder /app/mongo-migration .
