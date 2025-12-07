@@ -5,17 +5,10 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="53a82f71-5517-487d-94b0-2d95ee8915ca" name="Changes" comment="CLI and mongo-migration-tool">
+      <change beforePath="$PROJECT_DIR$/.golangci.yml" beforeDir="false" afterPath="$PROJECT_DIR$/.golangci.yml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/config/config.go" beforeDir="false" afterPath="$PROJECT_DIR$/config/config.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/examples/examplemigrations/20240101_001_add_user_indexes.go" beforeDir="false" afterPath="$PROJECT_DIR$/examples/examplemigrations/20240101_001_add_user_indexes.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/examples/examplemigrations/20240101_002_transform_user_data.go" beforeDir="false" afterPath="$PROJECT_DIR$/examples/examplemigrations/20240101_002_transform_user_data.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/examples/examplemigrations/20240101_003_create_audit_collection.go" beforeDir="false" afterPath="$PROJECT_DIR$/examples/examplemigrations/20240101_003_create_audit_collection.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/examples/examplemigrations/main.go" beforeDir="false" afterPath="$PROJECT_DIR$/examples/examplemigrations/main.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/examples/library-example/main.go" beforeDir="false" afterPath="$PROJECT_DIR$/examples/library-example/main.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/examples/main.go" beforeDir="false" afterPath="$PROJECT_DIR$/examples/main.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/migration/registry.go" beforeDir="false" afterPath="$PROJECT_DIR$/migration/registry.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/migrations/20251207_100000_create_users_collection.go" beforeDir="false" afterPath="$PROJECT_DIR$/migrations/20251207_100000_create_users_collection.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/migrations/main.go" beforeDir="false" afterPath="$PROJECT_DIR$/migrations/main.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/makefiles/variables/common.mk" beforeDir="false" afterPath="$PROJECT_DIR$/makefiles/variables/common.mk" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/makefiles/variables/vars.mk" beforeDir="false" afterPath="$PROJECT_DIR$/makefiles/variables/vars.mk" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -159,7 +152,7 @@
       <recent name="$PROJECT_DIR$/mcp/examples" />
     </key>
   </component>
-  <component name="RunManager" selected="Makefile Target.vet">
+  <component name="RunManager" selected="Makefile Target.release">
     <configuration default="true" type="GoApplicationRunConfiguration" factoryName="Go Application">
       <module name="mongo-migration-tool" />
       <working_directory value="$PROJECT_DIR$" />
@@ -204,14 +197,14 @@
       </makefile>
       <method v="2" />
     </configuration>
-    <configuration name="format" type="MAKEFILE_TARGET_RUN_CONFIGURATION" factoryName="Makefile" temporary="true">
-      <makefile filename="$PROJECT_DIR$/makefiles/linter.mk" target="format" workingDirectory="" arguments="">
+    <configuration name="lint" type="MAKEFILE_TARGET_RUN_CONFIGURATION" factoryName="Makefile" temporary="true">
+      <makefile filename="$PROJECT_DIR$/makefiles/linter.mk" target="lint" workingDirectory="" arguments="">
         <envs />
       </makefile>
       <method v="2" />
     </configuration>
-    <configuration name="lint" type="MAKEFILE_TARGET_RUN_CONFIGURATION" factoryName="Makefile" temporary="true">
-      <makefile filename="$PROJECT_DIR$/makefiles/linter.mk" target="lint" workingDirectory="" arguments="">
+    <configuration name="release" type="MAKEFILE_TARGET_RUN_CONFIGURATION" factoryName="Makefile" temporary="true">
+      <makefile filename="$PROJECT_DIR$/makefiles/release.mk" target="release" workingDirectory="" arguments="">
         <envs />
       </makefile>
       <method v="2" />
@@ -234,18 +227,18 @@
     <list>
       <item itemvalue="Go Build.up" />
       <item itemvalue="Makefile Target.ci-test" />
-      <item itemvalue="Makefile Target.format" />
       <item itemvalue="Makefile Target.lint" />
+      <item itemvalue="Makefile Target.release" />
       <item itemvalue="Makefile Target.vet" />
       <item itemvalue="Node.js.console.js" />
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="Makefile Target.release" />
+        <item itemvalue="Node.js.console.js" />
         <item itemvalue="Makefile Target.vet" />
         <item itemvalue="Makefile Target.ci-test" />
         <item itemvalue="Makefile Target.lint" />
-        <item itemvalue="Makefile Target.format" />
-        <item itemvalue="Node.js.console.js" />
       </list>
     </recent_temporary>
   </component>
@@ -267,7 +260,7 @@
       <workItem from="1760027209597" duration="116000" />
       <workItem from="1760027337322" duration="693000" />
       <workItem from="1765016689431" duration="12725000" />
-      <workItem from="1765109189119" duration="18437000" />
+      <workItem from="1765109189119" duration="20352000" />
     </task>
     <task id="LOCAL-00001" summary="CLI and mongo-migration-tool">
       <option name="closed" value="true" />
@@ -341,7 +334,23 @@
       <option name="project" value="LOCAL" />
       <updated>1765138321668</updated>
     </task>
-    <option name="localTasksCounter" value="10" />
+    <task id="LOCAL-00010" summary="CLI and mongo-migration-tool">
+      <option name="closed" value="true" />
+      <created>1765140766812</created>
+      <option name="number" value="00010" />
+      <option name="presentableId" value="LOCAL-00010" />
+      <option name="project" value="LOCAL" />
+      <updated>1765140766812</updated>
+    </task>
+    <task id="LOCAL-00011" summary="CLI and mongo-migration-tool">
+      <option name="closed" value="true" />
+      <created>1765141408466</created>
+      <option name="number" value="00011" />
+      <option name="presentableId" value="LOCAL-00011" />
+      <option name="project" value="LOCAL" />
+      <updated>1765141408466</updated>
+    </task>
+    <option name="localTasksCounter" value="12" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">

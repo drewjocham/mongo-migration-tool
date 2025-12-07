@@ -1,12 +1,17 @@
 # golangci-lint configuration
 # Documentation: https://golangci-lint.run/usage/configuration/
 
-version: 2
+version: "2"
 
 run:
   timeout: 5m
   issues-exit-code: 1
   tests: true
+  # Only analyze the main application code, excluding examples
+  skip-dirs:
+    - examples
+  skip-files:
+    - ".*_test.go$" # Exclude test files from general linting
 
 output:
   format: colored-line-number
@@ -99,11 +104,14 @@ linters:
     - whitespace
 
 issues:
+  # Exclude specific files from all linters
   exclude-files:
     - "examples/main.go"
     - "examples/library-example/main.go"
+  # Exclude specific directories from all linters
   exclude-dirs:
     - examples
+  # Exclude specific rules for specific paths
   exclude-rules:
     - path: examples/
       linters:
@@ -114,8 +122,9 @@ issues:
         - funlen
         - goconst
         - dupl
-
+  # Don't use default excludes, manage them explicitly
   exclude-use-default: false
+  # Exclude specific issue texts
   exclude:
     # Allow blank imports for side effects
     - "should not use blank imports"

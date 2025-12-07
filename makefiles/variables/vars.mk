@@ -1,14 +1,5 @@
-# This file is the single source of truth for all Makefile variables.
-# It dynamically calculates all paths relative to the project's root directory.
-
-# Find the absolute path to this variables file.
-# $(lastword $(MAKEFILE_LIST)) is the path to the current makefile being processed.
 VARS_MK_PATH := $(abspath $(lastword $(MAKEFILE_LIST)))
-
-# The 'makefiles' directory is one level up from the 'variables' directory.
 MAKEFILES_DIR := $(abspath $(dir $(VARS_MK_PATH))/..)
-
-# The project root is one level up from the 'makefiles' directory.
 REPO_ROOT := $(abspath $(MAKEFILES_DIR)/..)
 
 # Go environment
@@ -36,7 +27,6 @@ GOLANGCI_BIN := $(GOBIN)/golangci-lint
 
 MOCKERY_VERSION ?= v2.53.5
 MOCKERY_BIN := $(GOBIN)/mockery
-
 
 GREEN=\033[0;32m
 YELLOW=\033[1;33m

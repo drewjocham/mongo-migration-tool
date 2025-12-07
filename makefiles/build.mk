@@ -7,11 +7,15 @@ TEST_PACKAGES := $(filter-out $(EXAMPLE_PACKAGES), $(ALL_PACKAGES))
 build: deps ## Build the binary
 	@echo "$(GREEN)Building $(BINARY_NAME)...$(NC)"
 	@mkdir -p $(BUILD_DIR)
+	@go clean -modcache # Clear module cache
+	@go clean -cache # Clear build cache
 	CGO_ENABLED=0 go build $(LDFLAGS) -o $(BUILD_DIR)/$(BINARY_NAME) .
 
 build-all: deps ## Build for multiple platforms
 	@echo "$(GREEN)Building for multiple platforms...$(NC)"
 	@mkdir -p $(BUILD_DIR)
+	@go clean -modcache # Clear module cache
+	@go clean -cache # Clear build cache
 	# Linux amd64
 	GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build $(LDFLAGS) -o $(BUILD_DIR)/$(BINARY_NAME)-linux-amd64 .
 	# Linux arm64
