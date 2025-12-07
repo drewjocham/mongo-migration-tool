@@ -1,51 +1,25 @@
 # syntax=docker/dockerfile:1.4
-
 FROM golang:1.25-alpine AS builder
 
 WORKDIR /app
 COPY . .
 
 COPY go.mod go.sum ./
-RUN go mod download && go mod tidy
+RUN GO111MODULE=on go mod download && go mod tidy
 
-# Build 1: Production
-RUN CGO_ENABLED=0 GOOS=linux go build -v -a -installsuffix cgo -o /app/mongo-migration-prod .
+RUN CGO_ENABLED=0 GOOS=linux go build -v -a -installsuffix cgo -o /app/main .
 
-# Build 2: Profiling/Debug
-RUN CGO_ENABLED=0 GOOS=linux go build -v -gcflags="all=-N -l" -o /app/mongo-migration-debug .
+WORKDIR /app
 
 # -------------------------------
-FROM alpine:3.19 AS production
+FROM gcr.io/distroless/static-debian12:debug-nonroot AS final
 
-RUN apk --no-cache add ca-certificates tzdata
-
-WORKDIR /app
-
-# Copy the specific production binary
-COPY --from=builder /app/mongo-migration-prod /app/mongo-migration
+COPY --from=builder /app/main /app/main
 
 RUN adduser -D -s /bin/sh migration
-USER migration
 
-ENTRYPOINT ["/app/mongo-migration"]
-
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-    CMD ["/app/mongo-migration", "status"]
-
-# --------------------------------
-FROM alpine:3.19 AS profiling
-
-RUN apk --no-cache add ca-certificates tzdata
-
-WORKDIR /app
-
-# Copy the specific debug binary
-COPY --from=builder /app/mongo-migration-debug /app/mongo-migration-profile
-
-RUN adduser -D -s /bin/sh migration
-USER migration
-
-ENTRYPOINT ["/app/mongo-migration-profile"]
+USER 65532:65532
+ENTRYPOINT ["/app/main"]
 
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-    CMD ["/app/mongo-migration-profile", "status"]
+    CMD ["/app/main", "status"]
