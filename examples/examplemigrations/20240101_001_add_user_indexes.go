@@ -1,5 +1,7 @@
 package examplemigrations
 
+// This package contains example migration definitions.
+
 import (
 	"context"
 
@@ -11,15 +13,20 @@ import (
 // AddUserIndexesMigration adds indexes to the users collection
 type AddUserIndexesMigration struct{}
 
+// Version returns the unique version identifier for this migration
 func (m *AddUserIndexesMigration) Version() string {
 	return "20240101_001"
 }
 
+// Description returns a human-readable description of what this migration does
 func (m *AddUserIndexesMigration) Description() string {
 	return "Add indexes to users collection for email and created_at fields"
 }
 
-func (m *AddUserIndexesMigration) Up(ctx context.Context, db *mongo.Database) error {
+// Up executes the migration
+func (m *AddUserIndexesMigration) Up(
+	ctx context.Context, db *mongo.Database,
+) error {
 	collection := db.Collection("users")
 
 	// Create index for email field (unique)
@@ -29,8 +36,8 @@ func (m *AddUserIndexesMigration) Up(ctx context.Context, db *mongo.Database) er
 		},
 		Options: options.Index().
 			SetName("idx_users_email_unique").
-			SetUnique(true).
-			SetBackground(true),
+			SetUnique(true),
+		// SetBackground is deprecated in MongoDB 4.2+
 	}
 
 	// Create index for created_at field
@@ -39,8 +46,8 @@ func (m *AddUserIndexesMigration) Up(ctx context.Context, db *mongo.Database) er
 			{Key: "created_at", Value: -1},
 		},
 		Options: options.Index().
-			SetName("idx_users_created_at").
-			SetBackground(true),
+			SetName("idx_users_created_at"),
+		// SetBackground is deprecated in MongoDB 4.2+
 	}
 
 	// Create compound index for status and created_at
@@ -50,8 +57,8 @@ func (m *AddUserIndexesMigration) Up(ctx context.Context, db *mongo.Database) er
 			{Key: "created_at", Value: -1},
 		},
 		Options: options.Index().
-			SetName("idx_users_status_created_at").
-			SetBackground(true),
+			SetName("idx_users_status_created_at"),
+		// SetBackground is deprecated in MongoDB 4.2+
 	}
 
 	// Create all indexes
@@ -64,7 +71,10 @@ func (m *AddUserIndexesMigration) Up(ctx context.Context, db *mongo.Database) er
 	return err
 }
 
-func (m *AddUserIndexesMigration) Down(ctx context.Context, db *mongo.Database) error {
+// Down rolls back the migration
+func (m *AddUserIndexesMigration) Down(
+	ctx context.Context, db *mongo.Database,
+) error {
 	collection := db.Collection("users")
 
 	// Drop the indexes we created

@@ -1,5 +1,7 @@
 package migrations
 
+// This package contains migration definitions.
+
 import (
 	"context"
 
@@ -11,19 +13,26 @@ import (
 // CreateUsersCollectionMigration creates the users collection
 type CreateUsersCollectionMigration struct{}
 
+// Version returns the unique version identifier for this migration
 func (m *CreateUsersCollectionMigration) Version() string {
 	return "20251207_100000"
 }
 
+// Description returns a human-readable description of what this migration does
 func (m *CreateUsersCollectionMigration) Description() string {
 	return "Create users collection with schema validation and indexes"
 }
 
-func (m *CreateUsersCollectionMigration) Up(ctx context.Context, db *mongo.Database) error {
+// Up executes the migration
+func (m *CreateUsersCollectionMigration) Up(
+	ctx context.Context, db *mongo.Database,
+) error {
 	validator := bson.M{
 		"$jsonSchema": bson.M{
 			"bsonType": "object",
-			"required": []string{"email", "username", "password_hash", "created_at", "updated_at"},
+			"required": []string{
+				"email", "username", "password_hash", "created_at", "updated_at",
+			},
 			"properties": bson.M{
 				"email":         bson.M{"bsonType": "string", "description": "must be a string and is required"},
 				"username":      bson.M{"bsonType": "string", "description": "must be a string and is required"},
@@ -58,6 +67,9 @@ func (m *CreateUsersCollectionMigration) Up(ctx context.Context, db *mongo.Datab
 	return err
 }
 
-func (m *CreateUsersCollectionMigration) Down(ctx context.Context, db *mongo.Database) error {
+// Down rolls back the migration
+func (m *CreateUsersCollectionMigration) Down(
+	ctx context.Context, db *mongo.Database,
+) error {
 	return db.Collection("users").Drop(ctx)
 }

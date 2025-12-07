@@ -4,11 +4,11 @@ import (
 	"github.com/jocham/mongo-migration/migration"
 )
 
-func init() {
+func init() { //nolint:gochecknoinits // init functions are used for migration registration
 	migration.Register(
 		&CreateUsersCollectionMigration{},
 		&AddUserIndexesMigration{},
-		&Migration_20251207_190640_create_product_collection{},
-		&Migration_20251207_192545_test_demo_agl{},
+		&Migration20251207_190640CreateProductCollection{},
+		&Migration20251207_192545TestDemoAgl{},
 	)
 }

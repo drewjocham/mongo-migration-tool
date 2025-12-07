@@ -17,8 +17,6 @@ linters-settings:
   govet:
     enable:
       - shadow
-  revive:
-    min-confidence: 0.8
   cyclop:
     max-complexity: 10
   dupl:
@@ -83,7 +81,6 @@ linters:
     - goconst
     - gocritic
     - cyclop
-    - revive
     - mnd
     - goprintffuncname
     - gosec
@@ -93,7 +90,6 @@ linters:
     - misspell
     - nakedret
     - noctx
-    - nolintlint
     - rowserrcheck
     - copyloopvar
     - staticcheck

@@ -66,7 +66,6 @@ type Config struct {
 }
 
 // Load loads configuration from environment variables and, optionally, from .env files.
-// It layers configuration, with environment variables taking precedence over file-based ones.
 func Load(envFiles ...string) (*Config, error) {
 	for _, file := range envFiles {
 		if _, err := os.Stat(file); err == nil {

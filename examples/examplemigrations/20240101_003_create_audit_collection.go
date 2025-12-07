@@ -1,5 +1,7 @@
 package examplemigrations
 
+// This package contains example migration definitions.
+
 import (
 	"context"
 
@@ -8,23 +10,53 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
+const oneYearInSeconds = 365 * 24 * 60 * 60
+
 // CreateAuditCollectionMigration creates a new audit collection with validation
 type CreateAuditCollectionMigration struct{}
 
+// Version returns the unique version identifier for this migration
 func (m *CreateAuditCollectionMigration) Version() string {
 	return "20240101_003"
 }
 
+// Description returns a human-readable description of what this migration does
 func (m *CreateAuditCollectionMigration) Description() string {
 	return "Create audit collection with schema validation and indexes"
 }
 
-func (m *CreateAuditCollectionMigration) Up(ctx context.Context, db *mongo.Database) error {
-	// Define JSON schema validation
-	validator := bson.M{
+// Up executes the migration
+func (m *CreateAuditCollectionMigration) Up(
+	ctx context.Context, db *mongo.Database,
+) error {
+	validator := getAuditLogsValidator()
+	opts := options.CreateCollection().SetValidator(validator)
+	if err := db.CreateCollection(ctx, "audit_logs", opts); err != nil {
+		return err
+	}
+
+	collection := db.Collection("audit_logs")
+	indexes := getAuditLogsIndexes()
+
+	_, err := collection.Indexes().CreateMany(ctx, indexes)
+	return err
+}
+
+// Down rolls back the migration
+func (m *CreateAuditCollectionMigration) Down(
+	ctx context.Context, db *mongo.Database,
+) error {
+	// Drop the entire audit_logs collection
+	return db.Collection("audit_logs").Drop(ctx)
+}
+
+func getAuditLogsValidator() bson.M {
+	return bson.M{
 		"$jsonSchema": bson.M{
 			"bsonType": "object",
-			"required": []string{"user_id", "action", "timestamp", "resource_type", "resource_id"},
+			"required": []string{
+				"user_id", "action", "timestamp", "resource_type", "resource_id",
+			},
 			"properties": bson.M{
 				"user_id": bson.M{
 					"bsonType":    "objectId",
@@ -62,26 +94,18 @@ func (m *CreateAuditCollectionMigration) Up(ctx context.Context, db *mongo.Datab
 			},
 		},
 	}
+}
 
-	// Create collection with validation
-	opts := options.CreateCollection().SetValidator(validator)
-	err := db.CreateCollection(ctx, "audit_logs", opts)
-	if err != nil {
-		return err
-	}
-
-	collection := db.Collection("audit_logs")
-
-	// Create indexes for efficient querying
-	indexes := []mongo.IndexModel{
+func getAuditLogsIndexes() []mongo.IndexModel {
+	return []mongo.IndexModel{
 		{
 			Keys: bson.D{
 				{Key: "user_id", Value: 1},
 				{Key: "timestamp", Value: -1},
 			},
 			Options: options.Index().
-				SetName("idx_audit_user_timestamp").
-				SetBackground(true),
+				SetName("idx_audit_user_timestamp"),
+			// SetBackground is deprecated in MongoDB 4.2+
 		},
 		{
 			Keys: bson.D{
@@ -90,8 +114,7 @@ func (m *CreateAuditCollectionMigration) Up(ctx context.Context, db *mongo.Datab
 				{Key: "timestamp", Value: -1},
 			},
 			Options: options.Index().
-				SetName("idx_audit_resource_timestamp").
-				SetBackground(true),
+				SetName("idx_audit_resource_timestamp"),
 		},
 		{
 			Keys: bson.D{
@@ -99,8 +122,7 @@ func (m *CreateAuditCollectionMigration) Up(ctx context.Context, db *mongo.Datab
 				{Key: "timestamp", Value: -1},
 			},
 			Options: options.Index().
-				SetName("idx_audit_action_timestamp").
-				SetBackground(true),
+				SetName("idx_audit_action_timestamp"),
 		},
 		{
 			Keys: bson.D{
@@ -108,16 +130,8 @@ func (m *CreateAuditCollectionMigration) Up(ctx context.Context, db *mongo.Datab
 			},
 			Options: options.Index().
 				SetName("idx_audit_timestamp").
-				SetBackground(true).
-				SetExpireAfterSeconds(365 * 24 * 60 * 60), // Auto-delete after 1 year
+				SetExpireAfterSeconds(oneYearInSeconds), // Auto-delete after 1 year
+			// SetBackground is deprecated in MongoDB 4.2+
 		},
 	}
-
-	_, err = collection.Indexes().CreateMany(ctx, indexes)
-	return err
-}
-
-func (m *CreateAuditCollectionMigration) Down(ctx context.Context, db *mongo.Database) error {
-	// Drop the entire audit_logs collection
-	return db.Collection("audit_logs").Drop(ctx)
 }

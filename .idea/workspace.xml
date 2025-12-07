@@ -5,41 +5,17 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="53a82f71-5517-487d-94b0-2d95ee8915ca" name="Changes" comment="CLI and mongo-migration-tool">
-      <change afterPath="$PROJECT_DIR$/makefiles/build.mk" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/makefiles/dev.mk" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/makefiles/docker.mk" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/makefiles/linter.mk" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/makefiles/mcp.mk" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/makefiles/migration.mk" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/makefiles/release.mk" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/migrations/20251207_100000_create_users_collection.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/migrations/main.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dockerignore" beforeDir="false" afterPath="$PROJECT_DIR$/.dockerignore" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.golangci.yml" beforeDir="false" afterPath="$PROJECT_DIR$/.golangci.yml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.goreleaser.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/.goreleaser.yaml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/CONTRIBUTING.md" beforeDir="false" afterPath="$PROJECT_DIR$/CONTRIBUTING.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/INSTALL.md" beforeDir="false" afterPath="$PROJECT_DIR$/INSTALL.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/LIBRARY.md" beforeDir="false" afterPath="$PROJECT_DIR$/LIBRARY.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Makefile" beforeDir="false" afterPath="$PROJECT_DIR$/Makefile" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmd/create.go" beforeDir="false" afterPath="$PROJECT_DIR$/cmd/create.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmd/mcp.go" beforeDir="false" afterPath="$PROJECT_DIR$/cmd/mcp.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmd/root.go" beforeDir="false" afterPath="$PROJECT_DIR$/cmd/root.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/config/config.go" beforeDir="false" afterPath="$PROJECT_DIR$/config/config.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc.go" beforeDir="false" afterPath="$PROJECT_DIR$/doc.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/docker-compose.yml" beforeDir="false" afterPath="$PROJECT_DIR$/docker-compose.yml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/examples/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/examples/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/examples/examplemigrations/20240101_001_add_user_indexes.go" beforeDir="false" afterPath="$PROJECT_DIR$/examples/examplemigrations/20240101_001_add_user_indexes.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/examples/examplemigrations/20240101_002_transform_user_data.go" beforeDir="false" afterPath="$PROJECT_DIR$/examples/examplemigrations/20240101_002_transform_user_data.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/examples/examplemigrations/20240101_003_create_audit_collection.go" beforeDir="false" afterPath="$PROJECT_DIR$/examples/examplemigrations/20240101_003_create_audit_collection.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/examples/examplemigrations/main.go" beforeDir="false" afterPath="$PROJECT_DIR$/examples/examplemigrations/main.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/examples/library-example/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/examples/library-example/README.md" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/examples/library-example/main.go" beforeDir="false" afterPath="$PROJECT_DIR$/examples/library-example/main.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/examples/main.go" beforeDir="false" afterPath="$PROJECT_DIR$/examples/main.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/go.mod" beforeDir="false" afterPath="$PROJECT_DIR$/go.mod" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/go.sum" beforeDir="false" afterPath="$PROJECT_DIR$/go.sum" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/main.go" beforeDir="false" afterPath="$PROJECT_DIR$/main.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/makefiles/variables/common.mk" beforeDir="false" afterPath="$PROJECT_DIR$/makefiles/variables/common.mk" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/makefiles/variables/vars.mk" beforeDir="false" afterPath="$PROJECT_DIR$/makefiles/variables/vars.mk" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mcp/server.go" beforeDir="false" afterPath="$PROJECT_DIR$/mcp/server.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/migration/registry.go" beforeDir="false" afterPath="$PROJECT_DIR$/migration/registry.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/migrations/20251207_100000_create_users_collection.go" beforeDir="false" afterPath="$PROJECT_DIR$/migrations/20251207_100000_create_users_collection.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/migrations/main.go" beforeDir="false" afterPath="$PROJECT_DIR$/migrations/main.go" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -222,20 +198,20 @@
       <framework value="gotest" />
       <method v="2" />
     </configuration>
-    <configuration name="build (1)" type="MAKEFILE_TARGET_RUN_CONFIGURATION" factoryName="Makefile" temporary="true">
-      <makefile filename="$PROJECT_DIR$/makefiles/build.mk" target="build" workingDirectory="" arguments="">
+    <configuration name="ci-test" type="MAKEFILE_TARGET_RUN_CONFIGURATION" factoryName="Makefile" temporary="true">
+      <makefile filename="$PROJECT_DIR$/makefiles/linter.mk" target="ci-test" workingDirectory="" arguments="">
         <envs />
       </makefile>
       <method v="2" />
     </configuration>
-    <configuration name="dev-setup" type="MAKEFILE_TARGET_RUN_CONFIGURATION" factoryName="Makefile" temporary="true">
-      <makefile filename="$PROJECT_DIR$/makefiles/dev.mk" target="dev-setup" workingDirectory="" arguments="">
+    <configuration name="format" type="MAKEFILE_TARGET_RUN_CONFIGURATION" factoryName="Makefile" temporary="true">
+      <makefile filename="$PROJECT_DIR$/makefiles/linter.mk" target="format" workingDirectory="" arguments="">
         <envs />
       </makefile>
       <method v="2" />
     </configuration>
-    <configuration name="docs" type="MAKEFILE_TARGET_RUN_CONFIGURATION" factoryName="Makefile" temporary="true">
-      <makefile filename="$PROJECT_DIR$/makefiles/dev.mk" target="docs" workingDirectory="" arguments="">
+    <configuration name="lint" type="MAKEFILE_TARGET_RUN_CONFIGURATION" factoryName="Makefile" temporary="true">
+      <makefile filename="$PROJECT_DIR$/makefiles/linter.mk" target="lint" workingDirectory="" arguments="">
         <envs />
       </makefile>
       <method v="2" />
@@ -257,19 +233,19 @@
     </configuration>
     <list>
       <item itemvalue="Go Build.up" />
-      <item itemvalue="Makefile Target.build (1)" />
-      <item itemvalue="Makefile Target.dev-setup" />
-      <item itemvalue="Makefile Target.docs" />
+      <item itemvalue="Makefile Target.ci-test" />
+      <item itemvalue="Makefile Target.format" />
+      <item itemvalue="Makefile Target.lint" />
       <item itemvalue="Makefile Target.vet" />
       <item itemvalue="Node.js.console.js" />
     </list>
     <recent_temporary>
       <list>
         <item itemvalue="Makefile Target.vet" />
+        <item itemvalue="Makefile Target.ci-test" />
+        <item itemvalue="Makefile Target.lint" />
+        <item itemvalue="Makefile Target.format" />
         <item itemvalue="Node.js.console.js" />
-        <item itemvalue="Makefile Target.build (1)" />
-        <item itemvalue="Makefile Target.dev-setup" />
-        <item itemvalue="Makefile Target.docs" />
       </list>
     </recent_temporary>
   </component>
@@ -291,7 +267,7 @@
       <workItem from="1760027209597" duration="116000" />
       <workItem from="1760027337322" duration="693000" />
       <workItem from="1765016689431" duration="12725000" />
-      <workItem from="1765109189119" duration="16238000" />
+      <workItem from="1765109189119" duration="18437000" />
     </task>
     <task id="LOCAL-00001" summary="CLI and mongo-migration-tool">
       <option name="closed" value="true" />
@@ -357,7 +333,15 @@
       <option name="project" value="LOCAL" />
       <updated>1765041490902</updated>
     </task>
-    <option name="localTasksCounter" value="9" />
+    <task id="LOCAL-00009" summary="CLI and mongo-migration-tool">
+      <option name="closed" value="true" />
+      <created>1765138321668</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1765138321668</updated>
+    </task>
+    <option name="localTasksCounter" value="10" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
