@@ -1,71 +1,54 @@
 # syntax=docker/dockerfile:1.4
 
-# Builder Stage
 FROM golang:1.25-alpine AS builder
 
 WORKDIR /app
 
-# Copy go.mod and go.sum first for efficient caching
 COPY go.mod go.sum ./
-
-# Download modules
 RUN go mod download && go mod tidy
 
-# Copy the rest of the application source code
 COPY . .
 
-# --- DEBUG STEP: Verify migrations directory content ---
-RUN echo "--- Contents of /app/migrations ---" && \
-    ls -l /app/migrations && \
-    echo "--- Content of /app/migrations/main.go ---" && \
-    cat /app/migrations/main.go && \
-    echo "--- Content of /app/migrations/20240101_001_add_user_indexes.go ---" && \
-    cat /app/migrations/20240101_001_add_user_indexes.go && \
-    echo "--- END DEBUG ---"
+# Build 1: Production (Optimized, Static)
+# Output name: /app/mongo-migration-prod
+RUN CGO_ENABLED=0 GOOS=linux go build -v -a -installsuffix cgo -o /app/mongo-migration-prod .
 
-# Build production binary
-# CGO_ENABLED=0 GOOS=linux are standard for static binaries in Alpine
-# Explicitly build the ./cmd package
-RUN CGO_ENABLED=0 GOOS=linux go build -v -ldflags="-w -s" -o /app/mongo-essential ./cmd
-
-# Build profiling/debug binary (with gcflags for debugging info)
-# Explicitly build the ./cmd package
-RUN CGO_ENABLED=0 GOOS=linux go build -v -gcflags="all=-N -l" -o /app/mongo-essential-profile ./cmd
+# Build 2: Profiling/Debug (Disable optimizations, Enable profiling)
+# Output name: /app/mongo-migration-debug
+RUN CGO_ENABLED=0 GOOS=linux go build -v -gcflags="all=-N -l" -o /app/mongo-migration-debug .
 
 # -------------------------------
-# Production Image
-# ------------------------------
-FROM gcr.io/distroless/static-debian12:debug-nonroot AS production
+FROM alpine:3.19 AS production
+
+RUN apk --no-cache add ca-certificates tzdata
 
 WORKDIR /app
 
-# Copy production binary
-COPY --from=builder /app/mongo-essential /app/mongo-essential
+# Copy the specific production binary
+COPY --from=builder /app/mongo-migration-prod /app/mongo-migration
 
-# Add non-root user (distroless images often run as non-root by default, but good to be explicit)
-USER 65532:65532
+RUN adduser -D -s /bin/sh migration
+USER migration
 
-ENTRYPOINT ["/app/mongo-essential"]
+ENTRYPOINT ["/app/mongo-migration"]
 
-# Add healthcheck (assuming 'status' is a lightweight command)
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-    CMD ["/app/mongo-essential", "status"]
+    CMD ["/app/mongo-migration", "status"]
 
 # --------------------------------
-# Debug/Profiling Image
-# --------------------------------
-FROM gcr.io/distroless/static-debian12:debug-nonroot AS profiling
+FROM alpine:3.19 AS profiling
+
+RUN apk --no-cache add ca-certificates tzdata
 
 WORKDIR /app
 
-# Copy profiling binary
-COPY --from=builder /app/mongo-essential-profile /app/mongo-essential-profile
+# Copy the specific debug binary
+COPY --from=builder /app/mongo-migration-debug /app/mongo-migration-profile
 
-# Add non-root user
-USER 65532:65532
+RUN adduser -D -s /bin/sh migration
+USER migration
 
-ENTRYPOINT ["/app/mongo-essential-profile"]
+ENTRYPOINT ["/app/mongo-migration-profile"]
 
-# Add healthcheck (assuming 'status' is a lightweight command)
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-    CMD ["/app/mongo-essential-profile", "status"]
+    CMD ["/app/mongo-migration-profile", "status"]
