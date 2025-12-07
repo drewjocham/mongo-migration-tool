@@ -1,12 +1,134 @@
 # golangci-lint configuration
 # Documentation: https://golangci-lint.run/usage/configuration/
 
-# Absolute bare-bones configuration to bypass strict schema validation errors in CI.
-# This enables only a few core linters without any custom settings, exclusions, or other sections.
+version: "2"
+
+run:
+  timeout: 5m
+  issues-exit-code: 1
+  tests: true
+  # Only analyze the main application code, excluding examples
+  skip-dirs:
+    - examples
+  skip-files:
+    - ".*_test.go$" # Exclude test files from general linting
+
+output:
+  format: colored-line-number
+  print-issued-lines: true
+  print-linter-name: true
+
+linters-settings:
+  govet:
+    enable:
+      - shadow
+  cyclop:
+    max-complexity: 10
+  dupl:
+    threshold: 100
+  goconst:
+    min-len: 2
+    min-occurrences: 2
+  misspell:
+    locale: US
+  lll:
+    line-length: 120
+  goimports:
+    local-prefixes: github.com/jocham/mongo-migration
+  gocritic:
+    enabled-tags:
+      - diagnostic
+      - experimental
+      - opinionated
+      - performance
+      - style
+    disabled-checks:
+      - dupImport
+      - ifElseChain
+      - octalLiteral
+      - whyNoLint
+      - wrapperFunc
+  funlen:
+    lines: 60
+    statements: 50
+  depguard:
+    rules:
+      main:
+        deny:
+          - pkg: io/ioutil
+            desc: "use os and io packages instead of io/ioutil"
+        files:
+          - "$all"
+        allow:
+          - "$gostd"
+          - "github.com/spf13/cobra"
+          - "go.mongodb.org/mongo-driver/mongo"
+          - "go.mongodb.org/mongo-driver/mongo/options"
+          - "go.mongodb.org/mongo-driver/bson"
+          - "go.mongodb.org/mongo-driver/mongo/integration/mtest"
+          - "github.com/caarlos0/env/v11"
+          - "github.com/joho/godotenv"
+          - "github.com/jocham/mongo-migration/config"
+          - "github.com/jocham/mongo-migration/migration"
+          - "github.com/jocham/mongo-migration/mcp"
+          - "github.com/jocham/mongo-migration/examples/examplemigrations"
 
 linters:
+  disable-all: true
   enable:
+    - bodyclose
+    # - depguard  # disabled due to ongoing configuration issues
+    - dogsled
+    - dupl
     - errcheck
+    - funlen
+    - gochecknoinits
+    - goconst
+    - gocritic
+    - cyclop
+    - mnd
+    - goprintffuncname
+    - gosec
     - govet
+    - ineffassign
+    - lll
+    - misspell
+    - nakedret
+    - noctx
+    - rowserrcheck
+    - copyloopvar
     - staticcheck
+    - unconvert
+    - unparam
     - unused
+    - whitespace
+
+issues:
+  # Exclude specific files from all linters
+  exclude-files:
+    - "examples/main.go"
+    - "examples/library-example/main.go"
+  # Exclude specific directories from all linters
+  exclude-dirs:
+    - examples
+  # Exclude specific rules for specific paths
+  exclude-rules:
+    - path: examples/
+      linters:
+        - typecheck
+    - path: _test\.go
+      linters:
+        - mnd
+        - funlen
+        - goconst
+        - dupl
+  # Don't use default excludes, manage them explicitly
+  exclude-use-default: true
+  # Exclude specific issue texts
+  exclude:
+    # Allow blank imports for side effects
+    - "should not use blank imports"
+
+  max-issues-per-linter: 0
+  max-same-issues: 0
+  new: false

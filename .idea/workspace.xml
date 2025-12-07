@@ -5,10 +5,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="53a82f71-5517-487d-94b0-2d95ee8915ca" name="Changes" comment="CLI and mongo-migration-tool">
-      <change beforePath="$PROJECT_DIR$/.github/workflows/ci.yml" beforeDir="false" afterPath="$PROJECT_DIR$/.github/workflows/ci.yml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Dockerfile" beforeDir="false" afterPath="$PROJECT_DIR$/Dockerfile" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/makefiles/build.mk" beforeDir="false" afterPath="$PROJECT_DIR$/makefiles/build.mk" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.golangci.yml" beforeDir="false" afterPath="$PROJECT_DIR$/.golangci.yml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -260,7 +257,7 @@
       <workItem from="1760027209597" duration="116000" />
       <workItem from="1760027337322" duration="693000" />
       <workItem from="1765016689431" duration="12725000" />
-      <workItem from="1765109189119" duration="20822000" />
+      <workItem from="1765109189119" duration="21261000" />
     </task>
     <task id="LOCAL-00001" summary="CLI and mongo-migration-tool">
       <option name="closed" value="true" />
@@ -358,7 +355,23 @@
       <option name="project" value="LOCAL" />
       <updated>1765141922609</updated>
     </task>
-    <option name="localTasksCounter" value="13" />
+    <task id="LOCAL-00013" summary="CLI and mongo-migration-tool">
+      <option name="closed" value="true" />
+      <created>1765142282997</created>
+      <option name="number" value="00013" />
+      <option name="presentableId" value="LOCAL-00013" />
+      <option name="project" value="LOCAL" />
+      <updated>1765142282997</updated>
+    </task>
+    <task id="LOCAL-00014" summary="CLI and mongo-migration-tool">
+      <option name="closed" value="true" />
+      <created>1765142626051</created>
+      <option name="number" value="00014" />
+      <option name="presentableId" value="LOCAL-00014" />
+      <option name="project" value="LOCAL" />
+      <updated>1765142626051</updated>
+    </task>
+    <option name="localTasksCounter" value="15" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">

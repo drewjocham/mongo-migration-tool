@@ -5,7 +5,7 @@ WORKDIR /app
 COPY go.mod go.sum ./
 RUN go mod download && \
     go mod tidy && \
-    CGO_ENABLED=0 GOOS=linux go build -v -a -installsuffix cgo -o mongo-essential .
+    CGO_ENABLED=0 GOOS=linux go build -v -a -installsuffix cgo -o mongo-migration .
 
 # -------------------------------
 # 2. PROFILING BUILD STAGE
@@ -17,7 +17,7 @@ WORKDIR /app
 COPY go.mod go.sum ./
 RUN go mod download && \
     go mod tidy && \
-    go build -v -o mongo-essential-profile .
+    go build -v -o mongo-migration .
 
 # -------------------------------
 #  PRODUCTION IMAGE
@@ -28,7 +28,7 @@ RUN apk --no-cache add ca-certificates tzdata
 
 WORKDIR /app
 
-COPY --from=builder /app/mongo-essential .
+COPY --from=builder /app/mongo-migration .
 
 RUN mkdir -p migrations
 COPY .env.example .
@@ -38,13 +38,13 @@ RUN adduser -D -s /bin/sh migration
 USER migration
 
 
-ENTRYPOINT ["./mongo-essential"]
+ENTRYPOINT ["./mongo-migration"]
 
 # --------------------------------
 #  For debugging
 # --------------------------------
 FROM production AS profiling
 
-COPY --from=profiler_builder /app/mongo-essential-profile .
+COPY --from=profiler_builder /app/mongo-migration .
 
-ENTRYPOINT ["./mongo-essential-profile"]
+ENTRYPOINT ["./mongo-migration"]
