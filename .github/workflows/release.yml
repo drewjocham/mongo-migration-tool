@@ -55,6 +55,6 @@ jobs:
     steps:
       - name: Update pkg.go.dev
         run: |
-          curl -X POST "https://proxy.golang.org/github.com/drewjocham/mongo-essential/@v/${{ github.ref_name }}.info"
+          curl -X POST "https://proxy.golang.org/github.com/drewjocham/mongo-migration/@v/${{ github.ref_name }}.info"
           sleep 5
-          curl "https://pkg.go.dev/github.com/drewjocham/mongo-essential@${{ github.ref_name }}"
+          curl "https://pkg.go.dev/github.com/drewjocham/mongo-migration@${{ github.ref_name }}"

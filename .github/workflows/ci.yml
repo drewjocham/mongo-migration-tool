@@ -103,4 +103,4 @@ jobs:
         with:
           context: .
           push: false
-          tags: mongo-essential:test
+          tags: mongo-migration:test

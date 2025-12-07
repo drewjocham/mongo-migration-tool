@@ -6,8 +6,8 @@ lint: ## Run golangci-lint
 
 format: ## Format Go code
 	@echo "$(GREEN)Formatting code...$(NC)"
-	@cd $(REPO_ROOT) && gofmt -s -w .
-	@cd $(REPO_ROOT) && goimports -w .
+	@cd $(REPO_ROOT) && find . -type f -name "*.go" -not -path "./vendor/*" -not -path "./cmd/pkg/mod/*" -exec gofmt -s -w {} +
+	@cd $(REPO_ROOT) && find . -type f -name "*.go" -not -path "./vendor/*" -not -path "./cmd/pkg/mod/*" -exec goimports -w {} +
 
 vet: ## Run go vet
 	@echo "$(GREEN)Running go vet...$(NC)"
