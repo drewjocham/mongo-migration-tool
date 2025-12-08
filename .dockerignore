@@ -11,9 +11,6 @@ docs/
 LICENSE*
 CHANGELOG*
 
-# testing migrations
-migrations/
-
 # Build artifacts and binaries
 build/
 dist/
@@ -210,6 +207,7 @@ trivy-report.json
 # Migration testing
 migrations/test_*
 migrations/dev_*
+migrations/*
 
 # Local development overrides
 local/
