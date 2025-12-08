@@ -30,9 +30,7 @@ func (m *CreateUsersCollectionMigration) Up(
 	validator := bson.M{
 		"$jsonSchema": bson.M{
 			"bsonType": "object",
-			"required": []string{
-				"email", "username", "password_hash", "created_at", "updated_at",
-			},
+			"required": []string{"email", "username", "password_hash", "created_at", "updated_at"},
 			"properties": bson.M{
 				"email":         bson.M{"bsonType": "string", "description": "must be a string and is required"},
 				"username":      bson.M{"bsonType": "string", "description": "must be a string and is required"},

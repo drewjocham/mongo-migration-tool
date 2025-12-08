@@ -11,6 +11,9 @@ docs/
 LICENSE*
 CHANGELOG*
 
+# testing migrations
+migrations/
+
 # Build artifacts and binaries
 build/
 dist/
