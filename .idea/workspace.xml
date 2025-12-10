@@ -5,7 +5,20 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="53a82f71-5517-487d-94b0-2d95ee8915ca" name="Changes" comment="CLI and mongo-migration-tool">
-      <change beforePath="$PROJECT_DIR$/migrations/20251207_100000_create_users_collection.go" beforeDir="false" afterPath="$PROJECT_DIR$/migrations/20251207_100000_create_users_collection.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Dockerfile.mcp" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/cmd/mcp_start.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/supervisord.conf" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.dockerignore" beforeDir="false" afterPath="$PROJECT_DIR$/.dockerignore" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Dockerfile" beforeDir="false" afterPath="$PROJECT_DIR$/Dockerfile" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cmd/mcp.go" beforeDir="false" afterPath="$PROJECT_DIR$/cmd/mcp.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/docker-compose.yml" beforeDir="false" afterPath="$PROJECT_DIR$/docker-compose.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/examples/docker-compose.yml" beforeDir="false" afterPath="$PROJECT_DIR$/examples/docker-compose.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mcp/examples/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/mcp/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mcp/examples/mcp_client.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/mcp/examples/setup.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/mcp/server.go" beforeDir="false" afterPath="$PROJECT_DIR$/mcp/server.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/migration/types.go" beforeDir="false" afterPath="$PROJECT_DIR$/migration/types.go" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -114,10 +127,10 @@
     "RunOnceActivity.go.migrated.go.modules.settings": "true",
     "SHELLCHECK.PATH": "I do mind",
     "SONARLINT_PRECOMMIT_ANALYSIS": "true",
-    "com.google.cloudcode.ide_session_index": "20251207_0002",
+    "com.google.cloudcode.ide_session_index": "20251210_0001",
     "configurable..is.expanded": "true",
     "dart.analysis.tool.window.visible": "false",
-    "git-widget-placeholder": "setting-up-cli",
+    "git-widget-placeholder": "#2 on setting-up-cli",
     "go.import.settings.migrated": "true",
     "last_opened_file_path": "/Users/jocham/programming/mongo-migration-tool-/migrations",
     "node.js.detected.package.eslint": "true",
@@ -145,6 +158,7 @@
       <recent name="$PROJECT_DIR$/examples" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/mcp" />
       <recent name="$PROJECT_DIR$" />
       <recent name="$PROJECT_DIR$/mcp/examples" />
     </key>
@@ -257,7 +271,9 @@
       <workItem from="1760027209597" duration="116000" />
       <workItem from="1760027337322" duration="693000" />
       <workItem from="1765016689431" duration="12725000" />
-      <workItem from="1765109189119" duration="26633000" />
+      <workItem from="1765109189119" duration="28041000" />
+      <workItem from="1765198673696" duration="2000" />
+      <workItem from="1765343759728" duration="3020000" />
     </task>
     <task id="LOCAL-00001" summary="CLI and mongo-migration-tool">
       <option name="closed" value="true" />
@@ -475,7 +491,15 @@
       <option name="project" value="LOCAL" />
       <updated>1765180338647</updated>
     </task>
-    <option name="localTasksCounter" value="28" />
+    <task id="LOCAL-00028" summary="CLI and mongo-migration-tool">
+      <option name="closed" value="true" />
+      <created>1765180509817</created>
+      <option name="number" value="00028" />
+      <option name="presentableId" value="LOCAL-00028" />
+      <option name="project" value="LOCAL" />
+      <updated>1765180509817</updated>
+    </task>
+    <option name="localTasksCounter" value="29" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">

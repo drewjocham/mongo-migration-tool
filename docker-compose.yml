@@ -1,8 +1,10 @@
 services:
-  mongo-migrate:
-    build: .
+  mongo-cli:
+    build:
+      context: .
+      dockerfile: Dockerfile
     environment:
-      - MONGO_URL=mongodb://admin:password@mongo-cli:27017
+      - MONGO_URL=mongodb://admin:password@mongo-db:27017
       - MONGO_DATABASE=test_db
       - MIGRATIONS_PATH=/app/migrations
       - MIGRATIONS_COLLECTION=schema_migrations
@@ -10,13 +12,34 @@ services:
     volumes:
       - ./migrations:/app/migrations
     depends_on:
-      mongo-cli:
+      mongo-db:
         condition: service_healthy
-    command: ["status"]
+    # Default command is --help, but can be overridden
+    command: ["--help"]
     networks:
       - cli-network
 
-  mongo-cli:
+  mongo-mcp:
+    build:
+      context: .
+      dockerfile: Dockerfile.mcp
+    environment:
+      - MONGO_URL=mongodb://admin:password@mongo-db:27017
+      - MONGO_DATABASE=test_db
+      - MIGRATIONS_PATH=/app/migrations
+      - MIGRATIONS_COLLECTION=schema_migrations
+      - MONGO_TIMEOUT=30
+    ports:
+      - "8080:8080" # Expose a port if your MCP server needs it
+    volumes:
+      - ./migrations:/app/migrations
+    depends_on:
+      mongo-db:
+        condition: service_healthy
+    networks:
+      - cli-network
+
+  mongo-db:
     image: mongo:8.0
     command: [
       "--bind_ip_all",
@@ -40,6 +63,7 @@ services:
       - mongo_data:/data/db
     networks:
       - cli-network
+
 volumes:
   mongo_data:
 

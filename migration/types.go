@@ -1,25 +1,3 @@
-// Package migration provides MongoDB migration functionality for database schema versioning.
-//
-// This package allows you to version control your MongoDB schema changes using up/down
-// migrations, similar to Liquibase or Flyway for relational databases.
-//
-// Basic Usage:
-//
-//	// Create a new migration engine
-//	client, err := mongo.Connect(ctx, options.Client().ApplyURI("mongodb://localhost:27017"))
-//	if err != nil {
-//		log.Fatal(err)
-//	}
-//	db := client.Database("myapp")
-//	engine := migration.NewEngine(db, "schema_migrations")
-//
-//	// Register your migrations
-//	engine.Register(&MyMigration{})
-//
-//	// Run pending migrations
-//	if err := engine.Up(ctx, ""); err != nil {
-//		log.Fatal(err)
-//	}
 package migration
 
 import (
