@@ -45,7 +45,6 @@ anthropic-key.txt
 claude-key.txt
 
 # Docker
-.dockerignore
 docker-compose.override.yml
 
 # Docker volumes and data
