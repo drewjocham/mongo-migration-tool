@@ -15,7 +15,7 @@ RUN go mod download
 # Copy the rest of the source
 COPY . .
 
-# Build the main CLI (which includes the `mcp` command)
+# Build the main CLI
 RUN CGO_ENABLED=0 GOOS=linux go build -v -o /app/mongo-migration github.com/jocham/mongo-migration
 
 ##
