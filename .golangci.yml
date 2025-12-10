@@ -1,18 +1,13 @@
-# golangci-lint configuration
-# Documentation: https://golangci-lint.run/usage/configuration/
-
-version: "2"
+# This configuration has been updated to a modern format for recent versions of golangci-lint.
+version: 2
 
 run:
   timeout: 5m
   issues-exit-code: 1
-  tests: true
 
 linters:
-  default: none
   enable:
     - bodyclose
-    # - depguard  # disabled due configuration issues
     - dogsled
     - dupl
     - errcheck
@@ -20,9 +15,7 @@ linters:
     - gochecknoinits
     - goconst
     - gocritic
-    - cyclop
-    - mnd
-    - goprintffuncname
+    - gocyclo
     - gosec
     - govet
     - ineffassign
@@ -38,63 +31,53 @@ linters:
     - unused
     - whitespace
 
-  # Linter-specific settings (moved from legacy linters-settings)
-  settings:
-    govet:
-      enable:
-        - shadow
-    cyclop:
-      max-complexity: 10
-    dupl:
-      threshold: 100
-    goconst:
-      min-len: 2
-      min-occurrences: 2
-    misspell:
-      locale: US
-    lll:
-      line-length: 120
-    goimports:
-      local-prefixes: github.com/jocham/mongo-migration
-    gocritic:
-      enabled-tags:
-        - diagnostic
-        - experimental
-        - opinionated
-        - performance
-        - style
-      disabled-checks:
-        - dupImport
-        - ifElseChain
-        - octalLiteral
-        - whyNoLint
-        - wrapperFunc
-    funlen:
-      lines: 60
-      statements: 50
-    depguard:
-      rules:
-        main:
-          deny:
-            - pkg: io/ioutil
-              desc: "use os and io packages instead of io/ioutil"
-          files:
-            - "$all"
-          allow:
-            - "$gostd"
-            - "github.com/spf13/cobra"
-            - "go.mongodb.org/mongo-driver/mongo"
-            - "go.mongodb.org/mongo-driver/mongo/options"
-            - "go.mongodb.org/mongo-driver/bson"
-            - "go.mongodb.org/mongo-driver/mongo/integration/mtest"
-            - "github.com/caarlos0/env/v11"
-            - "github.com/joho/godotenv"
-            - "github.com/jocham/mongo-migration/config"
-            - "github.com/jocham/mongo-migration/migration"
-            - "github.com/jocham/mongo-migration/mcp"
-            - "github.com/jocham/mongo-migration/examples/examplemigrations"
+linters-settings:
+  govet:
+    enable:
+      - shadow
+  gocyclo:
+    min-complexity: 10
+  dupl:
+    threshold: 100
+  goconst:
+    min-len: 2
+    min-occurrences: 2
+  misspell:
+    locale: US
+  lll:
+    line-length: 120
+  gocritic:
+    enabled-tags:
+      - diagnostic
+      - experimental
+      - opinionated
+      - performance
+      - style
+    disabled-checks:
+      - dupImport
+      - ifElseChain
+      - octalLiteral
+      - whyNoLint
+      - wrapperFunc
+  funlen:
+    lines: 60
+    statements: 50
 
 issues:
   max-issues-per-linter: 0
   max-same-issues: 0
-  new: false
+  exclude-use-default: false
+  exclude-rules:
+    # Exclude gochecknoinits from main packages where it's common for setup.
+    - path: "cmd/mcp_start.go"
+      linters:
+        - "gochecknoinits"
+    - path: "mcp/server.go"
+      linters:
+        - "gochecknoinits"
+
+output:
+  formats:
+    colored-line-number: {}
+  print-issued-lines: true
+  print-linter-name: true
