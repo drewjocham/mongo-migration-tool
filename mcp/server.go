@@ -17,10 +17,6 @@ import (
 	"github.com/jocham/mongo-migration/migration"
 )
 
-func init() {
-	log.SetOutput(os.Stderr)
-}
-
 // MCPServer implements the Model Context Protocol for MongoDB migrations
 type MCPServer struct { //nolint:revive // MCPServer is clearer than Server in this context
 	engine *migration.Engine
@@ -72,6 +68,8 @@ func NewMCPServer() (*MCPServer, error) {
 		return nil, fmt.Errorf("failed to load configuration: %w", err)
 	}
 
+	log.SetOutput(os.Stderr)
+
 	client, db, err := connectMongoDB(cfg)
 	if err != nil {
 		return nil, err
@@ -119,7 +117,9 @@ func (s *MCPServer) ensureConnection(ctx context.Context) error {
 				return nil
 			}
 			log.Printf("MongoDB ping failed. Attempting reconnect (Attempt %d/%d).", i+1, maxRetries)
-			s.Close()
+			if err := s.Close(); err != nil {
+				log.Printf("Error closing server connection: %v", err)
+			}
 		}
 
 		client, db, err := connectMongoDB(s.config)
@@ -188,7 +188,8 @@ func (s *MCPServer) handleRequest(request *MCPRequest) *MCPResponse {
 	case "tools/call":
 		return s.handleToolsCall(request)
 	default:
-		return s.createErrorResponse(request.ID, -32601, "Method not found", fmt.Sprintf("Unknown method: %s", request.Method))
+		return s.createErrorResponse(
+			request.ID, -32601, "Method not found", fmt.Sprintf("Unknown method: %s", request.Method))
 	}
 }
 
@@ -523,7 +524,9 @@ func (s *MCPServer) createMigration(name, description string) (string, error) {
 	if err := s.writeMigrationFile(filepath, template); err != nil {
 		// Attempt to remove the file if creation failed after directory was made
 		if _, statErr := os.Stat(filepath); statErr == nil {
-			os.Remove(filepath)
+			if removeErr := os.Remove(filepath); removeErr != nil {
+				log.Printf("Warning: failed to remove partially created migration file: %v", removeErr)
+			}
 		}
 		return "", err
 	}

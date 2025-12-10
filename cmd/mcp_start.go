@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"context"
 	"log"
 	"os"
 	"os/exec"
@@ -16,8 +17,8 @@ var mcpStartCmd = &cobra.Command{
 	Run:   runMCPStart,
 }
 
-func init() {
-	mcpCmd.AddCommand(mcpStartCmd)
+func init() { //nolint:gochecknoinits // init functions are used for migration registration
+	rootCmd.AddCommand(mcpStartCmd)
 }
 
 func runMCPStart(_ *cobra.Command, _ []string) {
@@ -27,10 +28,11 @@ func runMCPStart(_ *cobra.Command, _ []string) {
 
 	// Check if the server script exists
 	if _, err := os.Stat(filepath.Join(serverDir, serverScript)); os.IsNotExist(err) {
-		log.Fatalf("MCP server script not found at %s. Make sure you are running inside the Docker container.", filepath.Join(serverDir, serverScript))
+		log.Fatalf("MCP server script not found at %s. Make sure you are running inside the Docker container.",
+			filepath.Join(serverDir, serverScript))
 	}
 
-	cmd := exec.Command("node", serverScript)
+	cmd := exec.CommandContext(context.Background(), "node", serverScript)
 	cmd.Dir = serverDir
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
