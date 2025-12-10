@@ -1,0 +1,62 @@
+{
+  "tools": [
+    {
+      "name": "migration_status",
+      "description": "Get the status of all migrations - shows which migrations are applied and when",
+      "command": "/app/mongo-migration",
+      "args": ["status"],
+      "inputSchema": {
+        "type": "object",
+        "properties": {}
+      }
+    },
+    {
+      "name": "migration_up",
+      "description": "Apply migrations up to a specific version or all pending migrations",
+      "command": "/app/mongo-migration",
+      "args": ["up", "{{.version}}"],
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "version": { "type": "string", "description": "Migration version to migrate up to (optional - if not provided, applies all pending migrations)" }
+        }
+      }
+    },
+    {
+      "name": "migration_down",
+      "description": "Roll back migrations down to a specific version or roll back the last migration",
+      "command": "/app/mongo-migration",
+      "args": ["down", "{{.version}}"],
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "version": { "type": "string", "description": "Migration version to roll back to (optional - if not provided, rolls back the last applied migration)" }
+        }
+      }
+    },
+    {
+      "name": "migration_create",
+      "description": "Create a new migration file with a given name and description",
+      "command": "/app/mongo-migration",
+      "args": ["create", "{{.name}}", "{{.description}}"],
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "name": { "type": "string", "description": "Name for the migration (will be used to generate filename)" },
+          "description": { "type": "string", "description": "Description of what the migration does" }
+        },
+        "required": ["name", "description"]
+      }
+    },
+    {
+      "name": "migration_list",
+      "description": "List all registered migrations with their versions and descriptions",
+      "command": "/app/mongo-migration",
+      "args": ["list"],
+      "inputSchema": {
+        "type": "object",
+        "properties": {}
+      }
+    }
+  ]
+}

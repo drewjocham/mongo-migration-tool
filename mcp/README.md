@@ -52,7 +52,7 @@ Create a configuration file for Ollama:
 ```json
 {
   "mcpServers": {
-    "mongo-essential": {
+    "mongo-migrate": {
       "command": "/path/to/mongo-essential",
       "args": ["mcp", "--with-examples"],
       "env": {

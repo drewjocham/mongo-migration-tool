@@ -1,51 +1,28 @@
 # syntax=docker/dockerfile:1.4
 
-# Stage 1: Build the Go MCP binary
-FROM golang:1.25-alpine AS go-builder
+##
+## Stage 1: Build your Go binary
+##
+FROM golang:1.25-alpine AS builder
 
-# Install git, which is needed by go mod download for some modules
 RUN apk --no-cache add git
-
 WORKDIR /app
 
-# First, copy go.mod and go.sum to leverage Docker layer caching
+# Use go.mod / go.sum for caching
 COPY go.mod go.sum ./
-
-# Download external dependencies
 RUN go mod download
 
-# Now, copy the entire source code, including local packages
+# Copy the rest of the source
 COPY . .
 
-# Build the application, targeting the current directory
-RUN CGO_ENABLED=0 GOOS=linux go build -v -a -installsuffix cgo -o /app/mongo-migration .
+# Build the main CLI (which includes the `mcp` command)
+RUN CGO_ENABLED=0 GOOS=linux go build -v -o /app/mongo-migration .
 
-# Final Stage: MongoDB runtime + MCP server in a single image
-# This combines the official MongoDB image with the compiled MCP binary.
-FROM mongo:8.0 AS production
+##
+## Stage 2: Extend the official MongoDB MCP Server image
+##
+FROM mongodb/mongodb-mcp-server:latest
 
-# Install supervisord to run both mongod and the MCP server
-RUN apt-get update \
-    && apt-get install -y --no-install-recommends supervisor \
-    && rm -rf /var/lib/apt/lists/*
+# Make your Go binary available on PATH inside the MCP container
+COPY --from=builder /app/mongo-migration /usr/local/bin/mongo-migration
 
-WORKDIR /app
-
-# Copy the Go binary
-COPY --from=go-builder /app/mongo-migration /app/mongo-migration
-
-# Copy supervisor configuration to manage mongod + MCP
-COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
-
-# Default environment used by the MCP server (can be overridden at runtime)
-ENV MONGO_URL=mongodb://localhost:27017 \
-    MONGO_DATABASE=test_db \
-    MIGRATIONS_PATH=/app/migrations \
-    MIGRATIONS_COLLECTION=schema_migrations \
-    MONGO_TIMEOUT=30
-
-# Expose the MongoDB port in case you want to connect from outside
-EXPOSE 27017
-
-# Use the Mongo entrypoint but run supervisord as the main process
-CMD ["supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
