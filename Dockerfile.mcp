@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1.4
 
 ##
-## Stage 1: Build your Go binary
+## Stage 1: Build MCP Go binary
 ##
 FROM golang:1.25-alpine AS builder
 
@@ -12,10 +12,8 @@ WORKDIR /app
 COPY go.mod go.sum ./
 RUN go mod download
 
-# Copy the rest of the source
 COPY . .
 
-# Build the main CLI
 RUN CGO_ENABLED=0 GOOS=linux go build -v -o /app/mongo-migration github.com/jocham/mongo-migration
 
 ##
@@ -23,5 +21,5 @@ RUN CGO_ENABLED=0 GOOS=linux go build -v -o /app/mongo-migration github.com/joch
 ##
 FROM mongodb/mongodb-mcp-server:latest
 
-# Make your Go binary available on PATH inside the MCP container
+# my Go binary available on PATH inside the MCP container
 COPY --from=builder /app/mongo-migration /usr/local/bin/mongo-migration

@@ -596,7 +596,7 @@ func (m *%sMigration) Up(ctx context.Context, db *mongo.Database) error {
     return nil
 }
 
-func (m *%sMigration) Down(ctx context.Context, db *mongo.Database) error {
+func (m *%sMigration) Down(ctx context.Ctxt, db *mongo.Database) error {
     // TODO: Implement migration down logic (rollback)
     // Example:
     // collection := db.Collection("your_collection")

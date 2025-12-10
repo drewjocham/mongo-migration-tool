@@ -18,18 +18,19 @@ var mcpStartCmd = &cobra.Command{
 }
 
 func init() { //nolint:gochecknoinits // init functions are used for migration registration
-	rootCmd.AddCommand(mcpStartCmd)
+	mcpCmd.AddCommand(mcpStartCmd)
 }
 
 func runMCPStart(_ *cobra.Command, _ []string) {
 	// The Node.js server is expected to be in /app/mcp-server in the Docker image
 	serverDir := "/app/mcp-server"
 	serverScript := "index.js"
+	serverPath := filepath.Join(serverDir, serverScript)
 
 	// Check if the server script exists
-	if _, err := os.Stat(filepath.Join(serverDir, serverScript)); os.IsNotExist(err) {
+	if _, err := os.Stat(serverPath); os.IsNotExist(err) {
 		log.Fatalf("MCP server script not found at %s. Make sure you are running inside the Docker container.",
-			filepath.Join(serverDir, serverScript))
+			serverPath)
 	}
 
 	cmd := exec.CommandContext(context.Background(), "node", serverScript)

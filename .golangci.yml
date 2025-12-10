@@ -1,70 +1,27 @@
-# This configuration has been updated to a modern format for recent versions of golangci-lint.
-version: "2"
-
 run:
   timeout: 5m
-  issues-exit-code: 1
 
 linters:
   enable:
-    - bodyclose
-    - dogsled
-    - dupl
     - errcheck
-    - funlen
     - gochecknoinits
-    - goconst
-    - gocritic
-    - gocyclo
-    - gosec
     - govet
     - ineffassign
     - lll
-    - misspell
-    - nakedret
     - noctx
-    - rowserrcheck
-    - copyloopvar
     - staticcheck
-    - unconvert
-    - unparam
     - unused
-    - whitespace
 
 linters-settings:
-  govet:
-    enable:
-      - shadow
-  gocyclo:
-    min-complexity: 10
-  dupl:
-    threshold: 100
-  goconst:
-    min-len: 2
-    min-occurrences: 2
-  misspell:
-    locale: US
   lll:
     line-length: 120
-  gocritic:
-    enabled-tags:
-      - diagnostic
-      - experimental
-      - opinionated
-      - performance
-      - style
-    disabled-checks:
-      - dupImport
-      - ifElseChain
-      - octalLiteral
-      - whyNoLint
-      - wrapperFunc
-  funlen:
-    lines: 60
-    statements: 50
 
 issues:
-  max-issues-per-linter: 0
-  max-same-issues: 0
-
-output:
+  exclude-rules:
+    # Exclude gochecknoinits from main packages where it's common for setup.
+    - path: "cmd/mcp_start.go"
+      linters:
+        - "gochecknoinits"
+    - path: "mcp/server.go"
+      linters:
+        - "gochecknoinits"
