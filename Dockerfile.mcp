@@ -16,7 +16,7 @@ RUN go mod download
 COPY . .
 
 # Build the main CLI (which includes the `mcp` command)
-RUN CGO_ENABLED=0 GOOS=linux go build -v -o /app/mongo-migration .
+RUN CGO_ENABLED=0 GOOS=linux go build -v -o /app/mongo-migration github.com/jocham/mongo-migration
 
 ##
 ## Stage 2: Extend the official MongoDB MCP Server image
@@ -25,4 +25,3 @@ FROM mongodb/mongodb-mcp-server:latest
 
 # Make your Go binary available on PATH inside the MCP container
 COPY --from=builder /app/mongo-migration /usr/local/bin/mongo-migration
-

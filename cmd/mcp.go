@@ -8,6 +8,7 @@ import (
 	"github.com/jocham/mongo-migration/examples/examplemigrations"
 	"github.com/jocham/mongo-migration/mcp"
 	"github.com/jocham/mongo-migration/migration"
+	_ "github.com/jocham/mongo-migration/migrations"
 )
 
 var mcpCmd = &cobra.Command{
