@@ -22,10 +22,6 @@ jobs:
         with:
           go-version: ${{ matrix.go-version }}
 
-      # sometimes is needed for bad builds
-      - name: Clear Cache
-        run: make clear-cache
-
       - name: Cache dependencies
         uses: actions/cache@v4
         with:
@@ -37,19 +33,16 @@ jobs:
             ${{ runner.os }}-go-
 
       - name: Download dependencies
-        run: go mod download
-
-      - name: Verify dependencies
-        run: go mod verify
+        run: make deps
 
       - name: Build
-        run: go build -v $(go list ./... | grep -v /examples)
+        run: make build
 
       - name: Run vet
-        run: go vet $(go list ./... | grep -v /examples)
+        run: make vet
 
       - name: Run tests
-        run: go test -v -race -coverprofile=coverage.out $(go list ./... | grep -v /examples)
+        run: make test
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v4
@@ -70,9 +63,7 @@ jobs:
           go-version: '1.24'
 
       - name: Run golangci-lint
-        uses: golangci/golangci-lint-action@v7
-        with:
-          version: latest
+        run: make lint
 
   build-examples:
     runs-on: ubuntu-latest
@@ -83,7 +74,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
-          go-version: '1.24'
+          go-version: '1.25'
 
       - name: Build examples
         run: |
@@ -102,9 +93,18 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Build Docker image
+      - name: Build Docker mongo-migration image
         uses: docker/build-push-action@v5
         with:
           context: .
+          file: Dockerfile
           push: false
-          tags: mongo-migration:test
+          tags: jocham-mongo-migration:test
+
+      - name: Build Docker mongo-mcp image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: Dockerfile.mcp
+          push: false
+          tags: jocham-mongo-mcp:test

@@ -10,6 +10,7 @@ run:
   # Only analyze the main application code, excluding examples
   skip-dirs:
     - examples
+    - mcp
   skip-files:
     - ".*_test.go$" # Exclude test files from general linting
 
