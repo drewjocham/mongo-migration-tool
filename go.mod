@@ -1,12 +1,12 @@
-module github.com/jocham/mongo-essential
+module github.com/jocham/mongo-migration
 
-go 1.24.0
+go 1.25
 
 require (
 	github.com/caarlos0/env/v11 v11.3.1
 	github.com/joho/godotenv v1.5.1
-	github.com/spf13/cobra v1.10.1
-	go.mongodb.org/mongo-driver v1.17.4
+	github.com/spf13/cobra v1.10.2
+	go.mongodb.org/mongo-driver v1.17.6
 )
 
 require (

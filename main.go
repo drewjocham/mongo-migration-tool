@@ -4,7 +4,9 @@ import (
 	"log"
 	"os"
 
-	"github.com/jocham/mongo-essential/cmd"
+	"github.com/jocham/mongo-migration/cmd"
+	_ "github.com/jocham/mongo-migration/examples/examplemigrations"
+	_ "github.com/jocham/mongo-migration/migrations"
 )
 
 // Version information set by GoReleaser

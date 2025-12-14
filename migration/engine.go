@@ -20,23 +20,11 @@ type Engine struct {
 }
 
 // NewEngine creates a new migration engine.
-func NewEngine(db *mongo.Database, migrationsCollection string) *Engine {
+func NewEngine(db *mongo.Database, migrationsCollection string, migrations map[string]Migration) *Engine {
 	return &Engine{
 		db:                   db,
 		migrationsCollection: migrationsCollection,
-		migrations:           make(map[string]Migration),
-	}
-}
-
-// Register registers a migration with the engine.
-func (e *Engine) Register(migration Migration) {
-	e.migrations[migration.Version()] = migration
-}
-
-// RegisterMany registers multiple migrations at once.
-func (e *Engine) RegisterMany(migrations ...Migration) {
-	for _, migration := range migrations {
-		e.Register(migration)
+		migrations:           migrations,
 	}
 }
 

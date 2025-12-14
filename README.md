@@ -1,8 +1,8 @@
-# mongo-essential
+# mongo-migration
 
-[![Go Report Card](https://goreportcard.com/badge/github.com/jocham/mongo-essential)](https://goreportcard.com/report/github.com/drewjocham/mongo-essential)
+[![Go Report Card](https://goreportcard.com/badge/github.com/jocham/mongo-migration)](https://goreportcard.com/report/github.com/drewjocham/mongo-migration)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Go Reference](https://pkg.go.dev/badge/github.com/jocham/mongo-essential.svg)](https://pkg.go.dev/github.com/drewjocham/mongo-essential)
+[![Go Reference](https://pkg.go.dev/badge/github.com/jocham/mongo-migration.svg)](https://pkg.go.dev/github.com/drewjocham/mongo-migration)
 
 A comprehensive MongoDB migration and database analysis tool with AI-powered insights. Think Liquibase/Flyway for MongoDB, plus intelligent database optimization recommendations.
 
@@ -37,36 +37,80 @@ Choose your preferred installation method:
 
 ```bash
 # Add the tap and install
-brew tap jocham/mongo-essential
-brew install mongo-essential
+brew tap jocham/mongo-migration
+brew install mongo-migration
 
 # Verify installation
-mongo-essential version
+mongo-migration version
 ```
 
 ### Docker
 
 ```bash
-# Pull and run
-docker pull ghcr.io/drewjocham/mongo-essential:latest
-docker run --rm -v $(pwd):/workspace ghcr.io/jocham/mongo-essential:latest --help
+  # Pull and run
+    docker pull ghcr.io/drewjocham/mongo-migration:latest
+    docker run --rm -v $(pwd):/workspace ghcr.io/jocham/mongo-migration:latest --help
 ```
 
-### Go Library
+* Run this command in your project's root directory to create a simple, static key file for development:
+```bash
+    echo "ThisIsADevKeyForInternalRSCommunication" > mongo_keyfile
+    # permissions for the MongoDB Key File
+    chmod 600 mongo_keyfile
+    # 2. Verify
+    ls -l mongo_keyfile
+```
+
+* Stop and starting the compose project
+* 
+```bash
+    docker-compose down &&  \
+    docker compose up -d mongo-migrate
+```
 
 ```bash
-# Add to your Go project
-go get github.com/drewjocham/mongo-essential@latest
+    # Delete the volume (ALL DATA WILL BE LOST)
+    docker volume rm mongo-migration-_mongo_data
+```
+* Quick path to get it working
+* 
+```bash
+     docker compose up -d mongo-cli
+     docker compose run --rm mongo-migrate status
+```
+If you want to run mongo-migration on your local machine:
+*  Ensure Mongo is running via Docker (docker compose up -d mongo-cli).
+*  Set .env like above with localhost and credentials.
+
+```shell
+  go run . --config .env status
+```
+* Check the staus and whether the library is installed
+```shell
+# or if installed:
+    mongo-migration status
+```
+* Access the shell (using authentication):
+```shell
+    docker exec -it mongo-migration--mongo-cli-1 mongosh -u admin -p password --authenticationDatabase admin
+```
+* Another way to access the shell:
+```shell
+  docker run --rm -it --network mongo-migration-_cli-network alpine sh
+```
+```bash
+    # Add to your Go project
+    go get github.com/drewjocham/mongo-migration@latest
 ```
 
 ### Binary Download
 
-Download pre-built binaries from [GitHub Releases](https://github.com/drewjocham/mongo-essential/releases) for Linux, macOS, Windows, and FreeBSD.
+Download pre-built binaries from [GitHub Releases](https://github.com/drewjocham/mongo-migration/releases) for Linux, macOS, Windows, and FreeBSD.
 
 ### Go Install (Development)
 
 ```bash
-go install github.com/drewjocham/mongo-essential@latest
+    go install github.com/drewjocham/mongo-migration@latest
 ```
 
 **📚 For detailed installation instructions, platform-specific guides, and troubleshooting, see [INSTALL.md](INSTALL.md)**
@@ -76,40 +120,44 @@ go install github.com/drewjocham/mongo-essential@latest
 ### 1. Database Migrations
 
 ```bash
-# Initialize configuration
-cp .env.example .env
-# Edit .env with your MongoDB connection details
-
-# Check migration status
-mongo-essential status
-
-# Create a new migration
-mongo-essential create add_user_indexes
-
-# Run pending migrations
-mongo-essential up
-
-# Rollback last migration
-mongo-essential down --target 20231201_001
+    # Initialize configuration
+    cp .env.example .env
+    # Edit .env with your MongoDB connection details
+```
+```bash
+    # Check migration status
+    ./mongo-essential status
+```
+```bash
+    # Create a new migration
+    mongo-essential create add_user_indexes
+```
+```bash
+    # Run pending migrations
+    mongo-essential up
+```
+```bash
+    # Rollback last migration
+    mongo-essential down --target 20231201_001
 ```
 
 ### 2. AI-Powered Analysis
 
 ```bash
 # Basic database analysis
-mongo-essential ai analyze --provider openai
+mongo-migration ai analyze --provider openai
 
 # Detailed schema analysis
-mongo-essential ai schema --provider gemini --detail
+mongo-migration ai schema --provider gemini --detail
 
 # Oplog and replication analysis
-mongo-essential ai oplog --provider openai --google-docs
+mongo-migration ai oplog --provider openai --google-docs
 
 # Change stream optimization
-mongo-essential ai changestream --collection events --provider gemini
+mongo-migration ai changestream --collection events --provider gemini
 
 # Performance analysis with Google Docs export
-mongo-essential ai performance --provider openai --google-docs \
+mongo-migration ai performance --provider openai --google-docs \
   --docs-title "Production Performance Report" \
   --docs-share "team@company.com"
 ```
@@ -118,23 +166,23 @@ mongo-essential ai performance --provider openai --google-docs \
 
 ```bash
 # Diagnose certificate issues
-mongo-essential cert diagnose
+mongo-migration cert diagnose
 
 # Check specific host certificate
-mongo-essential cert check login.microsoftonline.com --verbose
+mongo-migration cert check login.microsoftonline.com --verbose
 
 # Fix common certificate problems
-mongo-essential cert fix --apply
+mongo-migration cert fix --apply
 ```
 
 ### 4. AI Assistant Integration (MCP)
 
 ```bash
 # Start MCP server for AI assistants like Ollama, Claude, Goose
-mongo-essential mcp
+mongo-migration mcp
 
 # Start with example migrations for testing
-mongo-essential mcp --with-examples
+mongo-migration mcp --with-examples
 
 # Test MCP integration
 make mcp-test
@@ -179,7 +227,7 @@ See [.env.example](./.env.example) for complete configuration options.
 
 ## 🚀 Library Usage
 
-Use mongo-essential as a Go library in your applications:
+Use mongo-migration as a Go library in your applications:
 
 ```go
 package main
@@ -188,8 +236,8 @@ import (
     "context"
     "log"
     
-    "github.com/drewjocham/mongo-essential/config"
-    "github.com/drewjocham/mongo-essential/migration"
+    "github.com/drewjocham/mongo-migration/config"
+    "github.com/drewjocham/mongo-migration/migration"
     "go.mongodb.org/mongo-driver/mongo"
     "go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -247,21 +295,21 @@ func main() {
 
 | Command | Description |
 |---------|-------------|
-| `mongo-essential up` | Run pending migrations |
-| `mongo-essential down` | Rollback migrations |
-| `mongo-essential status` | Show migration status |
-| `mongo-essential create <name>` | Create new migration |
-| `mongo-essential force <version>` | Force mark migration as applied |
-| `mongo-essential ai analyze` | AI database analysis |
-| `mongo-essential ai schema` | AI schema analysis |
-| `mongo-essential ai performance` | AI performance analysis |
-| `mongo-essential ai oplog` | AI oplog/replication analysis |
-| `mongo-essential ai changestream` | AI change stream analysis |
-| `mongo-essential cert diagnose` | Certificate diagnostics |
-| `mongo-essential cert check <host>` | Check host certificate |
-| `mongo-essential cert fix` | Fix certificate issues |
-| `mongo-essential mcp` | Start MCP server for AI assistants |
-| `mongo-essential mcp --with-examples` | Start MCP server with example migrations |
+| `mongo-migration up` | Run pending migrations |
+| `mongo-migration down` | Rollback migrations |
+| `mongo-migration status` | Show migration status |
+| `mongo-migration create <name>` | Create new migration |
+| `mongo-migration force <version>` | Force mark migration as applied |
+| `mongo-migration ai analyze` | AI database analysis |
+| `mongo-migration ai schema` | AI schema analysis |
+| `mongo-migration ai performance` | AI performance analysis |
+| `mongo-migration ai oplog` | AI oplog/replication analysis |
+| `mongo-migration ai changestream` | AI change stream analysis |
+| `mongo-migration cert diagnose` | Certificate diagnostics |
+| `mongo-migration cert check <host>` | Check host certificate |
+| `mongo-migration cert fix` | Fix certificate issues |
+| `mongo-migration mcp` | Start MCP server for AI assistants |
+| `mongo-migration mcp --with-examples` | Start MCP server with example migrations |
 
 ### AI Providers
 
@@ -301,7 +349,7 @@ func main() {
 ## 🏗️ Architecture
 
 ```
-mongo-essential/
+mongo-migration/
 ├── cmd/                    # CLI commands
 │   ├── root.go            # Root command and global flags
 │   ├── ai.go              # AI analysis commands
@@ -322,14 +370,14 @@ We welcome contributions! Please see [CONTRIBUTING.md](./CONTRIBUTING.md) for de
 
 ```bash
 # Clone the repository
-git clone https://github.com/drewjocham/mongo-essential.git
-cd mongo-essential
+git clone https://github.com/drewjocham/mongo-migration.git
+cd mongo-migration
 
 # Install dependencies
 go mod tidy
 
 # Build the binary
-go build -o mongo-essential .
+go build -o mongo-migration .
 
 # Run tests
 go test ./...
@@ -360,11 +408,11 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## 🔗 Links & Resources
 
 ### Project Resources
-- **[Go Package Documentation](https://pkg.go.dev/github.com/drewjocham/mongo-essential)** - Complete API reference
-- **[GitHub Repository](https://github.com/drewjocham/mongo-essential)** - Source code and releases
-- **[Issue Tracker](https://github.com/drewjocham/mongo-essential/issues)** - Bug reports and feature requests
-- **[Homebrew Formula](https://github.com/drewjocham/homebrew-mongo-essential)** - Homebrew tap repository
-- **[Docker Images](https://ghcr.io/drewjocham/mongo-essential)** - Container registry
+- **[Go Package Documentation](https://pkg.go.dev/github.com/drewjocham/mongo-migration)** - Complete API reference
+- **[GitHub Repository](https://github.com/drewjocham/mongo-migration)** - Source code and releases
+- **[Issue Tracker](https://github.com/drewjocham/mongo-migration/issues)** - Bug reports and feature requests
+- **[Homebrew Formula](https://github.com/drewjocham/homebrew-mongo-migration)** - Homebrew tap repository
+- **[Docker Images](https://ghcr.io/drewjocham/mongo-migration)** - Container registry
 
 ### Documentation
 - **[Installation Guide](INSTALL.md)** - All installation methods and troubleshooting
@@ -375,8 +423,8 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 🐛 Support & Community
 
-- 🐛 **Issues**: [GitHub Issues](https://github.com/drewjocham/mongo-essential/issues)
-- 💬 **Discussions**: [GitHub Discussions](https://github.com/drewjocham/mongo-essential/discussions)
+- 🐛 **Issues**: [GitHub Issues](https://github.com/drewjocham/mongo-migration/issues)
+- 💬 **Discussions**: [GitHub Discussions](https://github.com/drewjocham/mongo-migration/discussions)
 - 📧 **Contact**: [Project Maintainer](https://github.com/drewjocham)
 - 📖 **Examples**: See the `examples/` directory in the repository
 

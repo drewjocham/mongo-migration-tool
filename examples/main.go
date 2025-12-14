@@ -1,5 +1,7 @@
 package main
 
+// This package provides an example of how to use the mongo-migration tool.
+
 import (
 	"context"
 	"fmt"
@@ -11,61 +13,78 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 
-	"github.com/jocham/mongo-essential/config"
-	"github.com/jocham/mongo-essential/examples/examplemigrations"
-	"github.com/jocham/mongo-essential/migration"
+	"github.com/jocham/mongo-migration/config"
+	_ "github.com/jocham/mongo-migration/examples/examplemigrations"
+	"github.com/jocham/mongo-migration/migration"
+)
+
+const (
+	minArgs           = 2
+	connectionTimeout = 10 * time.Second
+	statusLineLength  = 80
 )
 
 func main() {
-	if len(os.Args) < 2 {
+	if len(os.Args) < minArgs {
 		fmt.Println("Usage: go run main.go [up|down|status]")
-		os.Exit(1)
+		os.Exit(1) //nolint:gocritic // exit is intended here
 	}
 
 	command := os.Args[1]
 
-	// Load configuration
 	cfg, err := config.Load()
 	if err != nil {
-		log.Fatalf("Failed to load configuration: %v", err)
+		log.Print("Failed to load configuration: ", err)
+		os.Exit(1) //nolint:gocritic // exit is intended here
 	}
 
-	// Connect to MongoDB
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	client, db, err := connectToMongoDB(context.Background(), cfg)
+	if err != nil {
+		log.Print("Failed to connect to MongoDB: ", err)
+		os.Exit(1) //nolint:gocritic // exit is intended here
+	}
+	defer func() {
+		if disconnectErr := client.Disconnect(context.Background()); disconnectErr != nil {
+			log.Printf("Error disconnecting from MongoDB: %v", disconnectErr)
+		}
+	}()
+
+	engine := migration.NewEngine(db, cfg.MigrationsCollection, migration.RegisteredMigrations())
+
+	if err := executeCommand(context.Background(), command, engine); err != nil {
+		log.Print("Command failed: ", err)
+		os.Exit(1) //nolint:gocritic // exit is intended here
+	}
+}
+
+func connectToMongoDB(ctx context.Context, cfg *config.Config) (*mongo.Client, *mongo.Database, error) {
+	ctx, cancel := context.WithTimeout(ctx, connectionTimeout)
 	defer cancel()
 
 	client, err := mongo.Connect(ctx, options.Client().ApplyURI(cfg.GetConnectionString()))
 	if err != nil {
-		log.Fatalf("Failed to connect to MongoDB: %v", err)
+		return nil, nil, fmt.Errorf("failed to connect to MongoDB: %w", err)
 	}
-	defer client.Disconnect(ctx)
 
-	db := client.Database(cfg.Database)
+	if err = client.Ping(ctx, nil); err != nil {
+		if disconnectErr := client.Disconnect(ctx); disconnectErr != nil {
+			log.Printf("Warning: failed to disconnect client after ping failure: %v", disconnectErr)
+		}
+		return nil, nil, fmt.Errorf("failed to ping MongoDB: %w", err)
+	}
+	return client, client.Database(cfg.Database), nil
+}
 
-	// Create migration engine
-	engine := migration.NewEngine(db, cfg.MigrationsCollection)
-
-	engine.RegisterMany(
-		&examplemigrations.AddUserIndexesMigration{},
-		&examplemigrations.TransformUserDataMigration{},
-		&examplemigrations.CreateAuditCollectionMigration{},
-	)
-
+func executeCommand(ctx context.Context, command string, engine *migration.Engine) error {
 	switch command {
 	case "up":
-		err = runMigrationsUp(ctx, engine)
+		return runMigrationsUp(ctx, engine)
 	case "down":
-		err = runMigrationsDown(ctx, engine)
+		return runMigrationsDown(ctx, engine)
 	case "status":
-		err = showMigrationStatus(ctx, engine)
+		return showMigrationStatus(ctx, engine)
 	default:
-		fmt.Printf("Unknown command: %s\n", command)
-		fmt.Println("Available commands: up, down, status")
-		os.Exit(1)
-	}
-
-	if err != nil {
-		log.Fatalf("Command failed: %v", err)
+		return fmt.Errorf("unknown command: %s\nAvailable commands: up, down, status", command)
 	}
 }
 
@@ -99,7 +118,6 @@ func runMigrationsDown(ctx context.Context, engine *migration.Engine) error {
 		return fmt.Errorf("failed to get migration status: %w", err)
 	}
 
-	// Find the last applied migration
 	var lastApplied *migration.MigrationStatus
 	for i := len(status) - 1; i >= 0; i-- {
 		if status[i].Applied {
@@ -124,7 +142,7 @@ func runMigrationsDown(ctx context.Context, engine *migration.Engine) error {
 
 func showMigrationStatus(ctx context.Context, engine *migration.Engine) error {
 	fmt.Println("Migration Status:")
-	fmt.Println(strings.Repeat("-", 80))
+	fmt.Println(strings.Repeat("-", statusLineLength))
 
 	status, err := engine.GetStatus(ctx)
 	if err != nil {
@@ -132,20 +150,20 @@ func showMigrationStatus(ctx context.Context, engine *migration.Engine) error {
 	}
 
 	fmt.Printf("%-20s %-10s %-20s %s\n", "Version", "Applied", "Applied At", "Description")
-	fmt.Println(strings.Repeat("-", 80))
+	fmt.Println(strings.Repeat("-", statusLineLength))
 
 	for _, s := range status {
 		appliedStr := "❌ No"
-		appliedAt := "Never"
+		appliedAtStr := "Never"
 
 		if s.Applied {
 			appliedStr = "✅ Yes"
 			if s.AppliedAt != nil {
-				appliedAt = s.AppliedAt.Format("2006-01-02 15:04:05")
+				appliedAtStr = s.AppliedAt.Format("2006-01-02 15:04:05")
 			}
 		}
 
-		fmt.Printf("%-20s %-10s %-20s %s\n", s.Version, appliedStr, appliedAt, s.Description)
+		fmt.Printf("%-20s %-10s %-20s %s\n", s.Version, appliedStr, appliedAtStr, s.Description)
 	}
 
 	return nil

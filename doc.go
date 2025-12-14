@@ -1,6 +1,6 @@
-// Package mongoessential provides MongoDB migration and AI-powered database analysis.
+// Package mongo-migration provides MongoDB migration and AI-powered database analysis.
 //
-// mongo-essential is a comprehensive toolkit for MongoDB that combines database migration
+// mongo-migration is a comprehensive toolkit for MongoDB that combines database migration
 // capabilities (similar to Liquibase/Flyway for relational databases) with AI-powered
 // database analysis and optimization recommendations.
 //
@@ -14,8 +14,8 @@
 //
 //		"go.mongodb.org/mongo-driver/mongo"
 //		"go.mongodb.org/mongo-driver/mongo/options"
-//		"github.com/jocham/mongo-essential/migration"
-//		"github.com/jocham/mongo-essential/config"
+//		"github.com/jocham/mongo-migration/migration"
+//		"github.com/jocham/mongo-migration/config"
 //	)
 //
 //	// Load configuration
@@ -80,7 +80,7 @@
 //		return err
 //	}
 //
-// GitHub Repository: https://github.com/jocham/mongo-essential
+// GitHub Repository: https://github.com/jocham/mongo-migration
 //
-// Documentation: https://pkg.go.dev/github.com/jocham/mongo-essential
+// Documentation: https://pkg.go.dev/github.com/jocham/mongo-migration
 package main

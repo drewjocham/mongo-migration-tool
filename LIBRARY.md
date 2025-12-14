@@ -1,14 +1,14 @@
-# mongo-essential Go Library
+# mongo-migration Go Library
 
-[![Go Reference](https://pkg.go.dev/badge/github.com/jocham/mongo-essential.svg)](https://pkg.go.dev/github.com/jocham/mongo-essential)
-[![Go Report Card](https://goreportcard.com/badge/github.com/jocham/mongo-essential)](https://goreportcard.com/report/github.com/jocham/mongo-essential)
+[![Go Reference](https://pkg.go.dev/badge/github.com/jocham/mongo-migration.svg)](https://pkg.go.dev/github.com/jocham/mongo-migration)
+[![Go Report Card](https://goreportcard.com/badge/github.com/jocham/mongo-migration)](https://goreportcard.com/report/github.com/jocham/mongo-migration)
 
-Use mongo-essential as a Go library to integrate MongoDB migration capabilities into your applications.
+Use mongo-migration as a Go library to integrate MongoDB migration capabilities into your applications.
 
 ## Installation
 
 ```bash
-go get github.com/jocham/mongo-essential@latest
+go get github.com/jocham/mongo-migration@latest
 ```
 
 ## Quick Start
@@ -26,8 +26,8 @@ import (
     "go.mongodb.org/mongo-driver/mongo"
     "go.mongodb.org/mongo-driver/mongo/options"
 
-    "github.com/jocham/mongo-essential/config"
-    "github.com/jocham/mongo-essential/migration"
+    "github.com/jocham/mongo-migration/config"
+    "github.com/jocham/mongo-migration/migration"
 )
 
 func main() {
@@ -153,7 +153,7 @@ Handles environment-based configuration with validation.
 package main
 
 import (
-    "github.com/jocham/mongo-essential/config"
+    "github.com/jocham/mongo-migration/config"
 )
 
 func main() {
@@ -241,7 +241,7 @@ package main
 
 import (
     "log"
-    "github.com/jocham/mongo-essential/mcp"
+    "github.com/jocham/mongo-migration/mcp"
 )
 
 func main() {
@@ -387,7 +387,7 @@ import (
     
     "go.mongodb.org/mongo-driver/mongo/integration/mtest"
     
-    "github.com/jocham/mongo-essential/migration"
+    "github.com/jocham/mongo-migration/migration"
 )
 
 func TestAddUserIndexesMigration(t *testing.T) {
@@ -596,7 +596,7 @@ func (m *LargeDataMigration) Up(ctx context.Context, db *mongo.Database) error {
 
 ## API Reference
 
-For complete API documentation, visit [pkg.go.dev/github.com/jocham/mongo-essential](https://pkg.go.dev/github.com/jocham/mongo-essential).
+For complete API documentation, visit [pkg.go.dev/github.com/jocham/mongo-migration](https://pkg.go.dev/github.com/jocham/mongo-migration).
 
 ## Examples
 

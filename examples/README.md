@@ -1,6 +1,6 @@
 # Migration Examples
 
-This directory contains example migrations and a sample CLI application demonstrating how to use the mongo-essential migration library.
+This directory contains example migrations and a sample CLI application demonstrating how to use the mongo-migration migration library.
 
 ## Example Migrations
 
@@ -121,9 +121,9 @@ Rolling back migration: 20240101_003 - Create audit collection with schema valid
 
 ## Library Usage Example
 
-See `library-usage-example.go` for a complete example of using mongo-essential as a library in your own project. This example:
+See `library-usage-example.go` for a complete example of using mongo-migration as a library in your own project. This example:
 
-- Shows how to use mongo-essential without depending on the main project structure
+- Shows how to use mongo-migration without depending on the main project structure
 - Demonstrates programmatic configuration as well as .env file usage
 - Includes a complete migration lifecycle (up, status, down)
 - Can be copied and adapted for your own projects
@@ -139,7 +139,7 @@ go run library-usage-example.go
 
 To use these examples in your own project:
 
-1. **Install the library**: `go get github.com/jocham/mongo-essential@latest`
+1. **Install the library**: `go get github.com/jocham/mongo-migration@latest`
 2. **Copy migration patterns**: Use the migration structs in `examplemigrations/` as templates
 3. **Use the library example**: Copy and adapt `library-usage-example.go` for your needs
 4. **Configure properly**: Set up your .env file or programmatic configuration

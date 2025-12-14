@@ -4,10 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="53a82f71-5517-487d-94b0-2d95ee8915ca" name="Changes" comment="CLI and mongo-migration-tool">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mongo-migration-tool.iml" beforeDir="false" afterPath="$PROJECT_DIR$/mongo-migration-tool.iml" afterDir="false" />
-    </list>
+    <list default="true" id="53a82f71-5517-487d-94b0-2d95ee8915ca" name="Changes" comment="CLI and mongo-migration-tool" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -16,7 +13,7 @@
   <component name="ComposerSettings">
     <execution />
   </component>
-  <component name="GOROOT" url="file:///opt/homebrew/Cellar/go/1.25.1/libexec" />
+  <component name="GOROOT" url="file:///opt/homebrew/opt/go/libexec" />
   <component name="Git.Merge.Settings">
     <option name="BRANCH" value="master" />
   </component>
@@ -33,12 +30,20 @@
   &quot;selectedUrlAndAccountId&quot;: {
     &quot;url&quot;: &quot;git@github.com:drewjocham/mongo-migration-tool-.git&quot;,
     &quot;accountId&quot;: &quot;aa50e29b-cfae-403d-b09f-ae78889fae0e&quot;
-  }
+  },
+  &quot;editorReviewEnabled&quot;: false
 }</component>
   <component name="GoLibraries">
     <option name="indexEntireGoPath" value="true" />
   </component>
   <component name="GoLinterSelectedExecutable" path="$USER_HOME$/go/bin/golangci-lint" />
+  <component name="HighlightingSettingsPerFile">
+    <setting file="file://$APPLICATION_CONFIG_DIR$/consoles/db/525de36f-734e-4a91-8afa-c1e2c19521b8/console.js" root0="SKIP_HIGHLIGHTING" root1="FORCE_HIGHLIGHTING" />
+  </component>
+  <component name="KubernetesApiPersistence">{}</component>
+  <component name="KubernetesApiProvider">{
+  &quot;isMigrated&quot;: true
+}</component>
   <component name="MacroExpansionManager">
     <option name="directoryName" value="w14ZjFSk" />
   </component>
@@ -57,14 +62,31 @@
   </component>
   <component name="PropertiesComponent"><![CDATA[{
   "keyToString": {
+    "ACTIVE_CLOUD_PROJECT_ACCOUNT": "peter.jocham@mail.schwarz",
+    "ACTIVE_CLOUD_PROJECT_ID": "sit-pim-agl-goog-lvzt-run-zx2l",
+    "ACTIVE_CLOUD_PROJECT_NAME": "pim-agl-google-cloud lvzt",
+    "ACTIVE_CLOUD_PROJECT_NUMBER": "208284802881",
+    "Docker.docker-compose.yml.mongo-cli: Compose Deployment.executor": "Run",
+    "Docker.docker-compose.yml.mongo: Compose Deployment.executor": "Run",
+    "Go Build.go build main.go main.go.executor": "Run",
+    "Go Build.go build main.go.executor": "Run",
+    "Go Build.status.executor": "Run",
+    "Go Build.up.executor": "Run",
+    "Makefile Target._download-mockery.executor": "Run",
+    "Makefile Target.build (1).executor": "Run",
     "Makefile Target.build-all.executor": "Run",
     "Makefile Target.build.executor": "Run",
     "Makefile Target.ci-build.executor": "Run",
     "Makefile Target.ci-test.executor": "Run",
+    "Makefile Target.clean.executor": "Run",
     "Makefile Target.create-migration.executor": "Run",
+    "Makefile Target.db-up.executor": "Run",
     "Makefile Target.deps.executor": "Run",
     "Makefile Target.dev-setup.executor": "Run",
     "Makefile Target.docker-build.executor": "Run",
+    "Makefile Target.docker-compose-down.executor": "Run",
+    "Makefile Target.docker-compose-up.executor": "Run",
+    "Makefile Target.docker-run.executor": "Run",
     "Makefile Target.docs.executor": "Run",
     "Makefile Target.format.executor": "Run",
     "Makefile Target.install.executor": "Run",
@@ -72,13 +94,16 @@
     "Makefile Target.mcp-client-test.executor": "Run",
     "Makefile Target.mcp-test.executor": "Run",
     "Makefile Target.migration-status.executor": "Run",
+    "Makefile Target.migration-up.executor": "Run",
     "Makefile Target.release.executor": "Run",
     "Makefile Target.test-coverage.executor": "Run",
     "Makefile Target.test-library.executor": "Run",
     "Makefile Target.test.executor": "Run",
+    "Makefile Target.tidy.executor": "Run",
     "Makefile Target.version.executor": "Run",
     "Makefile Target.vet.executor": "Run",
     "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "Node.js.console.js.executor": "Run",
     "RunOnceActivity.GoLinterPluginOnboarding": "true",
     "RunOnceActivity.GoLinterPluginStorageMigration": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
@@ -88,30 +113,44 @@
     "RunOnceActivity.go.migrated.go.modules.settings": "true",
     "SHELLCHECK.PATH": "I do mind",
     "SONARLINT_PRECOMMIT_ANALYSIS": "true",
-    "com.google.cloudcode.ide_session_index": "20251009_0006",
+    "com.google.cloudcode.ide_session_index": "20251214_0001",
+    "configurable..is.expanded": "true",
     "dart.analysis.tool.window.visible": "false",
-    "git-widget-placeholder": "main",
+    "git-widget-placeholder": "#2 on setting-up-cli",
     "go.import.settings.migrated": "true",
-    "last_opened_file_path": "/Users/jocham/programming/mongo-migration-tool/examples",
+    "last_opened_file_path": "/Users/jocham/programming/mongo-migration-tool-",
     "node.js.detected.package.eslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
     "node.js.selected.package.tslint": "(autodetect)",
     "nodejs_package_manager_path": "npm",
-    "project.structure.last.edited": "Project",
+    "org.rust.cargo.project.model.impl.CargoExternalSystemProjectAware.subscribe.first.balloon": "",
+    "project.structure.last.edited": "Modules",
     "project.structure.proportion": "0.15",
     "project.structure.side.proportion": "0.2",
+    "settings.editor.selected.configurable": "preferences.pluginManager",
     "vue.rearranger.settings.migration": "true"
+  },
+  "keyToStringList": {
+    "DatabaseDriversLRU": [
+      "clickhouse",
+      "mongo",
+      "greenplum"
+    ]
   }
 }]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$" />
+      <recent name="$PROJECT_DIR$/migrations" />
       <recent name="$PROJECT_DIR$/examples" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/mcp" />
+      <recent name="$PROJECT_DIR$" />
       <recent name="$PROJECT_DIR$/mcp/examples" />
     </key>
   </component>
-  <component name="RunManager" selected="Makefile Target.test">
+  <component name="RunManager" selected="Go Build.up">
     <configuration default="true" type="GoApplicationRunConfiguration" factoryName="Go Application">
       <module name="mongo-migration-tool" />
       <working_directory value="$PROJECT_DIR$" />
@@ -119,6 +158,25 @@
       <kind value="FILE" />
       <directory value="$PROJECT_DIR$" />
       <filePath value="$PROJECT_DIR$" />
+      <method v="2" />
+    </configuration>
+    <configuration name="up" type="GoApplicationRunConfiguration" factoryName="Go Application">
+      <module name="mongo-migration-tool-" />
+      <working_directory value="$PROJECT_DIR$" />
+      <parameters value="up" />
+      <EXTENSION ID="net.ashald.envfile">
+        <option name="IS_ENABLED" value="false" />
+        <option name="IS_SUBST" value="false" />
+        <option name="IS_PATH_MACRO_SUPPORTED" value="false" />
+        <option name="IS_IGNORE_MISSING_FILES" value="false" />
+        <option name="IS_ENABLE_EXPERIMENTAL_INTEGRATIONS" value="false" />
+        <ENTRIES>
+          <ENTRY IS_ENABLED="true" PARSER="runconfig" IS_EXECUTABLE="false" />
+        </ENTRIES>
+      </EXTENSION>
+      <kind value="FILE" />
+      <directory value="$PROJECT_DIR$" />
+      <filePath value="$PROJECT_DIR$/main.go" />
       <method v="2" />
     </configuration>
     <configuration default="true" type="GoTestRunConfiguration" factoryName="Go Test">
@@ -131,43 +189,54 @@
       <framework value="gotest" />
       <method v="2" />
     </configuration>
-    <configuration name="build-all" type="MAKEFILE_TARGET_RUN_CONFIGURATION" factoryName="Makefile" temporary="true">
-      <makefile filename="$PROJECT_DIR$/Makefile" target="build-all" workingDirectory="" arguments="">
+    <configuration name="ci-test" type="MAKEFILE_TARGET_RUN_CONFIGURATION" factoryName="Makefile" temporary="true">
+      <makefile filename="$PROJECT_DIR$/makefiles/linter.mk" target="ci-test" workingDirectory="" arguments="">
         <envs />
       </makefile>
       <method v="2" />
     </configuration>
-    <configuration name="build" type="MAKEFILE_TARGET_RUN_CONFIGURATION" factoryName="Makefile" temporary="true">
-      <makefile filename="$PROJECT_DIR$/Makefile" target="build" workingDirectory="" arguments="">
+    <configuration name="lint" type="MAKEFILE_TARGET_RUN_CONFIGURATION" factoryName="Makefile" temporary="true">
+      <makefile filename="$PROJECT_DIR$/makefiles/linter.mk" target="lint" workingDirectory="" arguments="">
         <envs />
       </makefile>
       <method v="2" />
     </configuration>
-    <configuration name="deps" type="MAKEFILE_TARGET_RUN_CONFIGURATION" factoryName="Makefile" temporary="true">
-      <makefile filename="$PROJECT_DIR$/Makefile" target="deps" workingDirectory="" arguments="">
+    <configuration name="release" type="MAKEFILE_TARGET_RUN_CONFIGURATION" factoryName="Makefile" temporary="true">
+      <makefile filename="$PROJECT_DIR$/makefiles/release.mk" target="release" workingDirectory="" arguments="">
         <envs />
       </makefile>
       <method v="2" />
     </configuration>
-    <configuration name="docker-build" type="MAKEFILE_TARGET_RUN_CONFIGURATION" factoryName="Makefile" temporary="true">
-      <makefile filename="$PROJECT_DIR$/Makefile" target="docker-build" workingDirectory="" arguments="">
+    <configuration name="vet" type="MAKEFILE_TARGET_RUN_CONFIGURATION" factoryName="Makefile" temporary="true">
+      <makefile filename="$PROJECT_DIR$/makefiles/linter.mk" target="vet" workingDirectory="" arguments="">
         <envs />
       </makefile>
       <method v="2" />
     </configuration>
-    <configuration name="test" type="MAKEFILE_TARGET_RUN_CONFIGURATION" factoryName="Makefile" temporary="true">
-      <makefile filename="$PROJECT_DIR$/Makefile" target="test" workingDirectory="" arguments="">
-        <envs />
-      </makefile>
+    <configuration name="console.js" type="NodeJSConfigurationType" temporary="true" nameIsGenerated="true" path-to-js-file="$APPLICATION_CONFIG_DIR$/consoles/db/525de36f-734e-4a91-8afa-c1e2c19521b8/console.js" working-dir="$PROJECT_DIR$">
       <method v="2" />
     </configuration>
+    <configuration default="true" type="docker-deploy" factoryName="docker-compose.yml" temporary="true">
+      <deployment type="docker-compose.yml">
+        <settings />
+      </deployment>
+      <method v="2" />
+    </configuration>
+    <list>
+      <item itemvalue="Go Build.up" />
+      <item itemvalue="Makefile Target.ci-test" />
+      <item itemvalue="Makefile Target.lint" />
+      <item itemvalue="Makefile Target.release" />
+      <item itemvalue="Makefile Target.vet" />
+      <item itemvalue="Node.js.console.js" />
+    </list>
     <recent_temporary>
       <list>
-        <item itemvalue="Makefile Target.test" />
-        <item itemvalue="Makefile Target.deps" />
-        <item itemvalue="Makefile Target.build-all" />
-        <item itemvalue="Makefile Target.build" />
-        <item itemvalue="Makefile Target.docker-build" />
+        <item itemvalue="Makefile Target.release" />
+        <item itemvalue="Node.js.console.js" />
+        <item itemvalue="Makefile Target.vet" />
+        <item itemvalue="Makefile Target.ci-test" />
+        <item itemvalue="Makefile Target.lint" />
       </list>
     </recent_temporary>
   </component>
@@ -188,6 +257,15 @@
       <workItem from="1759997280333" duration="5264000" />
       <workItem from="1760027209597" duration="116000" />
       <workItem from="1760027337322" duration="693000" />
+      <workItem from="1765016689431" duration="12725000" />
+      <workItem from="1765109189119" duration="28041000" />
+      <workItem from="1765198673696" duration="2000" />
+      <workItem from="1765343759728" duration="9574000" />
+      <workItem from="1765354210979" duration="3607000" />
+      <workItem from="1765357865849" duration="9000" />
+      <workItem from="1765591848827" duration="428000" />
+      <workItem from="1765592295158" duration="3396000" />
+      <workItem from="1765721917666" duration="995000" />
     </task>
     <task id="LOCAL-00001" summary="CLI and mongo-migration-tool">
       <option name="closed" value="true" />
@@ -229,7 +307,287 @@
       <option name="project" value="LOCAL" />
       <updated>1760027765572</updated>
     </task>
-    <option name="localTasksCounter" value="6" />
+    <task id="LOCAL-00006" summary="CLI and mongo-migration-tool">
+      <option name="closed" value="true" />
+      <created>1765026706892</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1765026706892</updated>
+    </task>
+    <task id="LOCAL-00007" summary="CLI and mongo-migration-tool">
+      <option name="closed" value="true" />
+      <created>1765026847080</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1765026847080</updated>
+    </task>
+    <task id="LOCAL-00008" summary="CLI and mongo-migration-tool">
+      <option name="closed" value="true" />
+      <created>1765041490902</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1765041490902</updated>
+    </task>
+    <task id="LOCAL-00009" summary="CLI and mongo-migration-tool">
+      <option name="closed" value="true" />
+      <created>1765138321668</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1765138321668</updated>
+    </task>
+    <task id="LOCAL-00010" summary="CLI and mongo-migration-tool">
+      <option name="closed" value="true" />
+      <created>1765140766812</created>
+      <option name="number" value="00010" />
+      <option name="presentableId" value="LOCAL-00010" />
+      <option name="project" value="LOCAL" />
+      <updated>1765140766812</updated>
+    </task>
+    <task id="LOCAL-00011" summary="CLI and mongo-migration-tool">
+      <option name="closed" value="true" />
+      <created>1765141408466</created>
+      <option name="number" value="00011" />
+      <option name="presentableId" value="LOCAL-00011" />
+      <option name="project" value="LOCAL" />
+      <updated>1765141408466</updated>
+    </task>
+    <task id="LOCAL-00012" summary="CLI and mongo-migration-tool">
+      <option name="closed" value="true" />
+      <created>1765141922609</created>
+      <option name="number" value="00012" />
+      <option name="presentableId" value="LOCAL-00012" />
+      <option name="project" value="LOCAL" />
+      <updated>1765141922609</updated>
+    </task>
+    <task id="LOCAL-00013" summary="CLI and mongo-migration-tool">
+      <option name="closed" value="true" />
+      <created>1765142282997</created>
+      <option name="number" value="00013" />
+      <option name="presentableId" value="LOCAL-00013" />
+      <option name="project" value="LOCAL" />
+      <updated>1765142282997</updated>
+    </task>
+    <task id="LOCAL-00014" summary="CLI and mongo-migration-tool">
+      <option name="closed" value="true" />
+      <created>1765142626051</created>
+      <option name="number" value="00014" />
+      <option name="presentableId" value="LOCAL-00014" />
+      <option name="project" value="LOCAL" />
+      <updated>1765142626051</updated>
+    </task>
+    <task id="LOCAL-00015" summary="CLI and mongo-migration-tool">
+      <option name="closed" value="true" />
+      <created>1765142952699</created>
+      <option name="number" value="00015" />
+      <option name="presentableId" value="LOCAL-00015" />
+      <option name="project" value="LOCAL" />
+      <updated>1765142952699</updated>
+    </task>
+    <task id="LOCAL-00016" summary="CLI and mongo-migration-tool">
+      <option name="closed" value="true" />
+      <created>1765143165685</created>
+      <option name="number" value="00016" />
+      <option name="presentableId" value="LOCAL-00016" />
+      <option name="project" value="LOCAL" />
+      <updated>1765143165685</updated>
+    </task>
+    <task id="LOCAL-00017" summary="CLI and mongo-migration-tool">
+      <option name="closed" value="true" />
+      <created>1765143339020</created>
+      <option name="number" value="00017" />
+      <option name="presentableId" value="LOCAL-00017" />
+      <option name="project" value="LOCAL" />
+      <updated>1765143339020</updated>
+    </task>
+    <task id="LOCAL-00018" summary="CLI and mongo-migration-tool">
+      <option name="closed" value="true" />
+      <created>1765143565455</created>
+      <option name="number" value="00018" />
+      <option name="presentableId" value="LOCAL-00018" />
+      <option name="project" value="LOCAL" />
+      <updated>1765143565455</updated>
+    </task>
+    <task id="LOCAL-00019" summary="CLI and mongo-migration-tool">
+      <option name="closed" value="true" />
+      <created>1765143714056</created>
+      <option name="number" value="00019" />
+      <option name="presentableId" value="LOCAL-00019" />
+      <option name="project" value="LOCAL" />
+      <updated>1765143714056</updated>
+    </task>
+    <task id="LOCAL-00020" summary="CLI and mongo-migration-tool">
+      <option name="closed" value="true" />
+      <created>1765144592135</created>
+      <option name="number" value="00020" />
+      <option name="presentableId" value="LOCAL-00020" />
+      <option name="project" value="LOCAL" />
+      <updated>1765144592135</updated>
+    </task>
+    <task id="LOCAL-00021" summary="CLI and mongo-migration-tool">
+      <option name="closed" value="true" />
+      <created>1765144908424</created>
+      <option name="number" value="00021" />
+      <option name="presentableId" value="LOCAL-00021" />
+      <option name="project" value="LOCAL" />
+      <updated>1765144908424</updated>
+    </task>
+    <task id="LOCAL-00022" summary="CLI and mongo-migration-tool">
+      <option name="closed" value="true" />
+      <created>1765145500278</created>
+      <option name="number" value="00022" />
+      <option name="presentableId" value="LOCAL-00022" />
+      <option name="project" value="LOCAL" />
+      <updated>1765145500278</updated>
+    </task>
+    <task id="LOCAL-00023" summary="CLI and mongo-migration-tool">
+      <option name="closed" value="true" />
+      <created>1765145688322</created>
+      <option name="number" value="00023" />
+      <option name="presentableId" value="LOCAL-00023" />
+      <option name="project" value="LOCAL" />
+      <updated>1765145688322</updated>
+    </task>
+    <task id="LOCAL-00024" summary="CLI and mongo-migration-tool">
+      <option name="closed" value="true" />
+      <created>1765145906394</created>
+      <option name="number" value="00024" />
+      <option name="presentableId" value="LOCAL-00024" />
+      <option name="project" value="LOCAL" />
+      <updated>1765145906394</updated>
+    </task>
+    <task id="LOCAL-00025" summary="CLI and mongo-migration-tool">
+      <option name="closed" value="true" />
+      <created>1765145928668</created>
+      <option name="number" value="00025" />
+      <option name="presentableId" value="LOCAL-00025" />
+      <option name="project" value="LOCAL" />
+      <updated>1765145928668</updated>
+    </task>
+    <task id="LOCAL-00026" summary="CLI and mongo-migration-tool">
+      <option name="closed" value="true" />
+      <created>1765146970038</created>
+      <option name="number" value="00026" />
+      <option name="presentableId" value="LOCAL-00026" />
+      <option name="project" value="LOCAL" />
+      <updated>1765146970038</updated>
+    </task>
+    <task id="LOCAL-00027" summary="CLI and mongo-migration-tool">
+      <option name="closed" value="true" />
+      <created>1765180338647</created>
+      <option name="number" value="00027" />
+      <option name="presentableId" value="LOCAL-00027" />
+      <option name="project" value="LOCAL" />
+      <updated>1765180338647</updated>
+    </task>
+    <task id="LOCAL-00028" summary="CLI and mongo-migration-tool">
+      <option name="closed" value="true" />
+      <created>1765180509817</created>
+      <option name="number" value="00028" />
+      <option name="presentableId" value="LOCAL-00028" />
+      <option name="project" value="LOCAL" />
+      <updated>1765180509817</updated>
+    </task>
+    <task id="LOCAL-00029" summary="CLI and mongo-migration-tool">
+      <option name="closed" value="true" />
+      <created>1765346962562</created>
+      <option name="number" value="00029" />
+      <option name="presentableId" value="LOCAL-00029" />
+      <option name="project" value="LOCAL" />
+      <updated>1765346962562</updated>
+    </task>
+    <task id="LOCAL-00030" summary="CLI and mongo-migration-tool">
+      <option name="closed" value="true" />
+      <created>1765353197369</created>
+      <option name="number" value="00030" />
+      <option name="presentableId" value="LOCAL-00030" />
+      <option name="project" value="LOCAL" />
+      <updated>1765353197369</updated>
+    </task>
+    <task id="LOCAL-00031" summary="CLI and mongo-migration-tool">
+      <option name="closed" value="true" />
+      <created>1765354007786</created>
+      <option name="number" value="00031" />
+      <option name="presentableId" value="LOCAL-00031" />
+      <option name="project" value="LOCAL" />
+      <updated>1765354007786</updated>
+    </task>
+    <task id="LOCAL-00032" summary="CLI and mongo-migration-tool">
+      <option name="closed" value="true" />
+      <created>1765354427063</created>
+      <option name="number" value="00032" />
+      <option name="presentableId" value="LOCAL-00032" />
+      <option name="project" value="LOCAL" />
+      <updated>1765354427063</updated>
+    </task>
+    <task id="LOCAL-00033" summary="CLI and mongo-migration-tool">
+      <option name="closed" value="true" />
+      <created>1765354751091</created>
+      <option name="number" value="00033" />
+      <option name="presentableId" value="LOCAL-00033" />
+      <option name="project" value="LOCAL" />
+      <updated>1765354751091</updated>
+    </task>
+    <task id="LOCAL-00034" summary="CLI and mongo-migration-tool">
+      <option name="closed" value="true" />
+      <created>1765355204362</created>
+      <option name="number" value="00034" />
+      <option name="presentableId" value="LOCAL-00034" />
+      <option name="project" value="LOCAL" />
+      <updated>1765355204362</updated>
+    </task>
+    <task id="LOCAL-00035" summary="CLI and mongo-migration-tool">
+      <option name="closed" value="true" />
+      <created>1765355563198</created>
+      <option name="number" value="00035" />
+      <option name="presentableId" value="LOCAL-00035" />
+      <option name="project" value="LOCAL" />
+      <updated>1765355563198</updated>
+    </task>
+    <task id="LOCAL-00036" summary="CLI and mongo-migration-tool">
+      <option name="closed" value="true" />
+      <created>1765355774924</created>
+      <option name="number" value="00036" />
+      <option name="presentableId" value="LOCAL-00036" />
+      <option name="project" value="LOCAL" />
+      <updated>1765355774924</updated>
+    </task>
+    <task id="LOCAL-00037" summary="CLI and mongo-migration-tool">
+      <option name="closed" value="true" />
+      <created>1765357192491</created>
+      <option name="number" value="00037" />
+      <option name="presentableId" value="LOCAL-00037" />
+      <option name="project" value="LOCAL" />
+      <updated>1765357192491</updated>
+    </task>
+    <task id="LOCAL-00038" summary="CLI and mongo-migration-tool">
+      <option name="closed" value="true" />
+      <created>1765357493270</created>
+      <option name="number" value="00038" />
+      <option name="presentableId" value="LOCAL-00038" />
+      <option name="project" value="LOCAL" />
+      <updated>1765357493270</updated>
+    </task>
+    <task id="LOCAL-00039" summary="CLI and mongo-migration-tool">
+      <option name="closed" value="true" />
+      <created>1765357800479</created>
+      <option name="number" value="00039" />
+      <option name="presentableId" value="LOCAL-00039" />
+      <option name="project" value="LOCAL" />
+      <updated>1765357800479</updated>
+    </task>
+    <task id="LOCAL-00040" summary="CLI and mongo-migration-tool">
+      <option name="closed" value="true" />
+      <created>1765722666396</created>
+      <option name="number" value="00040" />
+      <option name="presentableId" value="LOCAL-00040" />
+      <option name="project" value="LOCAL" />
+      <updated>1765722666396</updated>
+    </task>
+    <option name="localTasksCounter" value="41" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -242,5 +600,9 @@
   <component name="VgoProject">
     <integration-enabled>false</integration-enabled>
     <settings-migrated>true</settings-migrated>
+  </component>
+  <component name="XSLT-Support.FileAssociations.UIState">
+    <expand />
+    <select />
   </component>
 </project>

@@ -1,5 +1,5 @@
 {
-  "name": "mongo-essential",
+  "name": "mongo-migration",
   "description": "MongoDB migration tool with MCP support for AI assistants",
   "version": "1.0.0",
   "protocol": "2024-11-05",

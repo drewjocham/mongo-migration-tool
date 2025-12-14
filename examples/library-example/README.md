@@ -1,6 +1,6 @@
 # Library Usage Example
 
-This directory contains a standalone example of how to use mongo-essential as a library in your own Go projects.
+This directory contains a standalone example of how to use mongo-migration as a library in your own Go projects.
 
 ## What's Included
 
@@ -15,7 +15,7 @@ This directory contains a standalone example of how to use mongo-essential as a 
 
 ### 1. Build the Example
 ```bash
-# From the mongo-migration-tool root directory
+# From the mongo-migration root directory
 go build -o examples/library-example/library-example examples/library-example/main.go
 
 # Or using make
@@ -37,8 +37,8 @@ export MONGO_DATABASE="example_db"
 # Initialize your Go module
 go mod init your-project-name
 
-# Add mongo-essential dependency
-go get github.com/jocham/mongo-essential@latest
+# Add mongo-migration dependency
+go get github.com/jocham/mongo-migration@latest
 
 # Copy and adapt the example code from main.go
 ```
@@ -61,7 +61,7 @@ The example uses environment variables or falls back to default values:
 
 When run successfully, you'll see:
 ```
-🚀 mongo-essential Standalone Example
+🚀 mongo-migration Standalone Example
 =====================================
 ℹ️  Using default configuration (no .env file found)
 🔗 Connecting to MongoDB: mongodb://localhost:27017/standalone_example
@@ -84,4 +84,4 @@ When run successfully, you'll see:
 🎉 Standalone example completed successfully!
 ```
 
-This demonstrates the complete lifecycle of using mongo-essential as a library.
+This demonstrates the complete lifecycle of using mongo-migration as a library.

@@ -1,9 +1,9 @@
-# GoReleaser configuration for mongo-essential
+# GoReleaser configuration for mongo-migration
 # Documentation: https://goreleaser.com
 
 version: 2
 
-project_name: mongo-essential
+project_name: mongo-migration
 
 before:
   hooks:
@@ -12,8 +12,8 @@ before:
     - go mod download
 
 builds:
-  - id: mongo-essential
-    binary: mongo-essential
+  - id: mongo-migration
+    binary: mongo-migration
     main: ./
     env:
       - CGO_ENABLED=0
@@ -93,12 +93,12 @@ changelog:
 
 # Homebrew tap
 brews:
-  - name: mongo-essential
+  - name: mongo-migration
     # Create a GitHub repository for your Homebrew tap
     # GitHub repository for the tap
     repository:
       owner: jocham
-      name: homebrew-mongo-essential
+      name: homebrew-mongo-migration
       branch: main
       token: "{{ .Env.GITHUB_TOKEN }}"
     
@@ -106,7 +106,7 @@ brews:
     folder: Formula
     
     # Homepage of your project
-    homepage: https://github.com/jocham/mongo-essential
+    homepage: https://github.com/jocham/mongo-migration
     
     # Your project's description
     description: "MongoDB migration tool with AI-powered insights and MCP support"
@@ -121,7 +121,7 @@ brews:
     
     # Custom install script
     install: |-
-      bin.install "mongo-essential"
+      bin.install "mongo-migration"
       
       # Install example configurations
       pkgshare.install ".env.example"
@@ -130,13 +130,13 @@ brews:
     
     # Test the installation
     test: |
-      system "#{bin}/mongo-essential --version"
+      system "#{bin}/mongo-migration --version"
 
 # Docker images
 dockers:
   - image_templates:
-      - "ghcr.io/jocham/mongo-essential:{{ .Version }}-amd64"
-      - "ghcr.io/jocham/mongo-essential:latest-amd64"
+      - "ghcr.io/jocham/mongo-migration:{{ .Version }}-amd64"
+      - "ghcr.io/jocham/mongo-migration:latest-amd64"
     dockerfile: Dockerfile
     use: buildx
     build_flag_templates:
@@ -145,11 +145,11 @@ dockers:
       - "--label=org.opencontainers.image.title={{.ProjectName}}"
       - "--label=org.opencontainers.image.revision={{.FullCommit}}"
       - "--label=org.opencontainers.image.version={{.Version}}"
-      - "--label=org.opencontainers.image.source=https://github.com/jocham/mongo-essential"
+      - "--label=org.opencontainers.image.source=https://github.com/jocham/mongo-migration"
   
   - image_templates:
-      - "ghcr.io/jocham/mongo-essential:{{ .Version }}-arm64"
-      - "ghcr.io/jocham/mongo-essential:latest-arm64"
+      - "ghcr.io/jocham/mongo-migration:{{ .Version }}-arm64"
+      - "ghcr.io/jocham/mongo-migration:latest-arm64"
     dockerfile: Dockerfile
     use: buildx
     build_flag_templates:
@@ -158,25 +158,25 @@ dockers:
       - "--label=org.opencontainers.image.title={{.ProjectName}}"
       - "--label=org.opencontainers.image.revision={{.FullCommit}}"
       - "--label=org.opencontainers.image.version={{.Version}}"
-      - "--label=org.opencontainers.image.source=https://github.com/jocham/mongo-essential"
+      - "--label=org.opencontainers.image.source=https://github.com/jocham/mongo-migration"
 
 # Multi-platform Docker manifest
 docker_manifests:
-  - name_template: "ghcr.io/jocham/mongo-essential:{{ .Version }}"
+  - name_template: "ghcr.io/jocham/mongo-migration:{{ .Version }}"
     image_templates:
-      - "ghcr.io/jocham/mongo-essential:{{ .Version }}-amd64"
-      - "ghcr.io/jocham/mongo-essential:{{ .Version }}-arm64"
+      - "ghcr.io/jocham/mongo-migration:{{ .Version }}-amd64"
+      - "ghcr.io/jocham/mongo-migration:{{ .Version }}-arm64"
   
-  - name_template: "ghcr.io/jocham/mongo-essential:latest"
+  - name_template: "ghcr.io/jocham/mongo-migration:latest"
     image_templates:
-      - "ghcr.io/jocham/mongo-essential:latest-amd64"
-      - "ghcr.io/jocham/mongo-essential:latest-arm64"
+      - "ghcr.io/jocham/mongo-migration:latest-amd64"
+      - "ghcr.io/jocham/mongo-migration:latest-arm64"
 
 # GitHub release settings
 release:
   github:
     owner: jocham
-    name: mongo-essential
+    name: mongo-migration
   
   draft: false
   prerelease: auto
@@ -192,37 +192,37 @@ release:
     
     #### Homebrew (macOS/Linux)
     ```bash
-    brew tap jocham/mongo-essential
-    brew install mongo-essential
+    brew tap jocham/mongo-migration
+    brew install mongo-migration
     ```
     
     #### Go Install
     ```bash
-    go install github.com/jocham/mongo-essential@v{{.Version}}
+    go install github.com/jocham/mongo-migration@v{{.Version}}
     ```
     
     #### Docker
     ```bash
-    docker run --rm ghcr.io/jocham/mongo-essential:{{.Version}} --help
+    docker run --rm ghcr.io/jocham/mongo-migration:{{.Version}} --help
     ```
   
   footer: |
     ## Library Usage
     
-    Use mongo-essential as a Go library in your projects:
+    Use mongo-migration as a Go library in your projects:
     
     ```bash
-    go get github.com/jocham/mongo-essential@v{{.Version}}
+    go get github.com/jocham/mongo-migration@v{{.Version}}
     ```
     
-    See the [documentation](https://pkg.go.dev/github.com/jocham/mongo-essential) for detailed API usage.
+    See the [documentation](https://pkg.go.dev/github.com/jocham/mongo-migration) for detailed API usage.
 
 # Package managers
 nfpms:
   - id: packages
-    package_name: mongo-essential
+    package_name: mongo-migration
     
-    homepage: https://github.com/jocham/mongo-essential
+    homepage: https://github.com/jocham/mongo-migration
     description: MongoDB migration tool with AI-powered insights and MCP support
     maintainer: jocham <your-email@example.com>
     license: MIT
@@ -236,11 +236,11 @@ nfpms:
     
     contents:
       - src: .env.example
-        dst: /usr/share/mongo-essential/.env.example
+        dst: /usr/share/mongo-migration/.env.example
       - src: MCP.md
-        dst: /usr/share/doc/mongo-essential/MCP.md
+        dst: /usr/share/doc/mongo-migration/MCP.md
       - src: examples/
-        dst: /usr/share/mongo-essential/examples/
+        dst: /usr/share/mongo-migration/examples/
 
 # Announce the release
 announce:

@@ -5,8 +5,10 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/jocham/mongo-essential/examples/examplemigrations"
-	"github.com/jocham/mongo-essential/mcp"
+	"github.com/jocham/mongo-migration/examples/examplemigrations"
+	"github.com/jocham/mongo-migration/mcp"
+	"github.com/jocham/mongo-migration/migration"
+	_ "github.com/jocham/mongo-migration/migrations"
 )
 
 var mcpCmd = &cobra.Command{
@@ -33,6 +35,16 @@ func setupMCPCommand() {
 }
 
 func runMCP(_ *cobra.Command, _ []string) {
+	// If --with-examples is used, register the example migrations.
+	// This needs to be done before the MCPServer is created.
+	if mcpWithExamples {
+		migration.Register(
+			&examplemigrations.AddUserIndexesMigration{},
+			&examplemigrations.TransformUserDataMigration{},
+			&examplemigrations.CreateAuditCollectionMigration{},
+		)
+	}
+
 	server, err := mcp.NewMCPServer()
 	if err != nil {
 		log.Fatalf("Failed to create MCP server: %v", err)
@@ -42,15 +54,6 @@ func runMCP(_ *cobra.Command, _ []string) {
 			log.Printf("Error closing server: %v", closeErr)
 		}
 	}()
-
-	// Register example migrations if requested
-	if mcpWithExamples {
-		server.RegisterMigrations(
-			&examplemigrations.AddUserIndexesMigration{},
-			&examplemigrations.TransformUserDataMigration{},
-			&examplemigrations.CreateAuditCollectionMigration{},
-		)
-	}
 
 	if err := server.Start(); err != nil {
 		log.Fatalf("MCP server failed: %v", err) //nolint:gocritic // exit is intended here

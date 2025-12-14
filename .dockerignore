@@ -11,6 +11,7 @@ docs/
 LICENSE*
 CHANGELOG*
 
+
 # Build artifacts and binaries
 build/
 dist/
@@ -19,10 +20,6 @@ bin/
 *.dll
 *.so
 *.dylib
-mongo-essential
-mongo-essential-*
-mongo-migrate
-mongo-migration-tool
 
 # Go specific
 *.test
@@ -86,7 +83,6 @@ Desktop.ini
 # Logs and temporary files
 *.log
 logs/
-log/
 tmp/
 temp/
 *.tmp
@@ -154,8 +150,6 @@ k8s/
 kubernetes/
 *.yaml
 *.yml
-!migrations/*.yml
-!migrations/*.yaml
 
 # Examples and test files
 examples/*/example
@@ -211,7 +205,8 @@ trivy-report.json
 # Migration testing
 migrations/test_*
 migrations/dev_*
-
+# Allow actual migration files into the image so the Go package builds correctly
+# (we only ignore explicit test/dev patterns above)
 # Local development overrides
 local/
 dev/

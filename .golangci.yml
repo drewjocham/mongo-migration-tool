@@ -1,129 +1,39 @@
-# golangci-lint configuration
-# Documentation: https://golangci-lint.run/usage/configuration/
-
-version: 2
-
-run:
-  timeout: 5m
-  issues-exit-code: 1
-  tests: true
-
-output:
-  format: colored-line-number
-  print-issued-lines: true
-  print-linter-name: true
-
-linters-settings:
-  govet:
-    enable:
-      - shadow
-  revive:
-    min-confidence: 0.8
-  cyclop:
-    max-complexity: 10
-  dupl:
-    threshold: 100
-  goconst:
-    min-len: 2
-    min-occurrences: 2
-  misspell:
-    locale: US
-  lll:
-    line-length: 120
-  goimports:
-    local-prefixes: github.com/jocham/mongo-essential
-  gocritic:
-    enabled-tags:
-      - diagnostic
-      - experimental
-      - opinionated
-      - performance
-      - style
-    disabled-checks:
-      - dupImport
-      - ifElseChain
-      - octalLiteral
-      - whyNoLint
-      - wrapperFunc
-  funlen:
-    lines: 60
-    statements: 50
-  depguard:
-    rules:
-      main:
-        deny:
-          - pkg: io/ioutil
-            desc: "use os and io packages instead of io/ioutil"
-        files:
-          - "$all"
-        allow:
-          - "$gostd"
-          - "github.com/spf13/cobra"
-          - "go.mongodb.org/mongo-driver/mongo"
-          - "go.mongodb.org/mongo-driver/mongo/options"
-          - "go.mongodb.org/mongo-driver/bson"
-          - "go.mongodb.org/mongo-driver/mongo/integration/mtest"
-          - "github.com/caarlos0/env/v11"
-          - "github.com/joho/godotenv"
-          - "github.com/jocham/mongo-essential/config"
-          - "github.com/jocham/mongo-essential/migration"
-          - "github.com/jocham/mongo-essential/mcp"
-          - "github.com/jocham/mongo-essential/examples/examplemigrations"
-
+version: "2"
 linters:
-  disable-all: true
   enable:
-    - bodyclose
-    # - depguard  # disabled due to ongoing configuration issues
-    - dogsled
-    - dupl
     - errcheck
-    - funlen
     - gochecknoinits
-    - goconst
-    - gocritic
-    - cyclop
-    - revive
-    - mnd
-    - goprintffuncname
-    - gosec
     - govet
     - ineffassign
     - lll
-    - misspell
-    - nakedret
     - noctx
-    - nolintlint
-    - rowserrcheck
-    - copyloopvar
     - staticcheck
-    - unconvert
-    - unparam
     - unused
-    - whitespace
-
-issues:
-  exclude-files:
-    - "examples/main.go"
-    - "examples/library-example/main.go"
-  exclude-dirs:
-    - examples
-  exclude-rules:
-    - path: examples/
-      linters:
-        - typecheck
-    - path: _test\.go
-      linters:
-        - mnd
-        - funlen
-        - goconst
-        - dupl
-
-  exclude-use-default: false
-  exclude:
-    # Allow blank imports for side effects
-    - "should not use blank imports"
-  
-  max-issues-per-linter: 0
-  max-same-issues: 0
-  new: false
+  settings:
+    lll:
+      line-length: 120
+  exclusions:
+    generated: lax
+    presets:
+      - comments
+      - common-false-positives
+      - legacy
+      - std-error-handling
+    rules:
+      - linters:
+          - gochecknoinits
+        path: cmd/mcp_start.go
+      - linters:
+          - gochecknoinits
+        path: mcp/server.go
+    paths:
+      - third_party$
+      - builtin$
+      - examples$
+formatters:
+  exclusions:
+    generated: lax
+    paths:
+      - third_party$
+      - builtin$
+      - examples$

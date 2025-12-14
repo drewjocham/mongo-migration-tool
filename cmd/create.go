@@ -27,10 +27,8 @@ Examples:
 	RunE: func(_ *cobra.Command, args []string) error {
 		migrationName := args[0]
 
-		// Generate timestamp-based version
 		timestamp := time.Now().Format("20060102_150405")
 
-		// Clean up migration name
 		cleanName := strings.ReplaceAll(strings.ToLower(migrationName), " ", "_")
 		cleanName = strings.ReplaceAll(cleanName, "-", "_")
 
@@ -42,7 +40,6 @@ Examples:
 		if err := os.MkdirAll(cfg.MigrationsPath, dirPermissions); err != nil {
 			return fmt.Errorf("failed to create migrations directory: %w", err)
 		}
-
 		filepath := filepath.Join(cfg.MigrationsPath, filename)
 
 		if _, err := os.Stat(filepath); err == nil {
