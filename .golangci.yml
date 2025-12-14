@@ -1,6 +1,4 @@
-run:
-  timeout: 5m
-
+version: "2"
 linters:
   enable:
     - errcheck
@@ -11,17 +9,31 @@ linters:
     - noctx
     - staticcheck
     - unused
-
-linters-settings:
-  lll:
-    line-length: 120
-
-issues:
-  exclude-rules:
-    # Exclude gochecknoinits from main packages where it's common for setup.
-    - path: "cmd/mcp_start.go"
-      linters:
-        - "gochecknoinits"
-    - path: "mcp/server.go"
-      linters:
-        - "gochecknoinits"
+  settings:
+    lll:
+      line-length: 120
+  exclusions:
+    generated: lax
+    presets:
+      - comments
+      - common-false-positives
+      - legacy
+      - std-error-handling
+    rules:
+      - linters:
+          - gochecknoinits
+        path: cmd/mcp_start.go
+      - linters:
+          - gochecknoinits
+        path: mcp/server.go
+    paths:
+      - third_party$
+      - builtin$
+      - examples$
+formatters:
+  exclusions:
+    generated: lax
+    paths:
+      - third_party$
+      - builtin$
+      - examples$
