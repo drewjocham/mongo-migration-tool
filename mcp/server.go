@@ -154,16 +154,26 @@ func (s *MCPServer) Close() error {
 	return nil
 }
 
-// Start starts the MCP server
+// Start starts the MCP server using stdin/stdout.
 func (s *MCPServer) Start() error {
-	decoder := json.NewDecoder(os.Stdin)
-	encoder := json.NewEncoder(os.Stdout)
+	return s.Serve(context.Background(), os.Stdin, os.Stdout)
+}
+
+// Serve starts the MCP server using the provided input/output streams.
+//
+// This exists primarily to make the server testable (so integration tests can
+// drive JSON-RPC over in-memory pipes instead of OS-level stdin/stdout).
+//
+// Serve returns nil on EOF.
+func (s *MCPServer) Serve(_ context.Context, in io.Reader, out io.Writer) error {
+	decoder := json.NewDecoder(in)
+	encoder := json.NewEncoder(out)
 
 	for {
 		var request MCPRequest
 		if err := decoder.Decode(&request); err != nil {
 			if err == io.EOF {
-				break
+				return nil
 			}
 			log.Printf("Error decoding request: %v", err)
 			continue
@@ -174,8 +184,6 @@ func (s *MCPServer) Start() error {
 			log.Printf("Error encoding response: %v", err)
 		}
 	}
-
-	return nil
 }
 
 // handleRequest handles an MCP request
@@ -596,7 +604,7 @@ func (m *%sMigration) Up(ctx context.Context, db *mongo.Database) error {
     return nil
 }
 
-func (m *%sMigration) Down(ctx context.Ctxt, db *mongo.Database) error {
+func (m *%sMigration) Down(ctx context.Context, db *mongo.Database) error {
     // TODO: Implement migration down logic (rollback)
     // Example:
     // collection := db.Collection("your_collection")

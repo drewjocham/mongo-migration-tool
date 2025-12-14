@@ -4,7 +4,14 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="53a82f71-5517-487d-94b0-2d95ee8915ca" name="Changes" comment="CLI and mongo-migration-tool" />
+    <list default="true" id="53a82f71-5517-487d-94b0-2d95ee8915ca" name="Changes" comment="CLI and mongo-migration-tool">
+      <change afterPath="$PROJECT_DIR$/go.work" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/mcp/integration_test.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.dockerignore" beforeDir="false" afterPath="$PROJECT_DIR$/.dockerignore" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/makefiles/mcp.mk" beforeDir="false" afterPath="$PROJECT_DIR$/makefiles/mcp.mk" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mcp/server.go" beforeDir="false" afterPath="$PROJECT_DIR$/mcp/server.go" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -26,13 +33,13 @@
     &quot;assignee&quot;: &quot;drewjocham&quot;
   }
 }</component>
-  <component name="GithubPullRequestsUISettings"><![CDATA[{
-  "selectedUrlAndAccountId": {
-    "url": "git@github.com:drewjocham/mongo-migration-tool-.git",
-    "accountId": "aa50e29b-cfae-403d-b09f-ae78889fae0e"
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;git@github.com:drewjocham/mongo-migration-tool-.git&quot;,
+    &quot;accountId&quot;: &quot;aa50e29b-cfae-403d-b09f-ae78889fae0e&quot;
   },
-  "editorReviewEnabled": false
-}]]></component>
+  &quot;editorReviewEnabled&quot;: false
+}</component>
   <component name="GoLibraries">
     <option name="indexEntireGoPath" value="true" />
   </component>
@@ -113,21 +120,21 @@
     "RunOnceActivity.go.migrated.go.modules.settings": "true",
     "SHELLCHECK.PATH": "I do mind",
     "SONARLINT_PRECOMMIT_ANALYSIS": "true",
-    "com.google.cloudcode.ide_session_index": "20251210_0001",
+    "com.google.cloudcode.ide_session_index": "20251214_0001",
     "configurable..is.expanded": "true",
     "dart.analysis.tool.window.visible": "false",
     "git-widget-placeholder": "#2 on setting-up-cli",
     "go.import.settings.migrated": "true",
-    "last_opened_file_path": "/Users/jocham/programming/mongo-migration-tool-/migrations",
+    "last_opened_file_path": "/Users/jocham/programming/mongo-migration-tool-",
     "node.js.detected.package.eslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
     "node.js.selected.package.tslint": "(autodetect)",
     "nodejs_package_manager_path": "npm",
     "org.rust.cargo.project.model.impl.CargoExternalSystemProjectAware.subscribe.first.balloon": "",
-    "project.structure.last.edited": "Facets",
+    "project.structure.last.edited": "Modules",
     "project.structure.proportion": "0.15",
     "project.structure.side.proportion": "0.2",
-    "settings.editor.selected.configurable": "preferences.keymap",
+    "settings.editor.selected.configurable": "preferences.pluginManager",
     "vue.rearranger.settings.migration": "true"
   },
   "keyToStringList": {
@@ -140,6 +147,7 @@
 }]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$" />
       <recent name="$PROJECT_DIR$/migrations" />
       <recent name="$PROJECT_DIR$/examples" />
     </key>
@@ -149,7 +157,7 @@
       <recent name="$PROJECT_DIR$/mcp/examples" />
     </key>
   </component>
-  <component name="RunManager" selected="Makefile Target.release">
+  <component name="RunManager" selected="Go Build.up">
     <configuration default="true" type="GoApplicationRunConfiguration" factoryName="Go Application">
       <module name="mongo-migration-tool" />
       <working_directory value="$PROJECT_DIR$" />
@@ -260,6 +268,11 @@
       <workItem from="1765109189119" duration="28041000" />
       <workItem from="1765198673696" duration="2000" />
       <workItem from="1765343759728" duration="9574000" />
+      <workItem from="1765354210979" duration="3607000" />
+      <workItem from="1765357865849" duration="9000" />
+      <workItem from="1765591848827" duration="428000" />
+      <workItem from="1765592295158" duration="3396000" />
+      <workItem from="1765721917666" duration="390000" />
     </task>
     <task id="LOCAL-00001" summary="CLI and mongo-migration-tool">
       <option name="closed" value="true" />
@@ -509,7 +522,71 @@
       <option name="project" value="LOCAL" />
       <updated>1765354007786</updated>
     </task>
-    <option name="localTasksCounter" value="32" />
+    <task id="LOCAL-00032" summary="CLI and mongo-migration-tool">
+      <option name="closed" value="true" />
+      <created>1765354427063</created>
+      <option name="number" value="00032" />
+      <option name="presentableId" value="LOCAL-00032" />
+      <option name="project" value="LOCAL" />
+      <updated>1765354427063</updated>
+    </task>
+    <task id="LOCAL-00033" summary="CLI and mongo-migration-tool">
+      <option name="closed" value="true" />
+      <created>1765354751091</created>
+      <option name="number" value="00033" />
+      <option name="presentableId" value="LOCAL-00033" />
+      <option name="project" value="LOCAL" />
+      <updated>1765354751091</updated>
+    </task>
+    <task id="LOCAL-00034" summary="CLI and mongo-migration-tool">
+      <option name="closed" value="true" />
+      <created>1765355204362</created>
+      <option name="number" value="00034" />
+      <option name="presentableId" value="LOCAL-00034" />
+      <option name="project" value="LOCAL" />
+      <updated>1765355204362</updated>
+    </task>
+    <task id="LOCAL-00035" summary="CLI and mongo-migration-tool">
+      <option name="closed" value="true" />
+      <created>1765355563198</created>
+      <option name="number" value="00035" />
+      <option name="presentableId" value="LOCAL-00035" />
+      <option name="project" value="LOCAL" />
+      <updated>1765355563198</updated>
+    </task>
+    <task id="LOCAL-00036" summary="CLI and mongo-migration-tool">
+      <option name="closed" value="true" />
+      <created>1765355774924</created>
+      <option name="number" value="00036" />
+      <option name="presentableId" value="LOCAL-00036" />
+      <option name="project" value="LOCAL" />
+      <updated>1765355774924</updated>
+    </task>
+    <task id="LOCAL-00037" summary="CLI and mongo-migration-tool">
+      <option name="closed" value="true" />
+      <created>1765357192491</created>
+      <option name="number" value="00037" />
+      <option name="presentableId" value="LOCAL-00037" />
+      <option name="project" value="LOCAL" />
+      <updated>1765357192491</updated>
+    </task>
+    <task id="LOCAL-00038" summary="CLI and mongo-migration-tool">
+      <option name="closed" value="true" />
+      <created>1765357493270</created>
+      <option name="number" value="00038" />
+      <option name="presentableId" value="LOCAL-00038" />
+      <option name="project" value="LOCAL" />
+      <updated>1765357493270</updated>
+    </task>
+    <task id="LOCAL-00039" summary="CLI and mongo-migration-tool">
+      <option name="closed" value="true" />
+      <created>1765357800479</created>
+      <option name="number" value="00039" />
+      <option name="presentableId" value="LOCAL-00039" />
+      <option name="project" value="LOCAL" />
+      <updated>1765357800479</updated>
+    </task>
+    <option name="localTasksCounter" value="40" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">

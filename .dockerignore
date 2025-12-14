@@ -83,7 +83,6 @@ Desktop.ini
 # Logs and temporary files
 *.log
 logs/
-log/
 tmp/
 temp/
 *.tmp
