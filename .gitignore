@@ -153,3 +153,12 @@ test.db
 # Go workspace
 go.work.sum
 /.idea/
+
+# Untracked files
+.golangci.bck.yml
+cmd/pkg/
+examples/example
+examples/library-example/library-example
+mongo_keyfile
+notes.md
+vendor/
