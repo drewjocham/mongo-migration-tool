@@ -274,7 +274,6 @@ make build-all
 
 3.  **Run GoReleaser**:
     ```bash
-    export GITHUB_TOKEN=<PLACEHOLDER>
     goreleaser release --clean
     ```
 
