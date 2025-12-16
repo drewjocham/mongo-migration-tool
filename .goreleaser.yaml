@@ -237,15 +237,3 @@ nfpms:
 # Announce the release
 announce:
   skip: true
-
-# Sign the artifacts
-signs:
-  - cmd: cosign
-    certificate: '${artifact}.pem'
-    args:
-      - sign-blob
-      - '--output-certificate=${certificate}'
-      - '--output-signature=${signature}'
-      - '${artifact}'
-      - --yes
-    artifacts: checksum
