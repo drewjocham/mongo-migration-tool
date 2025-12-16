@@ -87,3 +87,5 @@ integration-test: ## Run Docker-based CLI integration tests via docker compose
 
 ci-build: clean build-all test ## Build and test for CI
 	@echo "$(GREEN)CI build completed!$(NC)"
+
+
