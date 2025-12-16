@@ -4,12 +4,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="53a82f71-5517-487d-94b0-2d95ee8915ca" name="Changes" comment="CLI and mongo-migration-tool">
+    <list default="true" id="53a82f71-5517-487d-94b0-2d95ee8915ca" name="Changes" comment="preparing for first release">
       <change beforePath="$PROJECT_DIR$/.goreleaser.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/.goreleaser.yaml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/INSTALL.md" beforeDir="false" afterPath="$PROJECT_DIR$/INSTALL.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/log/logger.go" beforeDir="false" afterPath="$PROJECT_DIR$/log/logger.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/makefiles/build.mk" beforeDir="false" afterPath="$PROJECT_DIR$/makefiles/build.mk" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -273,7 +270,7 @@
       <workItem from="1765592295158" duration="3396000" />
       <workItem from="1765721917666" duration="995000" />
       <workItem from="1765840469567" duration="1776000" />
-      <workItem from="1765868240879" duration="2391000" />
+      <workItem from="1765868240879" duration="3429000" />
     </task>
     <task id="LOCAL-00001" summary="CLI and mongo-migration-tool">
       <option name="closed" value="true" />
@@ -595,7 +592,23 @@
       <option name="project" value="LOCAL" />
       <updated>1765722666396</updated>
     </task>
-    <option name="localTasksCounter" value="41" />
+    <task id="LOCAL-00041" summary="CLI and mongo-migration-tool">
+      <option name="closed" value="true" />
+      <created>1765873403548</created>
+      <option name="number" value="00041" />
+      <option name="presentableId" value="LOCAL-00041" />
+      <option name="project" value="LOCAL" />
+      <updated>1765873403548</updated>
+    </task>
+    <task id="LOCAL-00042" summary="preparing for first release">
+      <option name="closed" value="true" />
+      <created>1765873853948</created>
+      <option name="number" value="00042" />
+      <option name="presentableId" value="LOCAL-00042" />
+      <option name="project" value="LOCAL" />
+      <updated>1765873853948</updated>
+    </task>
+    <option name="localTasksCounter" value="43" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -603,7 +616,8 @@
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="CLI and mongo-migration-tool" />
-    <option name="LAST_COMMIT_MESSAGE" value="CLI and mongo-migration-tool" />
+    <MESSAGE value="preparing for first release" />
+    <option name="LAST_COMMIT_MESSAGE" value="preparing for first release" />
   </component>
   <component name="VgoProject">
     <integration-enabled>false</integration-enabled>
