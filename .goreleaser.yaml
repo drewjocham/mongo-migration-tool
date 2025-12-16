@@ -233,14 +233,6 @@ nfpms:
       - apk
     
     bindir: /usr/bin
-    
-    contents:
-      - src: .env.example
-        dst: /usr/share/mongo-migration/.env.example
-      - src: MCP.md
-        dst: /usr/share/doc/mongo-migration/MCP.md
-      - src: examples/
-        dst: /usr/share/mongo-migration/examples/
 
 # Announce the release
 announce:
