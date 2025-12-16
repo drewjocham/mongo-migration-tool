@@ -102,8 +102,8 @@ brews:
       branch: main
       token: "{{ .Env.GITHUB_TOKEN }}"
     
-    # Folder inside the repository to put the formula
-    folder: Formula
+    # Directory inside the repository to put the formula
+    directory: Formula
     
     # Homepage of your project
     homepage: https://github.com/jocham/mongo-migration
@@ -224,7 +224,7 @@ nfpms:
     
     homepage: https://github.com/jocham/mongo-migration
     description: MongoDB migration tool with AI-powered insights and MCP support
-    maintainer: jocham <your-email@example.com>
+    maintainer: Drew Jocham <drew.jocham@gmail.com>
     license: MIT
     
     formats:

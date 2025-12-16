@@ -4,7 +4,13 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="53a82f71-5517-487d-94b0-2d95ee8915ca" name="Changes" comment="CLI and mongo-migration-tool" />
+    <list default="true" id="53a82f71-5517-487d-94b0-2d95ee8915ca" name="Changes" comment="CLI and mongo-migration-tool">
+      <change beforePath="$PROJECT_DIR$/.goreleaser.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/.goreleaser.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/INSTALL.md" beforeDir="false" afterPath="$PROJECT_DIR$/INSTALL.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/log/logger.go" beforeDir="false" afterPath="$PROJECT_DIR$/log/logger.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/makefiles/build.mk" beforeDir="false" afterPath="$PROJECT_DIR$/makefiles/build.mk" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -113,10 +119,10 @@
     "RunOnceActivity.go.migrated.go.modules.settings": "true",
     "SHELLCHECK.PATH": "I do mind",
     "SONARLINT_PRECOMMIT_ANALYSIS": "true",
-    "com.google.cloudcode.ide_session_index": "20251214_0001",
+    "com.google.cloudcode.ide_session_index": "20251216_0003",
     "configurable..is.expanded": "true",
     "dart.analysis.tool.window.visible": "false",
-    "git-widget-placeholder": "#2 on setting-up-cli",
+    "git-widget-placeholder": "main",
     "go.import.settings.migrated": "true",
     "last_opened_file_path": "/Users/jocham/programming/mongo-migration-tool-",
     "node.js.detected.package.eslint": "true",
@@ -150,7 +156,7 @@
       <recent name="$PROJECT_DIR$/mcp/examples" />
     </key>
   </component>
-  <component name="RunManager" selected="Go Build.up">
+  <component name="RunManager" selected="Makefile Target.build">
     <configuration default="true" type="GoApplicationRunConfiguration" factoryName="Go Application">
       <module name="mongo-migration-tool" />
       <working_directory value="$PROJECT_DIR$" />
@@ -189,14 +195,14 @@
       <framework value="gotest" />
       <method v="2" />
     </configuration>
-    <configuration name="ci-test" type="MAKEFILE_TARGET_RUN_CONFIGURATION" factoryName="Makefile" temporary="true">
-      <makefile filename="$PROJECT_DIR$/makefiles/linter.mk" target="ci-test" workingDirectory="" arguments="">
+    <configuration name="build" type="MAKEFILE_TARGET_RUN_CONFIGURATION" factoryName="Makefile" temporary="true">
+      <makefile filename="$PROJECT_DIR$/makefiles/build.mk" target="build" workingDirectory="" arguments="">
         <envs />
       </makefile>
       <method v="2" />
     </configuration>
-    <configuration name="lint" type="MAKEFILE_TARGET_RUN_CONFIGURATION" factoryName="Makefile" temporary="true">
-      <makefile filename="$PROJECT_DIR$/makefiles/linter.mk" target="lint" workingDirectory="" arguments="">
+    <configuration name="ci-test" type="MAKEFILE_TARGET_RUN_CONFIGURATION" factoryName="Makefile" temporary="true">
+      <makefile filename="$PROJECT_DIR$/makefiles/linter.mk" target="ci-test" workingDirectory="" arguments="">
         <envs />
       </makefile>
       <method v="2" />
@@ -224,19 +230,19 @@
     </configuration>
     <list>
       <item itemvalue="Go Build.up" />
+      <item itemvalue="Makefile Target.build" />
       <item itemvalue="Makefile Target.ci-test" />
-      <item itemvalue="Makefile Target.lint" />
       <item itemvalue="Makefile Target.release" />
       <item itemvalue="Makefile Target.vet" />
       <item itemvalue="Node.js.console.js" />
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="Makefile Target.build" />
         <item itemvalue="Makefile Target.release" />
         <item itemvalue="Node.js.console.js" />
         <item itemvalue="Makefile Target.vet" />
         <item itemvalue="Makefile Target.ci-test" />
-        <item itemvalue="Makefile Target.lint" />
       </list>
     </recent_temporary>
   </component>
@@ -266,6 +272,8 @@
       <workItem from="1765591848827" duration="428000" />
       <workItem from="1765592295158" duration="3396000" />
       <workItem from="1765721917666" duration="995000" />
+      <workItem from="1765840469567" duration="1776000" />
+      <workItem from="1765868240879" duration="2391000" />
     </task>
     <task id="LOCAL-00001" summary="CLI and mongo-migration-tool">
       <option name="closed" value="true" />

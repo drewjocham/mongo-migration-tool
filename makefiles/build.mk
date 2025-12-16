@@ -66,3 +66,5 @@ test-examples: ## Test the examples
 
 ci-build: clean build-all test ## Build and test for CI
 	@echo "$(GREEN)CI build completed!$(NC)"
+
+
