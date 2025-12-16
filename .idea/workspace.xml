@@ -267,7 +267,7 @@
       <workItem from="1765592295158" duration="3396000" />
       <workItem from="1765721917666" duration="995000" />
       <workItem from="1765840469567" duration="1776000" />
-      <workItem from="1765868240879" duration="3739000" />
+      <workItem from="1765868240879" duration="4189000" />
     </task>
     <task id="LOCAL-00001" summary="CLI and mongo-migration-tool">
       <option name="closed" value="true" />
@@ -613,7 +613,23 @@
       <option name="project" value="LOCAL" />
       <updated>1765874132450</updated>
     </task>
-    <option name="localTasksCounter" value="44" />
+    <task id="LOCAL-00044" summary="preparing for first release">
+      <option name="closed" value="true" />
+      <created>1765874490632</created>
+      <option name="number" value="00044" />
+      <option name="presentableId" value="LOCAL-00044" />
+      <option name="project" value="LOCAL" />
+      <updated>1765874490632</updated>
+    </task>
+    <task id="LOCAL-00045" summary="preparing for first release">
+      <option name="closed" value="true" />
+      <created>1765874718158</created>
+      <option name="number" value="00045" />
+      <option name="presentableId" value="LOCAL-00045" />
+      <option name="project" value="LOCAL" />
+      <updated>1765874718158</updated>
+    </task>
+    <option name="localTasksCounter" value="46" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
