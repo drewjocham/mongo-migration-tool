@@ -4,146 +4,124 @@ import (
 	"context"
 	"crypto/tls"
 	"fmt"
-	"log"
+	"log/slog"
+	"os"
 	"time"
-
-	"github.com/spf13/cobra"
-	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
 
 	"github.com/jocham/mongo-migration/config"
 	"github.com/jocham/mongo-migration/migration"
-)
-
-const (
-	// pingTimeout is the duration to wait for a ping to succeed.
-	pingTimeout = 2 * time.Second
+	"github.com/spf13/cobra"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 var (
 	configFile string
-	debugMode  bool // Variable to hold the state of the debug flag
+	debugMode  bool
 	cfg        *config.Config
 	db         *mongo.Database
 	engine     *migration.Engine
+
+	logLevel = new(slog.LevelVar)
 )
 
-// rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
 	Use:   "mongo-essential",
 	Short: "Essential MongoDB toolkit with migrations and AI-powered analysis",
-	Long: `A MongoDB migration tool that provides version control for your database schema.
-    
-Features:
-- Version-controlled migrations with up/down support
-- Migration status tracking
-- Rollback capabilities
-- Force migration marking
-- Integration with existing Go projects`,
 	PersistentPreRunE: func(cmd *cobra.Command, _ []string) error {
-		// Skip configuration loading for version command
+		if debugMode {
+			logLevel.Set(slog.LevelDebug)
+		}
+		logger := slog.New(slog.NewTextHandler(os.Stderr, &slog.HandlerOptions{Level: logLevel}))
+		slog.SetDefault(logger)
+
 		if cmd.Name() == "version" {
 			return nil
 		}
 
 		var err error
-
 		if configFile != "" {
 			cfg, err = config.Load(configFile)
 		} else {
 			cfg, err = config.Load(".env", ".env.local")
 		}
 		if err != nil {
-			return fmt.Errorf("failed to load configuration: %w", err)
+			return fmt.Errorf("config load failed: %w", err)
 		}
 
-		if debugMode {
-			log.Printf("DEBUG: Loaded config.Username: '%s'\n", cfg.Username)
-			log.Printf("DEBUG: Loaded config.Password is set: %t\n", cfg.Password != "")
-			log.Printf("DEBUG: Connecting with URL: %s\n", cfg.GetConnectionString())
-		}
+		slog.Debug("Config loaded", "db", cfg.Database, "user", cfg.Username)
 
-		ctx, cancel := context.WithTimeout(context.Background(), time.Duration(cfg.Timeout)*time.Second)
-		defer cancel()
+		ctx, _ := context.WithTimeout(context.Background(), time.Duration(cfg.Timeout)*time.Second)
 
 		clientOpts := options.Client().
 			ApplyURI(cfg.GetConnectionString()).
 			SetMaxPoolSize(uint64(cfg.MaxPoolSize)).
-			SetMinPoolSize(uint64(cfg.MinPoolSize)).
-			SetMaxConnIdleTime(time.Duration(cfg.MaxIdleTime) * time.Second).
-			SetServerSelectionTimeout(time.Duration(cfg.Timeout) * time.Second).
-			SetConnectTimeout(time.Duration(cfg.Timeout) * time.Second)
+			SetMinPoolSize(uint64(cfg.MinPoolSize))
 
 		if cfg.SSLEnabled {
-			tlsConfig := &tls.Config{
-				InsecureSkipVerify: cfg.SSLInsecure, // #nosec G402 -- user-configurable for dev environments
-			}
-			clientOpts.SetTLSConfig(tlsConfig)
+			clientOpts.SetTLSConfig(&tls.Config{
+				InsecureSkipVerify: cfg.SSLInsecure,
+			})
 		}
 
 		client, err := mongo.Connect(ctx, clientOpts)
 		if err != nil {
-			return fmt.Errorf("failed to connect to MongoDB: %w", err)
+			return fmt.Errorf("mongo connect failed: %w", err)
 		}
 
-		const maxRetries = 12
-		const delay = 5 * time.Second
-
-		fmt.Println("Waiting for MongoDB Primary to be ready...")
-
-		for i := 0; i < maxRetries; i++ {
-			pingCtx, pingCancel := context.WithTimeout(context.Background(), pingTimeout)
-			defer pingCancel()
-
-			if err = client.Ping(pingCtx, nil); err == nil {
-				fmt.Println("MongoDB Primary found. Connection successful.")
-				break
-			}
-
-			if i == maxRetries-1 {
-				return fmt.Errorf("failed to ping MongoDB after %d attempts: %w", maxRetries, err)
-			}
-
-			fmt.Printf("Attempt %d/%d failed: %v. Retrying in %v...\n", i+1, maxRetries, err, delay)
-			time.Sleep(delay)
+		if err := retryPing(ctx, client); err != nil {
+			return err
 		}
 
 		db = client.Database(cfg.Database)
 
-		//  Global Registry
-		registeredMigrations := migration.RegisteredMigrations()
-		engine = migration.NewEngine(db, cfg.MigrationsCollection, registeredMigrations)
+		migrations := migration.RegisteredMigrations()
+		engine = migration.NewEngine(db, cfg.MigrationsCollection, migrations)
 
-		fmt.Printf("Registered %d migration(s).\n", len(registeredMigrations))
+		slog.Info("Engine initialized", "registered_migrations", len(migrations))
 
+		// Pass the database/engine context down to subcommands
+		cmd.SetContext(ctx)
 		return nil
 	},
 }
 
-// Execute adds all child commands to the root command and sets flags appropriately.
-func Execute() error {
-	// IMPORTANT: Ensure your main package imports all migration packages
-	// to trigger their init() functions and populate the registry.
-	return rootCmd.Execute()
+func retryPing(ctx context.Context, client *mongo.Client) error {
+	const maxRetries = 5
+	const delay = 2 * time.Second
+
+	for i := 1; i <= maxRetries; i++ {
+		pingCtx, cancel := context.WithTimeout(ctx, 2*time.Second)
+		err := client.Ping(pingCtx, nil)
+		cancel()
+
+		if err == nil {
+			slog.Debug("MongoDB connection verified")
+			return nil
+		}
+
+		slog.Warn("MongoDB not ready, retrying...", "attempt", i, "max", maxRetries, "error", err)
+		if i < maxRetries {
+			time.Sleep(delay)
+		}
+	}
+	return fmt.Errorf("could not reach MongoDB after %d attempts", maxRetries)
 }
 
-// SetupRootCommand initializes all command flags and subcommands.
 func SetupRootCommand() {
-	// Add the --debug flag
-	rootCmd.PersistentFlags().BoolVar(&debugMode, "debug", false, "Enable debug logging")
-	rootCmd.PersistentFlags().StringVar(&configFile, "config", "", "config file (default is .env)")
+	rootCmd.PersistentFlags().BoolVar(&debugMode, "debug", false, "Enable debug (verbose) logging")
+	rootCmd.PersistentFlags().StringVar(&configFile, "config", "", "Path to config file (default .env)")
 
-	// Setup subcommands
-	setupDownCommand()
-	setupUpCommand()
-	setupMCPCommand()
-
-	// Add subcommands
+	// Subcommands
 	rootCmd.AddCommand(upCmd)
 	rootCmd.AddCommand(downCmd)
+	rootCmd.AddCommand(forceCmd)
 	rootCmd.AddCommand(statusCmd)
 	rootCmd.AddCommand(createCmd)
-	rootCmd.AddCommand(forceCmd)
-	rootCmd.AddCommand(versionCmd)
 	rootCmd.AddCommand(mcpCmd)
+	rootCmd.AddCommand(versionCmd)
+}
+
+func Execute() error {
+	return rootCmd.Execute()
 }

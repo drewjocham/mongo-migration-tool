@@ -101,7 +101,6 @@ func (c *Config) GetConnectionString() string {
 		return c.MongoURL
 	}
 
-	// Add user credentials if they are provided and not already in the URL
 	if c.Username != "" && c.Password != "" && u.User == nil {
 		u.User = url.UserPassword(c.Username, c.Password)
 	}

@@ -5,7 +5,6 @@ import (
 	"os"
 
 	"github.com/jocham/mongo-migration/cmd"
-	_ "github.com/jocham/mongo-migration/examples/examplemigrations"
 	_ "github.com/jocham/mongo-migration/migrations"
 )
 

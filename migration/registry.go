@@ -1,15 +1,25 @@
 package migration
 
-import "fmt"
+import (
+	"fmt"
+	"sync"
+)
 
 var (
-	// registry is a global collection of all registered migrations.
+	mu       sync.RWMutex
 	registry = make(map[string]Migration)
 )
 
 // Register adds one or more migrations to the global registry.
 func Register(migrations ...Migration) {
+	mu.Lock()
+	defer mu.Unlock()
+
 	for _, m := range migrations {
+		if m == nil {
+			continue
+		}
+
 		version := m.Version()
 		if _, exists := registry[version]; exists {
 			panic(fmt.Sprintf("migration: duplicate version registered: %s", version))
@@ -18,12 +28,18 @@ func Register(migrations ...Migration) {
 	}
 }
 
-// RegisteredMigrations returns a map of all registered migrations.
-func RegisteredMigrations() map[string]Migration {
-	// Return a copy to prevent external modification
+func All() map[string]Migration {
+	mu.RLock()
+	defer mu.RUnlock()
+
 	copied := make(map[string]Migration, len(registry))
 	for k, v := range registry {
 		copied[k] = v
 	}
 	return copied
+}
+
+// RegisteredMigrations returns a copy of every registered migration.
+func RegisteredMigrations() map[string]Migration {
+	return All()
 }

@@ -1,15 +1,16 @@
 package mcp
 
 import (
+	"bytes"
 	"context"
-	"encoding/json"
 	"fmt"
-	"io"
-	"log"
 	"os"
 	"strings"
+	"sync"
+	"text/template"
 	"time"
 
+	"github.com/modelcontextprotocol/go-sdk/mcp"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 
@@ -17,678 +18,255 @@ import (
 	"github.com/jocham/mongo-migration/migration"
 )
 
-// MCPServer implements the Model Context Protocol for MongoDB migrations
-type MCPServer struct { //nolint:revive // MCPServer is clearer than Server in this context
-	engine *migration.Engine
-	db     *mongo.Database
-	client *mongo.Client
-	config *config.Config
+type MCPServer struct {
+	mu        sync.Mutex
+	mcpServer *mcp.Server
+	engine    *migration.Engine
+	db        *mongo.Database
+	client    *mongo.Client
+	config    *config.Config
 }
 
-// MCPRequest represents an incoming MCP request
-type MCPRequest struct { //nolint:revive // MCPRequest is clearer than Request in this context
-	JSONRPC string          `json:"jsonrpc"`
-	ID      interface{}     `json:"id"`
-	Method  string          `json:"method"`
-	Params  json.RawMessage `json:"params,omitempty"`
-}
-
-// MCPResponse represents an MCP response
-type MCPResponse struct { //nolint:revive // MCPResponse is clearer than Response in this context
-	JSONRPC string      `json:"jsonrpc"`
-	ID      interface{} `json:"id"`
-	Result  interface{} `json:"result,omitempty"`
-	Error   *MCPError   `json:"error,omitempty"`
-}
-
-// MCPError represents an MCP error
-type MCPError struct { //nolint:revive // MCPError is clearer than Error in this context
-	Code    int    `json:"code"`
-	Message string `json:"message"`
-	Data    string `json:"data,omitempty"`
-}
-
-// ToolCallParams represents parameters for tools/call
-type ToolCallParams struct {
-	Name      string                 `json:"name"`
-	Arguments map[string]interface{} `json:"arguments,omitempty"`
-}
-
-// Tool represents an MCP tool definition
-type Tool struct {
-	Name        string                 `json:"name"`
-	Description string                 `json:"description"`
-	InputSchema map[string]interface{} `json:"inputSchema"`
-}
-
-// NewMCPServer creates a new MCP server instance
+// NewMCPServer initializes the SDK server and our migration logic.
 func NewMCPServer() (*MCPServer, error) {
 	cfg, err := config.Load()
 	if err != nil {
 		return nil, fmt.Errorf("failed to load configuration: %w", err)
 	}
+	serverImpl := &mcp.Implementation{
+		Name:    "mongo-migration",
+		Version: "1.0.0",
+	}
+	s := mcp.NewServer(serverImpl, nil)
 
-	log.SetOutput(os.Stderr)
-
-	client, db, err := connectMongoDB(cfg)
-	if err != nil {
-		return nil, err
+	mcpSrv := &MCPServer{
+		mcpServer: s,
+		config:    cfg,
 	}
 
-	engine := migration.NewEngine(db, cfg.MigrationsCollection, migration.RegisteredMigrations())
+	mcpSrv.registerTools()
 
-	return &MCPServer{
-		engine: engine,
-		db:     db,
-		client: client,
-		config: cfg,
-	}, nil
+	return mcpSrv, nil
 }
 
-func connectMongoDB(cfg *config.Config) (*mongo.Client, *mongo.Database, error) {
-	const connectionTimeout = 10
-	ctx, cancel := context.WithTimeout(context.Background(), connectionTimeout*time.Second)
-	defer cancel()
+// registerTools defines the tool schemas and connects them to handlers.
+func (s *MCPServer) registerTools() {
+	mcp.AddTool(s.mcpServer, &mcp.Tool{
+		Name:        "migration_status",
+		Description: "Get a list of all migrations and whether they have been applied to the database.",
+		Annotations: &mcp.ToolAnnotations{ReadOnlyHint: true},
+	}, s.handleStatus)
 
-	client, err := mongo.Connect(ctx, options.Client().ApplyURI(cfg.GetConnectionString()))
-	if err != nil {
-		return nil, nil, fmt.Errorf("failed to connect to MongoDB: %w", err)
+	mcp.AddTool(s.mcpServer, &mcp.Tool{
+		Name:        "migration_up",
+		Description: "Apply pending migrations. If a version is provided, it migrates up to that version.",
+	}, s.handleUp)
+
+	mcp.AddTool(s.mcpServer, &mcp.Tool{
+		Name:        "migration_down",
+		Description: "Roll back applied migrations. If a version is provided, it rolls back to that version.",
+	}, s.handleDown)
+
+	mcp.AddTool(s.mcpServer, &mcp.Tool{
+		Name:        "migration_create",
+		Description: "Generate a new Go migration file template.",
+	}, s.handleCreate)
+}
+
+// --- Handlers ---
+func (s *MCPServer) handleStatus(
+	ctx context.Context,
+	req *mcp.CallToolRequest,
+	_ emptyArgs,
+) (*mcp.CallToolResult, any, error) {
+	if err := s.ensureConnection(ctx); err != nil {
+		return toolErrorResult(fmt.Sprintf("Database error: %v", err)), nil, nil
 	}
 
-	if err := client.Ping(ctx, nil); err != nil {
-		if disconnectErr := client.Disconnect(ctx); disconnectErr != nil {
-			log.Printf("Warning: failed to disconnect client: %v", disconnectErr)
+	status, err := s.engine.GetStatus(ctx)
+	if err != nil {
+		return toolErrorResult(err.Error()), nil, nil
+	}
+
+	var b strings.Builder
+	b.WriteString("### Migration Status\n\n")
+	b.WriteString("| Version | Status | Applied At | Description |\n")
+	b.WriteString("| :--- | :--- | :--- | :--- |\n")
+	for _, st := range status {
+		applied, at := "⏳ Pending", "N/A"
+		if st.Applied {
+			applied = "✅ Applied"
+			if st.AppliedAt != nil {
+				at = st.AppliedAt.Format("2006-01-02 15:04")
+			}
 		}
-		return nil, nil, fmt.Errorf("failed to ping MongoDB: %w", err)
+		b.WriteString(fmt.Sprintf("| %s | %s | %s | %s |\n", st.Version, applied, at, st.Description))
 	}
 
-	db := client.Database(cfg.Database)
-	return client, db, nil
+	return toolTextResult(b.String()), nil, nil
 }
 
-// ensureConnection checks the MongoDB connection status and attempts to reconnect if necessary.
+func (s *MCPServer) handleUp(
+	ctx context.Context,
+	req *mcp.CallToolRequest,
+	args versionArgs,
+) (*mcp.CallToolResult, any, error) {
+	if err := s.ensureConnection(ctx); err != nil {
+		return toolErrorResult(err.Error()), nil, nil
+	}
+
+	if err := s.engine.Up(ctx, args.Version); err != nil {
+		return toolErrorResult(err.Error()), nil, nil
+	}
+
+	return toolTextResult("✅ Migration 'Up' operation completed successfully."), nil, nil
+}
+
+func (s *MCPServer) handleDown(
+	ctx context.Context,
+	req *mcp.CallToolRequest,
+	args versionArgs,
+) (*mcp.CallToolResult, any, error) {
+	if err := s.ensureConnection(ctx); err != nil {
+		return toolErrorResult(err.Error()), nil, nil
+	}
+
+	if err := s.engine.Down(ctx, args.Version); err != nil {
+		return toolErrorResult(err.Error()), nil, nil
+	}
+
+	return toolTextResult("✅ Migration 'Down' operation completed successfully."), nil, nil
+}
+
+func (s *MCPServer) handleCreate(
+	ctx context.Context,
+	req *mcp.CallToolRequest,
+	args createMigrationArgs,
+) (*mcp.CallToolResult, any, error) {
+
+	version := time.Now().Format("20060102_150405")
+	cleanName := strings.ToLower(strings.ReplaceAll(args.Name, " ", "_"))
+	fname := fmt.Sprintf("migrations/%s_%s.go", version, cleanName)
+
+	if err := os.MkdirAll("migrations", 0750); err != nil {
+		return toolErrorResult(fmt.Sprintf("failed to create directory: %v", err)), nil, nil
+	}
+
+	tmpl, err := template.New("migration").Parse(migrationTemplate)
+	if err != nil {
+		return toolErrorResult(err.Error()), nil, nil
+	}
+
+	var buf bytes.Buffer
+	data := struct {
+		StructName, Version, Description string
+	}{
+		StructName:  toCamelCase(cleanName),
+		Version:     version,
+		Description: args.Description,
+	}
+
+	if err := tmpl.Execute(&buf, data); err != nil {
+		return toolErrorResult(err.Error()), nil, nil
+	}
+
+	if err := os.WriteFile(fname, buf.Bytes(), 0600); err != nil {
+		return toolErrorResult(err.Error()), nil, nil
+	}
+
+	return toolTextResult(fmt.Sprintf("🚀 Created new migration file: %s", fname)), nil, nil
+}
+
+// --- Lifecycle & Helpers ---
+
+func (s *MCPServer) Start() error {
+	return s.mcpServer.Run(context.Background(), &mcp.StdioTransport{})
+}
+
 func (s *MCPServer) ensureConnection(ctx context.Context) error {
-	const maxRetries = 3
-	const retryDelay = 2 * time.Second
+	s.mu.Lock()
+	defer s.mu.Unlock()
 
-	for i := 0; i < maxRetries; i++ {
-		if s.client != nil {
-			if err := s.client.Ping(ctx, nil); err == nil {
-				return nil
-			}
-			log.Printf("MongoDB ping failed. Attempting reconnect (Attempt %d/%d).", i+1, maxRetries)
-			if err := s.Close(); err != nil {
-				log.Printf("Error closing server connection: %v", err)
-			}
-		}
-
-		client, db, err := connectMongoDB(s.config)
-		if err == nil {
-			s.client = client
-			s.db = db
-			s.engine = migration.NewEngine(db, s.config.MigrationsCollection, migration.RegisteredMigrations())
+	if s.client != nil {
+		if err := s.client.Ping(ctx, nil); err == nil {
 			return nil
 		}
-
-		if i < maxRetries-1 {
-			time.Sleep(retryDelay)
-		} else {
-			return fmt.Errorf("failed to re-establish MongoDB connection after %d attempts: %w", maxRetries, err)
-		}
 	}
-	return nil
-}
 
-// Close closes the MCP server and database connections
-func (s *MCPServer) Close() error {
-	if s.client != nil {
-		const closeTimeout = 5
-		ctx, cancel := context.WithTimeout(context.Background(), closeTimeout*time.Second)
-		defer cancel()
-		err := s.client.Disconnect(ctx)
-		s.client = nil
-		s.db = nil
-		s.engine = nil
+	client, err := mongo.Connect(ctx, options.Client().ApplyURI(s.config.GetConnectionString()))
+	if err != nil {
 		return err
 	}
+
+	s.client = client
+	s.db = client.Database(s.config.Database)
+	s.engine = migration.NewEngine(s.db, s.config.MigrationsCollection, migration.RegisteredMigrations())
 	return nil
 }
 
-// Start starts the MCP server using stdin/stdout.
-func (s *MCPServer) Start() error {
-	return s.Serve(context.Background(), os.Stdin, os.Stdout)
-}
-
-// Serve starts the MCP server using the provided input/output streams.
-//
-// This exists primarily to make the server testable (so integration tests can
-// drive JSON-RPC over in-memory pipes instead of OS-level stdin/stdout).
-//
-// Serve returns nil on EOF.
-func (s *MCPServer) Serve(_ context.Context, in io.Reader, out io.Writer) error {
-	decoder := json.NewDecoder(in)
-	encoder := json.NewEncoder(out)
-
-	for {
-		var request MCPRequest
-		if err := decoder.Decode(&request); err != nil {
-			if err == io.EOF {
-				return nil
-			}
-			log.Printf("Error decoding request: %v", err)
-			continue
-		}
-
-		response := s.handleRequest(&request)
-		if err := encoder.Encode(response); err != nil {
-			log.Printf("Error encoding response: %v", err)
-		}
-	}
-}
-
-// handleRequest handles an MCP request
-func (s *MCPServer) handleRequest(request *MCPRequest) *MCPResponse {
-	switch request.Method {
-	case "initialize":
-		return s.handleInitialize(request)
-	case "tools/list":
-		return s.handleToolsList(request)
-	case "tools/call":
-		return s.handleToolsCall(request)
-	default:
-		return s.createErrorResponse(
-			request.ID, -32601, "Method not found", fmt.Sprintf("Unknown method: %s", request.Method))
-	}
-}
-
-// handleInitialize handles the initialize request
-func (s *MCPServer) handleInitialize(request *MCPRequest) *MCPResponse {
-	result := map[string]interface{}{
-		"protocolVersion": "2024-11-05",
-		"capabilities": map[string]interface{}{
-			"tools": map[string]interface{}{},
-		},
-		"serverInfo": map[string]interface{}{
-			"name":    "mongo-migration",
-			"version": "1.0.0",
-		},
-	}
-
-	return s.createSuccessResponseRaw(request.ID, result)
-}
-
-// handleToolsList handles the tools/list request
-func (s *MCPServer) handleToolsList(request *MCPRequest) *MCPResponse {
-	tools := s.getAvailableTools()
-
-	return s.createSuccessResponseRaw(request.ID, map[string]interface{}{
-		"tools": tools,
-	})
-}
-
-// getAvailableTools returns all available MCP tools
-func (s *MCPServer) getAvailableTools() []Tool {
-	return []Tool{
-		createMigrationStatusTool(),
-		createMigrationUpTool(),
-		createMigrationDownTool(),
-		createMigrationCreateTool(),
-		createMigrationListTool(),
-	}
-}
-
-// createMigrationStatusTool creates the migration_status tool definition
-func createMigrationStatusTool() Tool {
-	return Tool{
-		Name:        "migration_status",
-		Description: "Get the status of all migrations - shows which migrations are applied and when",
-		InputSchema: map[string]interface{}{
-			"type":       "object",
-			"properties": map[string]interface{}{},
-		},
-	}
-}
-
-// createMigrationUpTool creates the migration_up tool definition
-func createMigrationUpTool() Tool {
-	return Tool{
-		Name:        "migration_up",
-		Description: "Apply migrations up to a specific version or all pending migrations",
-		InputSchema: createVersionInputSchema(
-			"Migration version to migrate up to (optional - if not provided, applies all pending migrations)"),
-	}
-}
-
-// createMigrationDownTool creates the migration_down tool definition
-func createMigrationDownTool() Tool {
-	return Tool{
-		Name:        "migration_down",
-		Description: "Roll back migrations down to a specific version or roll back the last migration",
-		InputSchema: createVersionInputSchema(
-			"Migration version to roll back to (optional - " +
-				"if not provided, rolls back the last applied migration)"),
-	}
-}
-
-// createMigrationCreateTool creates the migration_create tool definition
-func createMigrationCreateTool() Tool {
-	return Tool{
-		Name:        "migration_create",
-		Description: "Create a new migration file with a given name and description",
-		InputSchema: map[string]interface{}{
-			"type": "object",
-			"properties": map[string]interface{}{
-				"name": map[string]interface{}{
-					"type":        "string",
-					"description": "Name for the migration (will be used to generate filename)",
-					"required":    true,
-				},
-				"description": map[string]interface{}{
-					"type":        "string",
-					"description": "Description of what the migration does",
-					"required":    true,
-				},
-			},
-			"required": []string{"name", "description"},
-		},
-	}
-}
-
-// createMigrationListTool creates the migration_list tool definition
-func createMigrationListTool() Tool {
-	return Tool{
-		Name:        "migration_list",
-		Description: "List all registered migrations with their versions and descriptions",
-		InputSchema: map[string]interface{}{
-			"type":       "object",
-			"properties": map[string]interface{}{},
-		},
-	}
-}
-
-// createVersionInputSchema creates a common input schema for version parameter
-func createVersionInputSchema(description string) map[string]interface{} {
-	return map[string]interface{}{
-		"type": "object",
-		"properties": map[string]interface{}{
-			"version": map[string]interface{}{
-				"type":        "string",
-				"description": description,
-			},
-		},
-	}
-}
-
-// handleToolsCall handles the tools/call request
-func (s *MCPServer) handleToolsCall(request *MCPRequest) *MCPResponse {
-	var params ToolCallParams
-	if err := json.Unmarshal(request.Params, &params); err != nil {
-		return s.createErrorResponse(request.ID, -32602, "Invalid params", err.Error())
-	}
-
-	const timeoutDuration = 30
-	ctx, cancel := context.WithTimeout(context.Background(), timeoutDuration*time.Second)
-	defer cancel()
-
-	if err := s.ensureConnection(ctx); err != nil {
-		return s.createErrorResponse(request.ID, -32001, "Database connection error", err.Error())
-	}
-
-	result, err := s.executeTool(ctx, params)
-	if err != nil {
-		return s.createToolExecutionErrorResponse(request.ID, err)
-	}
-
-	return s.createSuccessResponse(request.ID, result)
-}
-
-// executeTool executes the requested tool
-func (s *MCPServer) executeTool(ctx context.Context, params ToolCallParams) (interface{}, error) {
-	switch params.Name {
-	case "migration_status":
-		return s.getMigrationStatus(ctx)
-	case "migration_up":
-		version, _ := params.Arguments["version"].(string)
-		return s.runMigrationUp(ctx, version)
-	case "migration_down":
-		version, _ := params.Arguments["version"].(string)
-		return s.runMigrationDown(ctx, version)
-	case "migration_create":
-		name, _ := params.Arguments["name"].(string)
-		description, _ := params.Arguments["description"].(string)
-		return s.createMigration(name, description)
-	case "migration_list":
-		return s.listMigrations(ctx)
-	default:
-		return nil, fmt.Errorf("unknown tool: %s", params.Name)
-	}
-}
-
-// createErrorResponse creates a standard error response
-func (s *MCPServer) createErrorResponse(id interface{}, code int, message, data string) *MCPResponse {
-	return &MCPResponse{
-		JSONRPC: "2.0",
-		ID:      id,
-		Error: &MCPError{
-			Code:    code,
-			Message: message,
-			Data:    data,
-		},
-	}
-}
-
-// createToolExecutionErrorResponse creates an error response for tool execution failures
-func (s *MCPServer) createToolExecutionErrorResponse(id interface{}, err error) *MCPResponse {
-	return s.createErrorResponse(id, -32603, "Tool execution error", err.Error())
-}
-
-// createSuccessResponseRaw creates a successful response with the raw result (for initialize/tools/list)
-func (s *MCPServer) createSuccessResponseRaw(id interface{}, result interface{}) *MCPResponse {
-	return &MCPResponse{
-		JSONRPC: "2.0",
-		ID:      id,
-		Result:  result,
-	}
-}
-
-// createSuccessResponse creates a successful response wrapping the string result in content
-func (s *MCPServer) createSuccessResponse(id interface{}, result interface{}) *MCPResponse {
-	return &MCPResponse{
-		JSONRPC: "2.0",
-		ID:      id,
-		Result: map[string]interface{}{
-			"content": []map[string]interface{}{
-				{
-					"type": "text",
-					"text": result,
-				},
-			},
-		},
-	}
-}
-
-// getMigrationStatus gets the migration status
-func (s *MCPServer) getMigrationStatus(ctx context.Context) (string, error) {
-	status, err := s.engine.GetStatus(ctx)
-	if err != nil {
-		return "", fmt.Errorf("failed to get migration status: %w", err)
-	}
-
-	var result strings.Builder
-	result.WriteString("Migration Status:\n")
-	result.WriteString("================================================================================\n")
-	result.WriteString(fmt.Sprintf("%-20s %-10s %-20s %s\n", "Version", "Applied", "Applied At", "Description"))
-	result.WriteString("================================================================================\n")
-
-	for _, s := range status {
-		appliedStr := "❌ No"
-		appliedAt := "Never"
-
-		if s.Applied {
-			appliedStr = "✅ Yes"
-			if s.AppliedAt != nil {
-				appliedAt = s.AppliedAt.Format("2006-01-02 15:04:05")
-			}
-		}
-
-		result.WriteString(fmt.Sprintf("%-20s %-10s %-20s %s\n", s.Version, appliedStr, appliedAt, s.Description))
-	}
-
-	return result.String(), nil
-}
-
-// runMigrationUp runs migrations up
-func (s *MCPServer) runMigrationUp(ctx context.Context, version string) (string, error) {
-	var result strings.Builder
-
-	if version != "" {
-		result.WriteString(fmt.Sprintf("Running migration up to version: %s\n", version))
-		if err := s.engine.Up(ctx, version); err != nil {
-			return "", fmt.Errorf("failed to run migration %s: %w", version, err)
-		}
-		result.WriteString(fmt.Sprintf("✅ Successfully applied migration: %s\n", version))
-	} else {
-		result.WriteString("Running all pending migrations...\n")
-		status, err := s.engine.GetStatus(ctx)
-		if err != nil {
-			return "", fmt.Errorf("failed to get migration status: %w", err)
-		}
-
-		appliedCount := 0
-		for _, migStatus := range status {
-			if !migStatus.Applied {
-				result.WriteString(fmt.Sprintf("Applying migration: %s - %s\n", migStatus.Version, migStatus.Description))
-				if err := s.engine.Up(ctx, migStatus.Version); err != nil {
-					return "", fmt.Errorf("failed to run migration %s: %w", migStatus.Version, err)
-				}
-				result.WriteString(fmt.Sprintf("✅ Applied migration: %s\n", migStatus.Version))
-				appliedCount++
-			}
-		}
-
-		if appliedCount == 0 {
-			result.WriteString("No pending migrations found.\n")
-		} else {
-			result.WriteString(fmt.Sprintf("Successfully applied %d migrations!\n", appliedCount))
-		}
-	}
-
-	return result.String(), nil
-}
-
-// runMigrationDown runs migrations down
-func (s *MCPServer) runMigrationDown(ctx context.Context, version string) (string, error) {
-	var result strings.Builder
-
-	if version != "" {
-		result.WriteString(fmt.Sprintf("Rolling back migration: %s\n", version))
-		if err := s.engine.Down(ctx, version); err != nil {
-			return "", fmt.Errorf("failed to roll back migration %s: %w", version, err)
-		}
-		result.WriteString(fmt.Sprintf("✅ Successfully rolled back migration: %s\n", version))
-	} else {
-		result.WriteString("Rolling back last applied migration...\n")
-		status, err := s.engine.GetStatus(ctx)
-		if err != nil {
-			return "", fmt.Errorf("failed to get migration status: %w", err)
-		}
-
-		var lastApplied *migration.MigrationStatus
-		for i := len(status) - 1; i >= 0; i-- {
-			if status[i].Applied {
-				lastApplied = &status[i]
-				break
-			}
-		}
-
-		if lastApplied == nil {
-			result.WriteString("No migrations to roll back.\n")
-		} else {
-			result.WriteString(fmt.Sprintf("Rolling back migration: %s - %s\n", lastApplied.Version, lastApplied.Description))
-			if err := s.engine.Down(ctx, lastApplied.Version); err != nil {
-				return "", fmt.Errorf("failed to roll back migration %s: %w", lastApplied.Version, err)
-			}
-			result.WriteString(fmt.Sprintf("✅ Successfully rolled back migration: %s\n", lastApplied.Version))
-		}
-	}
-
-	return result.String(), nil
-}
-
-// createMigration creates a new migration file
-func (s *MCPServer) createMigration(name, description string) (string, error) {
-	if err := s.validateMigrationParams(name, description); err != nil {
-		return "", err
-	}
-
-	version, cleanName, filepath := s.generateMigrationInfo(name)
-
-	if err := s.createMigrationsDirectory(); err != nil {
-		return "", err
-	}
-
-	template := s.generateMigrationTemplate(cleanName, description, version)
-
-	if err := s.writeMigrationFile(filepath, template); err != nil {
-		// Attempt to remove the file if creation failed after directory was made
-		if _, statErr := os.Stat(filepath); statErr == nil {
-			if removeErr := os.Remove(filepath); removeErr != nil {
-				log.Printf("Warning: failed to remove partially created migration file: %v", removeErr)
-			}
-		}
-		return "", err
-	}
-
-	return s.formatMigrationCreationResult(filepath, version, name, description, cleanName), nil
-}
-
-// validateMigrationParams validates migration creation parameters
-func (s *MCPServer) validateMigrationParams(name, description string) error {
-	if name == "" {
-		return fmt.Errorf("migration name is required")
-	}
-	if description == "" {
-		return fmt.Errorf("migration description is required")
+func (s *MCPServer) Close() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.client != nil {
+		return s.client.Disconnect(context.Background())
 	}
 	return nil
 }
 
-// generateMigrationInfo generates version, clean name, and file path for migration
-func (s *MCPServer) generateMigrationInfo(name string) (version, cleanName, filepath string) {
-	version = time.Now().Format("20060102_150405")
-	cleanName = strings.ToLower(strings.ReplaceAll(name, " ", "_"))
-	filename := fmt.Sprintf("%s_%s.go", version, cleanName)
-	filepath = fmt.Sprintf("migrations/%s", filename)
-	return
-}
-
-// createMigrationsDirectory creates the migrations directory if it doesn't exist
-func (s *MCPServer) createMigrationsDirectory() error {
-	const migrationsDir = "migrations"
-	const dirPermissions = 0750
-	if err := os.MkdirAll(migrationsDir, dirPermissions); err != nil {
-		return fmt.Errorf("failed to create migrations directory: %w", err)
+func toolErrorResult(message string) *mcp.CallToolResult {
+	return &mcp.CallToolResult{
+		IsError: true,
+		Content: []mcp.Content{&mcp.TextContent{Text: message}},
 	}
-	return nil
 }
 
-// generateMigrationTemplate generates the migration file template
-func (s *MCPServer) generateMigrationTemplate(cleanName, description, version string) string {
-	camelCaseName := toCamelCase(cleanName)
-	return fmt.Sprintf(`package migrations
-
-import (
-    "context"
-
-    "go.mongodb.org/mongo-driver/bson"
-    "go.mongodb.org/mongo-driver/mongo"
-)
-
-// %sMigration %s
-type %sMigration struct{}
-
-func (m *%sMigration) Version() string {
-    return "%s"
-}
-
-func (m *%sMigration) Description() string {
-    return "%s"
-}
-
-func (m *%sMigration) Up(ctx context.Context, db *mongo.Database) error {
-    // TODO: Implement migration up logic
-    // Example:
-    // collection := db.Collection("your_collection")
-    // _, err := collection.UpdateMany(ctx, bson.D{}, bson.D{{"$set", bson.D{{"new_field", "default_value"}}}})
-    // return err
-    return nil
-}
-
-func (m *%sMigration) Down(ctx context.Context, db *mongo.Database) error {
-    // TODO: Implement migration down logic (rollback)
-    // Example:
-    // collection := db.Collection("your_collection")
-    // _, err := collection.UpdateMany(ctx, bson.D{}, bson.D{{"$unset", bson.D{{"new_field", ""}}}})
-    // return err
-    return nil
-}
-`,
-		camelCaseName, description, camelCaseName, camelCaseName, version,
-		camelCaseName, description, camelCaseName, camelCaseName)
-}
-
-// writeMigrationFile writes the migration template to file
-func (s *MCPServer) writeMigrationFile(filepath, template string) error {
-	const filePermissions = 0600
-	if err := os.WriteFile(filepath, []byte(template), filePermissions); err != nil {
-		return fmt.Errorf("failed to write migration file: %w", err)
+func toolTextResult(message string) *mcp.CallToolResult {
+	return &mcp.CallToolResult{
+		Content: []mcp.Content{&mcp.TextContent{Text: message}},
 	}
-	return nil
 }
 
-// formatMigrationCreationResult formats the result message for migration creation
-func (s *MCPServer) formatMigrationCreationResult(filepath, version, name, description, cleanName string) string {
-	return fmt.Sprintf(`Created new migration file: %s
+type emptyArgs struct{}
 
-Migration Details:
-- Version: %s
-- Name: %s
-- Description: %s
-- File: %s
-
-Next steps:
-1. Edit the file to implement your migration logic in the Up() method
-2. Implement the rollback logic in the Down() method
-3. Register the migration in your main application
-4. Run the migration with: mongo-migration migrate up
-
-Example registration:
-migration.Register(&examplemigrations.%sMigration{})
-`, filepath, version, name, description, filepath, toCamelCase(cleanName))
+type versionArgs struct {
+	Version string `json:"version,omitempty" jsonschema:"Version identifier such as 20240101_001"`
 }
 
-// listMigrations lists all registered migrations
-func (s *MCPServer) listMigrations(ctx context.Context) (string, error) {
-	status, err := s.engine.GetStatus(ctx)
-	if err != nil {
-		return "", fmt.Errorf("failed to get migration status: %w", err)
-	}
-
-	var result strings.Builder
-	result.WriteString("Registered Migrations:\n")
-	result.WriteString("================================================================================\n")
-
-	if len(status) == 0 {
-		result.WriteString("No migrations registered.\n")
-		result.WriteString("To register migrations, use migration.Register() in an init() function.\n")
-	} else {
-		result.WriteString(fmt.Sprintf("Total migrations: %d\n\n", len(status)))
-		for i, s := range status {
-			result.WriteString(fmt.Sprintf("%d. %s\n", i+1, s.Version))
-			result.WriteString(fmt.Sprintf("   Description: %s\n", s.Description))
-			if s.Applied {
-				result.WriteString("   Status: ✅ Applied")
-				if s.AppliedAt != nil {
-					result.WriteString(fmt.Sprintf(" on %s", s.AppliedAt.Format("2006-01-02 15:04:05")))
-				}
-				result.WriteString("\n")
-			} else {
-				result.WriteString("   Status: ⏳ Pending\n")
-			}
-			result.WriteString("\n")
-		}
-	}
-
-	return result.String(), nil
+type createMigrationArgs struct {
+	Name        string `json:"name" jsonschema:"Migration name (e.g., add_users_collection)"`
+	Description string `json:"description" jsonschema:"Brief summary of what the migration does"`
 }
 
-// toCamelCase converts a snake_case string to CamelCase
 func toCamelCase(s string) string {
 	parts := strings.Split(s, "_")
-	for i, part := range parts {
-		if len(part) > 0 {
-			parts[i] = strings.ToUpper(part[:1]) + part[1:]
+	for i, p := range parts {
+		if len(p) > 0 {
+			parts[i] = strings.ToUpper(p[:1]) + p[1:]
 		}
 	}
 	return strings.Join(parts, "")
 }
+
+const migrationTemplate = `package migrations
+
+import (
+	"context"
+	"go.mongodb.org/mongo-driver/mongo"
+)
+
+// {{.StructName}} Migration: {{.Description}}
+type {{.StructName}} struct{}
+
+func (m *{{.StructName}}) Version() string     { return "{{.Version}}" }
+func (m *{{.StructName}}) Description() string { return "{{.Description}}" }
+
+func (m *{{.StructName}}) Up(ctx context.Context, db *mongo.Database) error {
+	// Implement migration logic here
+	return nil
+}
+
+func (m *{{.StructName}}) Down(ctx context.Context, db *mongo.Database) error {
+	// Implement rollback logic here
+	return nil
+}
+`

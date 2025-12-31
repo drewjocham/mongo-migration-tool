@@ -38,19 +38,20 @@ func customHandler(baseHandler slog.Handler, keyProvider ContextKeyProvider) slo
 	return &ContextHandler{baseHandler, keyProvider}
 }
 
-//nolint:gocritic //need to implement interface
-func (h *ContextHandler) handle(ctx context.Context, r slog.Record) error {
-	for _, keyName := range h.keyProvider() {
+func (h *ContextHandler) Handle(ctx context.Context, r slog.Record) error {
+	provider := h.keyProvider
+	if provider == nil {
+		provider = defaultProvider
+	}
+
+	for _, keyName := range provider() {
 		value := ctx.Value(keyName)
 		if value == nil {
 			continue
 		}
+
 		r.AddAttrs(slog.Attr{Key: string(keyName), Value: slog.AnyValue(value)})
 	}
 
 	return h.Handler.Handle(ctx, r)
-}
-
-func (h *ContextHandler) Handle(ctx context.Context, r slog.Record) error {
-	return h.Handle(ctx, r)
 }

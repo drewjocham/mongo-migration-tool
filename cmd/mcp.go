@@ -1,61 +1,62 @@
 package cmd
 
 import (
-	"log"
+	"log/slog"
+	"os"
 
 	"github.com/spf13/cobra"
 
-	"github.com/jocham/mongo-migration/examples/examplemigrations"
 	"github.com/jocham/mongo-migration/mcp"
-	"github.com/jocham/mongo-migration/migration"
 	_ "github.com/jocham/mongo-migration/migrations"
 )
 
-var mcpCmd = &cobra.Command{
-	Use:   "mcp",
-	Short: "Start MCP server for AI assistant integration",
-	Long: `Start the Model Context Protocol (MCP) server that allows AI assistants
-like Ollama, Goose, and others to interact with your MongoDB migrations.
+var (
+	mcpWithExamples bool
 
-The MCP server exposes migration operations as tools that AI assistants can call:
-- migration_status: Get migration status
-- migration_up: Apply migrations 
-- migration_down: Roll back migrations
-- migration_create: Create new migration files
-- migration_list: List all registered migrations
+	mcpCmd = func() *cobra.Command {
+		cmd := &cobra.Command{
+			Use:   "mcp",
+			Short: "Start MCP server for AI assistant integration",
+			Long: `Start the Model Context Protocol (MCP) server for AI assistants.
+IMPORTANT: This command uses stdin/stdout for communication. 
+Logs are automatically redirected to stderr.`,
+			Run: runMCP,
+		}
 
-The server reads from stdin and writes to stdout using JSON-RPC protocol.`,
-	Run: runMCP,
-}
+		cmd.Flags().BoolVar(&mcpWithExamples, "with-examples", false, "Register example migrations with the MCP server")
 
-var mcpWithExamples bool
+		return cmd
+	}()
+)
 
-func setupMCPCommand() {
-	mcpCmd.Flags().BoolVar(&mcpWithExamples, "with-examples", false, "Register example migrations with the MCP server")
-}
+func runMCP(cmd *cobra.Command, _ []string) {
+	logger := slog.New(slog.NewTextHandler(os.Stderr, nil))
+	slog.SetDefault(logger)
 
-func runMCP(_ *cobra.Command, _ []string) {
-	// If --with-examples is used, register the example migrations.
-	// This needs to be done before the MCPServer is created.
 	if mcpWithExamples {
-		migration.Register(
-			&examplemigrations.AddUserIndexesMigration{},
-			&examplemigrations.TransformUserDataMigration{},
-			&examplemigrations.CreateAuditCollectionMigration{},
-		)
+		slog.Info("Registering example migrations")
+		if err := registerExampleMigrations(); err != nil {
+			slog.Error("Failed to register example migrations", "error", err)
+			os.Exit(1)
+		}
 	}
 
 	server, err := mcp.NewMCPServer()
 	if err != nil {
-		log.Fatalf("Failed to create MCP server: %v", err)
+		slog.Error("Failed to create MCP server", "error", err)
+		os.Exit(1)
 	}
+
 	defer func() {
-		if closeErr := server.Close(); closeErr != nil {
-			log.Printf("Error closing server: %v", closeErr)
+		if err := server.Close(); err != nil {
+			slog.Error("Error closing MCP server", "error", err)
 		}
 	}()
 
+	slog.Info("Starting MCP server", "pid", os.Getpid())
+
 	if err := server.Start(); err != nil {
-		log.Fatalf("MCP server failed: %v", err) //nolint:gocritic // exit is intended here
+		slog.Error("MCP server execution failed", "error", err)
+		os.Exit(1)
 	}
 }

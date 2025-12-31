@@ -8,9 +8,6 @@ import (
 )
 
 // Migration represents a single database migration.
-//
-// Each migration must have a unique version identifier and provide both
-// up and down implementations for bidirectional migrations.
 type Migration interface {
 	// Version returns the unique version identifier for this migration.
 	// Recommended format: YYYYMMDD_NNN (e.g., "20240101_001")
@@ -27,9 +24,6 @@ type Migration interface {
 }
 
 // MigrationRecord represents a migration record stored in the database.
-//
-// This is used internally to track which migrations have been applied
-// and when they were executed.
 type MigrationRecord struct { //nolint:revive // MigrationRecord is clearer than Record in this context
 	Version     string    `bson:"version"`
 	Description string    `bson:"description"`

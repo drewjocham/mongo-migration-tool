@@ -2,32 +2,34 @@ package cmd
 
 import (
 	"fmt"
+	"log/slog"
 
 	"github.com/spf13/cobra"
 )
 
-// Version information
 var (
 	appVersion = "dev"
 	appCommit  = "none"
 	appDate    = "unknown"
 )
 
-// SetVersion sets the version information from main
 func SetVersion(version, commit, date string) {
 	appVersion = version
 	appCommit = commit
 	appDate = date
 }
 
-// versionCmd represents the version command
 var versionCmd = &cobra.Command{
 	Use:   "version",
 	Short: "Print the version number",
-	Long:  `Print the version number of mongo-essential.`,
-	Run: func(_ *cobra.Command, _ []string) {
-		fmt.Printf("mongo-essential version %s\n", appVersion)
-		fmt.Printf("  commit: %s\n", appCommit)
-		fmt.Printf("  built: %s\n", appDate)
+	Long:  `Print the version, commit hash, and build date of mongo-essential.`,
+	Run: func(cmd *cobra.Command, _ []string) {
+		slog.Debug("Version command executed",
+			"version", appVersion, "commit", appCommit)
+
+		// Human-readable output
+		fmt.Printf("mongo-essential version: %s\n", appVersion)
+		fmt.Printf("  Commit ID:  %s\n", appCommit)
+		fmt.Printf("  Build Date: %s\n", appDate)
 	},
 }
