@@ -22,7 +22,8 @@ var (
 	db         *mongo.Database
 	engine     *migration.Engine
 
-	logLevel = new(slog.LevelVar)
+	logLevel   = new(slog.LevelVar)
+	rootCancel context.CancelFunc
 )
 
 var rootCmd = &cobra.Command{
@@ -51,7 +52,8 @@ var rootCmd = &cobra.Command{
 
 		slog.Debug("Config loaded", "db", cfg.Database, "user", cfg.Username)
 
-		ctx, _ := context.WithTimeout(context.Background(), time.Duration(cfg.Timeout)*time.Second)
+		ctx, cancel := context.WithTimeout(context.Background(), time.Duration(cfg.Timeout)*time.Second)
+		rootCancel = cancel
 
 		clientOpts := options.Client().
 			ApplyURI(cfg.GetConnectionString()).
@@ -111,6 +113,12 @@ func retryPing(ctx context.Context, client *mongo.Client) error {
 func SetupRootCommand() {
 	rootCmd.PersistentFlags().BoolVar(&debugMode, "debug", false, "Enable debug (verbose) logging")
 	rootCmd.PersistentFlags().StringVar(&configFile, "config", "", "Path to config file (default .env)")
+	rootCmd.PersistentPostRun = func(cmd *cobra.Command, _ []string) {
+		if rootCancel != nil {
+			rootCancel()
+			rootCancel = nil
+		}
+	}
 
 	// Subcommands
 	rootCmd.AddCommand(upCmd)

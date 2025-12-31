@@ -1,19 +1,27 @@
-# Use a minimal base image
-FROM alpine:3.19
+# syntax=docker/dockerfile:1.4
+FROM golang:1.25-alpine AS builder
 
-# Install certificates and timezone data
-RUN apk --no-cache add ca-certificates tzdata
+RUN apk --no-cache add git
 
-# Set the working directory
 WORKDIR /app
 
-# Copy the pre-built binary from the GoReleaser build context
-COPY mongo-migration /app/mongo-migration
+COPY go.mod go.sum ./
+RUN go mod download
 
-# Create a non-root user for security
+COPY . .
+
+RUN CGO_ENABLED=0 GOOS=linux go build -v -o /app/mongo-migration .
+
+FROM alpine:3.19
+
+RUN apk --no-cache add ca-certificates tzdata
+
+WORKDIR /app
+
+COPY --from=builder /app/mongo-migration /app/mongo-migration
+
 RUN adduser -D -s /bin/sh migration
 USER migration
 
-# Set the entrypoint and default command
 ENTRYPOINT ["/app/mongo-migration"]
 CMD ["--help"]
