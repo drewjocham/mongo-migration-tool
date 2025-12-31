@@ -1,66 +1,70 @@
 package cmd
 
 import (
-	"context"
 	"fmt"
+	"log/slog"
+	"os"
 	"strings"
+	"text/tabwriter"
 
+	"github.com/jocham/mongo-migration/migration"
 	"github.com/spf13/cobra"
 )
 
-// statusCmd represents the status command
 var statusCmd = &cobra.Command{
 	Use:   "status",
 	Short: "Show migration status",
 	Long: `Display the current status of all migrations, showing which have been applied
-and which are pending.
+and which are pending.`,
+	RunE: func(cmd *cobra.Command, _ []string) error {
+		ctx := cmd.Context()
 
-This command shows:
-- Migration version and description
-- Applied status (✓ or ✗)  
-- Timestamp when applied (if applicable)
-
-Examples:
-  mongo-essential status
-  mongo-essential status --verbose`,
-	RunE: func(_ *cobra.Command, _ []string) error {
-		ctx := context.Background()
-
-		fmt.Println("Migration Status")
-		const separatorLength = 50
-		fmt.Println(strings.Repeat("=", separatorLength))
+		slog.Debug("Fetching migration status from database")
 
 		status, err := engine.GetStatus(ctx)
 		if err != nil {
+			slog.Error("Failed to retrieve migration status", "error", err)
 			return fmt.Errorf("failed to get migration status: %w", err)
 		}
 
 		if len(status) == 0 {
-			fmt.Println("No migrations found")
+			fmt.Println("No migrations found in the registry.")
 			return nil
 		}
 
-		for _, s := range status {
-			statusIcon := "✗"
-			statusText := "Pending"
-			appliedAt := ""
-
-			if s.Applied {
-				statusIcon = "✓"
-				statusText = "Applied"
-				if s.AppliedAt != nil {
-					appliedAt = fmt.Sprintf(" (%s)", s.AppliedAt.Format("2006-01-02 15:04:05"))
-				}
-			}
-
-			fmt.Printf("%s %s - %s %s%s\n",
-				statusIcon,
-				s.Version,
-				s.Description,
-				statusText,
-				appliedAt)
-		}
+		printStatusTable(status)
 
 		return nil
 	},
+}
+
+// printStatusTable formats the output into a clean, aligned table
+func printStatusTable(status []migration.MigrationStatus) {
+	fmt.Println("\nMigration Status Report")
+	fmt.Println(strings.Repeat("=", 30))
+
+	w := tabwriter.NewWriter(os.Stdout, 0, 0, 3, ' ', 0)
+	fmt.Fprintln(w, "STATE\tVERSION\tAPPLIED AT\tDESCRIPTION")
+	fmt.Fprintln(w, "-----\t-------\t----------\t-----------")
+
+	for _, s := range status {
+		state := "  [ ]" // Pending
+		appliedAt := "n/a"
+
+		if s.Applied {
+			state = "  [✓]" // Applied
+			if s.AppliedAt != nil {
+				appliedAt = s.AppliedAt.Format("2006-01-02 15:04:05")
+			}
+		}
+
+		fmt.Fprintf(w, "%s\t%s\t%s\t%s\n",
+			state,
+			s.Version,
+			appliedAt,
+			s.Description,
+		)
+	}
+	w.Flush()
+	fmt.Println()
 }

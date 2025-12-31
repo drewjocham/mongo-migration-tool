@@ -3,6 +3,7 @@ package migration
 import (
 	"context"
 	"crypto/sha256"
+	"errors"
 	"fmt"
 	"sort"
 	"time"
@@ -16,7 +17,37 @@ import (
 type Engine struct {
 	db                   *mongo.Database
 	migrationsCollection string
+	lockCollection       string
 	migrations           map[string]Migration
+}
+
+func (e *Engine) executeMigrationNoTx(ctx context.Context, migration Migration, direction Direction) error {
+	collection := e.db.Collection(e.migrationsCollection)
+	version := migration.Version()
+
+	switch direction {
+	case DirectionUp:
+		if err := migration.Up(ctx, e.db); err != nil {
+			return err
+		}
+		record := MigrationRecord{
+			Version:     version,
+			Description: migration.Description(),
+			AppliedAt:   time.Now().UTC(),
+			Checksum:    e.calculateChecksum(migration),
+		}
+		_, err := collection.InsertOne(ctx, record)
+		return err
+
+	case DirectionDown:
+		if err := migration.Down(ctx, e.db); err != nil {
+			return err
+		}
+		_, err := collection.DeleteOne(ctx, bson.M{"version": version})
+		return err
+	default:
+		return fmt.Errorf("unsupported direction: %v", direction)
+	}
 }
 
 // NewEngine creates a new migration engine.
@@ -24,8 +55,41 @@ func NewEngine(db *mongo.Database, migrationsCollection string, migrations map[s
 	return &Engine{
 		db:                   db,
 		migrationsCollection: migrationsCollection,
+		lockCollection:       migrationsCollection + "_lock",
 		migrations:           migrations,
 	}
+}
+
+const lockID = "migration_engine_lock"
+
+func (e *Engine) acquireLock(ctx context.Context) error {
+	coll := e.db.Collection(e.lockCollection)
+
+	// Ensure a unique index exists on the "lock_id" field
+	_, _ = coll.Indexes().CreateOne(ctx, mongo.IndexModel{
+		Keys:    bson.D{{Key: "lock_id", Value: 1}},
+		Options: options.Index().SetUnique(true),
+	})
+
+	lockDoc := bson.M{
+		"lock_id":     lockID,
+		"acquired_at": time.Now().UTC(),
+		// Optional: Add owner info like hostname/IP for debugging
+	}
+
+	_, err := coll.InsertOne(ctx, lockDoc)
+	if err != nil {
+		if mongo.IsDuplicateKeyError(err) {
+			return fmt.Errorf("migration failed: could not acquire lock (another instance is running)")
+		}
+		return err
+	}
+	return nil
+}
+
+func (e *Engine) releaseLock(ctx context.Context) {
+	coll := e.db.Collection(e.lockCollection)
+	_, _ = coll.DeleteOne(ctx, bson.M{"lock_id": lockID})
 }
 
 // GetStatus returns the status of all migrations.
@@ -120,78 +184,112 @@ func (e *Engine) Force(ctx context.Context, version string) error {
 	return nil
 }
 
-// migrate executes migrations in the specified direction
+// migrate executes migrations in the specified direction with distributed locking.
 func (e *Engine) migrate(ctx context.Context, direction Direction, target string) error {
+	if err := e.acquireLock(ctx); err != nil {
+		return fmt.Errorf("lock acquisition failed: %w", err)
+	}
+
+	defer e.releaseLock(context.Background())
+
 	appliedMigrations, err := e.getAppliedMigrations(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to get applied migrations: %w", err)
 	}
 
-	appliedMap := make(map[string]bool)
+	appliedMap := make(map[string]MigrationRecord)
+	appliedVersions := make(map[string]bool)
 	for _, record := range appliedMigrations {
-		appliedMap[record.Version] = true
+		appliedMap[record.Version] = record
+		appliedVersions[record.Version] = true
 	}
 
-	migrationsToExecute, err := e.getMigrationsToExecute(direction, target, appliedMap)
+	// Filter the migrations list based on direction and target
+	migrationsToExecute, err := e.getMigrationsToExecute(direction, target, appliedVersions)
 	if err != nil {
-		return fmt.Errorf("failed to determine migrations to execute: %w", err)
+		return fmt.Errorf("failed to determine migration sequence: %w", err)
 	}
 
 	if len(migrationsToExecute) == 0 {
-		return nil
+		return nil // Nothing to do
 	}
 
 	for _, version := range migrationsToExecute {
 		migration := e.migrations[version]
 		if migration == nil {
-			return fmt.Errorf("migration %s not found", version)
+			return fmt.Errorf("migration %s is missing from the registry", version)
 		}
 
-		err := e.executeMigration(ctx, migration, direction)
-		if err != nil {
-			return fmt.Errorf("failed to execute migration %s %s: %w", version, direction.String(), err)
+		// Validate checksum for UP migrations if they were previously recorded
+		if direction == DirectionUp {
+			if record, exists := appliedMap[version]; exists {
+				currentChecksum := e.calculateChecksum(migration)
+				if record.Checksum != currentChecksum {
+					return fmt.Errorf("checksum mismatch for migration %s: database has %s, code has %s",
+						version, record.Checksum, currentChecksum)
+				}
+			}
+		}
+
+		// Execute individual migration
+		if err := e.executeMigration(ctx, migration, direction); err != nil {
+			return fmt.Errorf("interrupted at %s (%s): %w", version, direction.String(), err)
 		}
 	}
 
 	return nil
 }
 
-// executeMigration executes a single migration
+// executeMigration runs a single migration within a session transaction for atomicity.
 func (e *Engine) executeMigration(ctx context.Context, migration Migration, direction Direction) error {
 	version := migration.Version()
 
-	switch direction {
-	case DirectionUp:
-		if err := migration.Up(ctx, e.db); err != nil {
-			return err
-		}
-
-		record := MigrationRecord{
-			Version:     version,
-			Description: migration.Description(),
-			AppliedAt:   time.Now().UTC(),
-			Checksum:    e.calculateChecksum(migration),
-		}
-
-		collection := e.db.Collection(e.migrationsCollection)
-		_, err := collection.InsertOne(ctx, record)
+	session, err := e.db.Client().StartSession()
+	if err != nil {
 		return err
-
-	case DirectionDown:
-		if err := migration.Down(ctx, e.db); err != nil {
-			return err
-		}
-
-		collection := e.db.Collection(e.migrationsCollection)
-		_, err := collection.DeleteOne(ctx, bson.M{"version": version})
-		return err
-
-	default:
-		return fmt.Errorf("unknown direction: %v", direction)
 	}
+	defer session.EndSession(ctx)
+
+	_, err = session.WithTransaction(ctx, func(sessCtx mongo.SessionContext) (interface{}, error) {
+		collection := e.db.Collection(e.migrationsCollection)
+
+		switch direction {
+		case DirectionUp:
+			if err := migration.Up(sessCtx, e.db); err != nil {
+				return nil, err
+			}
+
+			record := MigrationRecord{
+				Version:     version,
+				Description: migration.Description(),
+				AppliedAt:   time.Now().UTC(),
+				Checksum:    e.calculateChecksum(migration),
+			}
+			return collection.InsertOne(sessCtx, record)
+
+		case DirectionDown:
+			if err := migration.Down(sessCtx, e.db); err != nil {
+				return nil, err
+			}
+			return collection.DeleteOne(sessCtx, bson.M{"version": version})
+
+		default:
+			return nil, fmt.Errorf("unsupported direction: %v", direction)
+		}
+	})
+	if err == nil {
+		return nil
+	}
+
+	// Fallback for standalone MongoDB instances that do not support transactions.
+	var cmdErr mongo.CommandError
+	if errors.As(err, &cmdErr) && cmdErr.HasErrorCode(20) { // Error code 20: IllegalOperation
+		return e.executeMigrationNoTx(ctx, migration, direction)
+	}
+
+	return err
 }
 
-// getAppliedMigrations retrieves all applied migrations from the database
 func (e *Engine) getAppliedMigrations(ctx context.Context) ([]MigrationRecord, error) {
 	collection := e.db.Collection(e.migrationsCollection)
 

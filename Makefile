@@ -8,9 +8,6 @@ include $(MAKEFILES_DIR)/mcp.mk
 include $(MAKEFILES_DIR)/release.mk
 include $(MAKEFILES_DIR)/migration.mk
 include $(MAKEFILES_DIR)/dev.mk
-
-.PHONY: help
-
 help: ## Show this help message
 	@echo "MongoDB Migration Tool - Available commands:"
 	@echo

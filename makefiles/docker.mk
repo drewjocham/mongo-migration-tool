@@ -1,8 +1,10 @@
 .PHONY: docker-build docker-run docker-compose-up docker-compose-down security-scan
 
+#DOCKER_TAG=v0.1.0
+
 docker-build: ## Build Docker image
 	@echo "$(GREEN)Building Docker image $(DOCKER_IMAGE):$(DOCKER_TAG)...$(NC)"
-	docker build -t $(DOCKER_IMAGE):$(DOCKER_TAG) .
+	docker build -t $(DOCKER_IMAGE):$(DOCKER_TAG) -f Dockerfile.local .
 
 docker-run: docker-build ## Run Docker container
 	@echo "$(GREEN)Running Docker container...$(NC)"
@@ -11,11 +13,18 @@ docker-run: docker-build ## Run Docker container
 		-e MONGO_DATABASE=test_db \
 		$(DOCKER_IMAGE):$(DOCKER_TAG) status
 
-docker-compose-up: ## Start services with docker-compose
+start-tool: ## Start services with docker-compose
+	@echo "$(GREEN)Running Docker container...$(NC)"
+	docker run --rm -it \
+		-e  "MONGO_URL=mongodb://jocham-user:lbjKMTf8d3sQ8q2M@s-fc0a667a-6ce3-4893-89a5-77e4661a3e2c-0.mongodb.eu01.onstackit.cloud:27017,s-fc0a667a-6ce3-4893-89a5-77e4661a3e2c-1.mongodb.eu01.onstackit.cloud:27017,s-fc0a667a-6ce3-4893-89a5-77e4661a3e2c-2.mongodb.eu01.onstackit.cloud:27017/stackit?authSource=stackit&tls=true&authMechanism=SCRAM-SHA-256" \
+		-e  "MDB_MCP_CONNECTION_STRING=mongodb://jocham-user:lbjKMTf8d3sQ8q2M@s-fc0a667a-6ce3-4893-89a5-77e4661a3e2c-0.mongodb.eu01.onstackit.cloud:27017,s-fc0a667a-6ce3-4893-89a5-77e4661a3e2c-1.mongodb.eu01.onstackit.cloud:27017,s-fc0a667a-6ce3-4893-89a5-77e4661a3e2c-2.mongodb.eu01.onstackit.cloud:27017/stackit?authSource=stackit&tls=true&authMechanism=SCRAM-SHA-256" \
+		$(DOCKER_IMAGE):$(DOCKER_TAG)
+
+docker-up: ## Start services with docker-compose
 	@echo "$(GREEN)Starting services with docker-compose...$(NC)"
 	docker-compose up -d --remove-orphans
 
-docker-compose-down: ## Stop services with docker-compose
+docker-down: ## Stop services with docker-compose
 	@echo "$(YELLOW)Stopping services with docker-compose...$(NC)"
 	docker-compose down --remove-orphans -v
 

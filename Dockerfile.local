@@ -6,13 +6,14 @@ RUN apk --no-cache add git
 WORKDIR /app
 
 COPY go.mod go.sum ./
+
 RUN go mod download
 
 COPY . .
 
-RUN CGO_ENABLED=0 GOOS=linux go build -v -o /app/mongo-migration .
+RUN CGO_ENABLED=0 GOOS=linux go build -v -a -installsuffix cgo -o /app/mongo-migration .
 
-FROM alpine:3.19
+FROM alpine:3.19 AS production
 
 RUN apk --no-cache add ca-certificates tzdata
 
@@ -21,7 +22,9 @@ WORKDIR /app
 COPY --from=builder /app/mongo-migration /app/mongo-migration
 
 RUN adduser -D -s /bin/sh migration
+
 USER migration
 
 ENTRYPOINT ["/app/mongo-migration"]
+
 CMD ["--help"]

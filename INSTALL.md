@@ -254,6 +254,29 @@ go install ./cmd/mongo-migration
 make build-all
 ```
 
+### Run GoReleaser
+
+1.  **Install GoReleaser**:
+    *   **Using Homebrew**:
+        ```bash
+        brew install goreleaser
+        ```
+    *   **Using `go install`**:
+        ```bash
+        go install github.com/goreleaser/goreleaser@latest
+        ```
+
+2.  **Set GitHub Token**:
+    Make sure you have a `GITHUB_TOKEN` environment variable set with `repo` scope.
+    ```bash
+    export GITHUB_TOKEN="your_github_token"
+    ```
+
+3.  **Run GoReleaser**:
+    ```bash
+    goreleaser release --clean
+    ```
+
 ### Development Build
 
 ```bash

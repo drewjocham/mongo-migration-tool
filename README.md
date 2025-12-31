@@ -379,8 +379,13 @@ go mod tidy
 # Build the binary
 go build -o mongo-migration .
 
-# Run tests
-go test ./...
+# Run tests (disable go.work so vendored deps resolve)
+GOWORK=off go test ./...
+
+# Run Docker-backed CLI integration tests (requires Docker)
+GOWORK=off go test -tags=integration ./integration
+# or use the Makefile shortcut
+make integration-test
 
 # Run linter
 golangci-lint run

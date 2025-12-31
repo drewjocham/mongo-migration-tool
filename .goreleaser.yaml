@@ -102,8 +102,8 @@ brews:
       branch: main
       token: "{{ .Env.GITHUB_TOKEN }}"
     
-    # Folder inside the repository to put the formula
-    folder: Formula
+    # Directory inside the repository to put the formula
+    directory: Formula
     
     # Homepage of your project
     homepage: https://github.com/jocham/mongo-migration
@@ -224,7 +224,7 @@ nfpms:
     
     homepage: https://github.com/jocham/mongo-migration
     description: MongoDB migration tool with AI-powered insights and MCP support
-    maintainer: jocham <your-email@example.com>
+    maintainer: Drew Jocham <drew.jocham@gmail.com>
     license: MIT
     
     formats:
@@ -233,29 +233,7 @@ nfpms:
       - apk
     
     bindir: /usr/bin
-    
-    contents:
-      - src: .env.example
-        dst: /usr/share/mongo-migration/.env.example
-      - src: MCP.md
-        dst: /usr/share/doc/mongo-migration/MCP.md
-      - src: examples/
-        dst: /usr/share/mongo-migration/examples/
 
 # Announce the release
 announce:
   skip: true
-
-# Sign the artifacts
-signs:
-  - cmd: cosign
-    env:
-      - COSIGN_EXPERIMENTAL=1
-    certificate: '${artifact}.pem'
-    args:
-      - sign-blob
-      - '--output-certificate=${certificate}'
-      - '--output-signature=${signature}'
-      - '${artifact}'
-      - --yes
-    artifacts: checksum

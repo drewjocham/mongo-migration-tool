@@ -173,10 +173,10 @@ func TestMCPIntegration_IndexingAndMigrations(t *testing.T) {
 
 	client := &mcpRPCClient{enc: json.NewEncoder(clientToServerW), dec: json.NewDecoder(serverToClientR)}
 
-	// 1) initialize
+	// initialize
 	_ = client.call(t, rpcRequest{JSONRPC: "2.0", ID: 1, Method: "initialize", Params: map[string]interface{}{}})
 
-	// 2) tools/list (verify MCP is alive and exposes migration tools)
+	// tools/list (verify MCP is alive and exposes migration tools)
 	toolsResp := client.call(t, rpcRequest{JSONRPC: "2.0", ID: 2, Method: "tools/list", Params: map[string]interface{}{}})
 	var tools toolsListResult
 	if err := json.Unmarshal(toolsResp.Result, &tools); err != nil {
@@ -192,7 +192,7 @@ func TestMCPIntegration_IndexingAndMigrations(t *testing.T) {
 		}
 	}
 
-	// 3) Run migrations via MCP (this will create indexes via example migrations).
+	// Run migrations via MCP (this will create indexes via example migrations).
 	upResp := client.call(t, rpcRequest{
 		JSONRPC: "2.0",
 		ID:      3,
@@ -207,7 +207,7 @@ func TestMCPIntegration_IndexingAndMigrations(t *testing.T) {
 		t.Fatalf("unexpected migration_up output: %q", upText)
 	}
 
-	// 4) Verify indexes exist (tests the indexing capability).
+	// Verify indexes exist (tests the indexing capability).
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 

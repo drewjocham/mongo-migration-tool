@@ -1,8 +1,8 @@
 package cmd
 
 import (
-	"context"
-	"log"
+	"fmt"
+	"log/slog"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -13,33 +13,42 @@ import (
 var mcpStartCmd = &cobra.Command{
 	Use:   "start",
 	Short: "Starts the Node.js MCP server",
-	Long:  `Starts the Node.js MCP server as a child process.`,
-	Run:   runMCPStart,
+	Long: `Starts the Node.js MCP server as a child process. 
+			This is intended for use within the Docker environment where the 
+			Node.js implementation is located at /app/mcp-server.`,
+	RunE: runMCPStart,
 }
 
-func init() { //nolint:gochecknoinits // init functions are used for migration registration
+func init() {
 	mcpCmd.AddCommand(mcpStartCmd)
 }
 
-func runMCPStart(_ *cobra.Command, _ []string) {
-	// The Node.js server is expected to be in /app/mcp-server in the Docker image
+func runMCPStart(cmd *cobra.Command, _ []string) error {
+	logger := slog.New(slog.NewTextHandler(os.Stderr, nil))
+	slog.SetDefault(logger)
+
 	serverDir := "/app/mcp-server"
 	serverScript := "index.js"
 	serverPath := filepath.Join(serverDir, serverScript)
 
-	// Check if the server script exists
 	if _, err := os.Stat(serverPath); os.IsNotExist(err) {
-		log.Fatalf("MCP server script not found at %s. Make sure you are running inside the Docker container.",
-			serverPath)
+		slog.Error("MCP server script not found", "path", serverPath)
+		return fmt.Errorf("node script not found at %s: ensure you are in the correct Docker container", serverPath)
 	}
 
-	cmd := exec.CommandContext(context.Background(), "node", serverScript)
-	cmd.Dir = serverDir
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
+	nodeCmd := exec.CommandContext(cmd.Context(), "node", serverScript)
+	nodeCmd.Dir = serverDir
 
-	log.Println("Starting Node.js MCP server...")
-	if err := cmd.Run(); err != nil {
-		log.Fatalf("Node.js MCP server failed: %v", err)
+	nodeCmd.Stdout = os.Stdout
+	nodeCmd.Stderr = os.Stderr
+	nodeCmd.Stdin = os.Stdin
+
+	slog.Info("Starting Node.js MCP child process", "script", serverPath)
+
+	if err := nodeCmd.Run(); err != nil {
+		slog.Error("Node.js MCP server exited with error", "error", err)
+		return err
 	}
+
+	return nil
 }
