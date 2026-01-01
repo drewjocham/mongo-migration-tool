@@ -1,27 +1,12 @@
-# syntax=docker/dockerfile:1.4
-FROM golang:1.25-alpine AS builder
-
-RUN apk --no-cache add git
-
-WORKDIR /app
-
-COPY go.mod go.sum ./
-RUN go mod download
-
-COPY . .
-
-RUN CGO_ENABLED=0 GOOS=linux go build -v -o /app/mongo-migration ./cmd
-
 FROM alpine:3.19
 
 RUN apk --no-cache add ca-certificates tzdata
-
 WORKDIR /app
 
-COPY --from=builder /app/mongo-migration /app/mongo-migration
+COPY mongo-migration /usr/local/bin/mongo-migration
 
 RUN adduser -D -s /bin/sh migration
 USER migration
 
-ENTRYPOINT ["/app/mongo-migration"]
+ENTRYPOINT ["/usr/local/bin/mongo-migration"]
 CMD ["--help"]
