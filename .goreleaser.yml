@@ -135,8 +135,8 @@ brews:
 # Docker images
 dockers:
   - image_templates:
-      - "ghcr.io/drewjocham/mongo-migration-tool-:{{ .Version }}-amd64"
-      - "ghcr.io/drewjocham/mongo-migration-tool-:latest-amd64"
+      - "ghcr.io/drewjocham/mongo-migration-tool:{{ .Version }}-amd64"
+      - "ghcr.io/drewjocham/mongo-migration-tool:latest-amd64"
     dockerfile: Dockerfile
     use: buildx
     build_flag_templates:
@@ -151,8 +151,8 @@ dockers:
       - go.sum
   
   - image_templates:
-      - "ghcr.io/drewjocham/mongo-migration-tool-:{{ .Version }}-arm64"
-      - "ghcr.io/drewjocham/mongo-migration-tool-:latest-arm64"
+      - "ghcr.io/drewjocham/mongo-migration-tool:{{ .Version }}-arm64"
+      - "ghcr.io/drewjocham/mongo-migration-tool:latest-arm64"
     dockerfile: Dockerfile
     use: buildx
     build_flag_templates:
@@ -168,15 +168,15 @@ dockers:
 
 # Multi-platform Docker manifest
 docker_manifests:
-  - name_template: "ghcr.io/drewjocham/mongo-migration-tool-:{{ .Version }}"
+  - name_template: "ghcr.io/drewjocham/mongo-migration-tool:{{ .Version }}"
     image_templates:
-      - "ghcr.io/drewjocham/mongo-migration-tool-:{{ .Version }}-amd64"
-      - "ghcr.io/drewjocham/mongo-migration-tool-:{{ .Version }}-arm64"
+      - "ghcr.io/drewjocham/mongo-migration-tool:{{ .Version }}-amd64"
+      - "ghcr.io/drewjocham/mongo-migration-tool:{{ .Version }}-arm64"
   
-  - name_template: "ghcr.io/drewjocham/mongo-migration-tool-:latest"
+  - name_template: "ghcr.io/drewjocham/mongo-migration-tool:latest"
     image_templates:
-      - "ghcr.io/drewjocham/mongo-migration-tool-:latest-amd64"
-      - "ghcr.io/drewjocham/mongo-migration-tool-:latest-arm64"
+      - "ghcr.io/drewjocham/mongo-migration-tool:latest-amd64"
+      - "ghcr.io/drewjocham/mongo-migration-tool:latest-arm64"
 
 # GitHub release settings
 release:
@@ -227,7 +227,7 @@ release:
 
     #### Docker
     ```bash
-    docker run --rm -v $(pwd):/app ghcr.io/drewjocham/mongo-migration-tool-:{{.Version}} --help
+    docker run --rm -v $(pwd):/app ghcr.io/drewjocham/mongo-migration-tool:{{.Version}} --help
     ```
 
     ### 🔮 What's Next?
