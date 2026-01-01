@@ -13,7 +13,7 @@ builds:
       - arm
     goarm:
       - 7
-    main: ./cmd # Assuming your main package is in the 'cmd' directory
+    main: ./cmd
     binary: mongo-migration
 
 docker_builds:
