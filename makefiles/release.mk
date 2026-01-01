@@ -1,4 +1,4 @@
-.PHONY: release release-check deploy-dev deploy-prod
+.PHONY: release release-check deploy-dev deploy-prod release-beta
 
 release-check: clean ci-test build-all releaser-check ## Create a release build
 	@echo "$(GREEN)Release build completed!$(NC)"
@@ -19,7 +19,6 @@ releaser-check:
 release:
 	goreleaser release --clean
 
-
-docker-release-login:
-	export CR_PAT=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
-	echo $CR_PAT | docker login ghcr.io -u drewjocham --password-stdin
+release-beta: ## Create and release a new beta version
+	@echo "$(GREEN)Starting beta release process...$(NC)"
+	./scripts/release-beta.sh
