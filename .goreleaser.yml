@@ -97,7 +97,7 @@ brews:
     # Create a GitHub repository for your Homebrew tap
     # GitHub repository for the tap
     repository:
-      owner: jocham
+      owner: drewjocham
       name: homebrew-mongo-migration
       branch: main
       token: "{{ .Env.GITHUB_TOKEN }}"
@@ -106,7 +106,7 @@ brews:
     directory: Formula
     
     # Homepage of your project
-    homepage: https://github.com/jocham/mongo-migration-tool
+    homepage: https://github.com/drewjocham/mongo-migration-tool
     
     # Your project's description
     description: "MongoDB migration tool with AI-powered insights and MCP support"
@@ -135,8 +135,8 @@ brews:
 # Docker images
 dockers:
   - image_templates:
-      - "ghcr.io/jocham/mongo-migration-tool:{{ .Version }}-amd64"
-      - "ghcr.io/jocham/mongo-migration-tool:latest-amd64"
+      - "ghcr.io/drewjocham/mongo-migration-tool:{{ .Version }}-amd64"
+      - "ghcr.io/drewjocham/mongo-migration-tool:latest-amd64"
     dockerfile: Dockerfile
     use: buildx
     build_flag_templates:
@@ -145,14 +145,15 @@ dockers:
       - "--label=org.opencontainers.image.title={{.ProjectName}}"
       - "--label=org.opencontainers.image.revision={{.FullCommit}}"
       - "--label=org.opencontainers.image.version={{.Version}}"
-      - "--label=org.opencontainers.image.source=https://github.com/jocham/mongo-migration-tool"
+      - "--label=org.opencontainers.image.source=https://github.com/drewjocham/mongo-migration-tool"
+ol"
     extra_files:
       - go.mod
       - go.sum
   
   - image_templates:
-      - "ghcr.io/jocham/mongo-migration-tool:{{ .Version }}-arm64"
-      - "ghcr.io/jocham/mongo-migration-tool:latest-arm64"
+      - "ghcr.io/drewjocham/mongo-migration-tool:{{ .Version }}-arm64"
+      - "ghcr.io/drewjocham/mongo-migration-tool:latest-arm64"
     dockerfile: Dockerfile
     use: buildx
     build_flag_templates:
@@ -168,21 +169,21 @@ dockers:
 
 # Multi-platform Docker manifest
 docker_manifests:
-  - name_template: "ghcr.io/jocham/mongo-migration-tool:{{ .Version }}"
+  - name_template: "ghcr.io/drewjocham/mongo-migration-tool:{{ .Version }}"
     image_templates:
-      - "ghcr.io/jocham/mongo-migration-tool:{{ .Version }}-amd64"
-      - "ghcr.io/jocham/mongo-migration-tool:{{ .Version }}-arm64"
+      - "ghcr.io/drewjocham/mongo-migration-tool:{{ .Version }}-amd64"
+      - "ghcr.io/drewjocham/mongo-migration-tool:{{ .Version }}-arm64"
   
-  - name_template: "ghcr.io/jocham/mongo-migration-tool:latest"
+  - name_template: "ghcr.io/drewjocham/mongo-migration-tool:latest"
     image_templates:
-      - "ghcr.io/jocham/mongo-migration-tool:latest-amd64"
-      - "ghcr.io/jocham/mongo-migration-tool:latest-arm64"
+      - "ghcr.io/drewjocham/mongo-migration-tool:latest-amd64"
+      - "ghcr.io/drewjocham/mongo-migration-tool:latest-arm64"
 
 # GitHub release settings
 release:
   github:
-    owner: jocham
-    name: mongo-migration
+    owner: drewjocham
+    name: mongo-migration-tool
   
   draft: false
   prerelease: auto
