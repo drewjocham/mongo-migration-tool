@@ -186,10 +186,6 @@ docker_manifests:
 
 # GitHub release settings
 release:
-  github:
-    owner: drewjocham
-    name: mongo-migration-tool
-  
   draft: false
   prerelease: auto
   
