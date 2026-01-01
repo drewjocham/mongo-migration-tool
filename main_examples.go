@@ -3,5 +3,5 @@
 package main
 
 import (
-	_ "github.com/drewjocham/mongo-migration-tool/examples/examplemigrations"
+	_ "github.com/drewjocham/mongo-migration-tool-/examples/examplemigrations"
 )

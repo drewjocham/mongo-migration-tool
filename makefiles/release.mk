@@ -21,4 +21,4 @@ release:
 
 release-beta: ## Create and release a new beta version
 	@echo "$(GREEN)Starting beta release process...$(NC)"
-	./scripts/release-beta.sh && ./scripts/dist/run.sh release
+	rm -rf dist && ./scripts/release-beta.sh && ./scripts/dist/run.sh release

@@ -13,9 +13,9 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 
-	"github.com/drewjocham/mongo-migration-tool/config"
-	_ "github.com/drewjocham/mongo-migration-tool/examples/examplemigrations"
-	"github.com/drewjocham/mongo-migration-tool/migration"
+	"github.com/drewjocham/mongo-migration-tool-/config"
+	_ "github.com/drewjocham/mongo-migration-tool-/examples/examplemigrations"
+	"github.com/drewjocham/mongo-migration-tool-/migration"
 )
 
 const (

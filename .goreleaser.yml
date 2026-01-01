@@ -106,7 +106,7 @@ brews:
     directory: Formula
     
     # Homepage of your project
-    homepage: https://github.com/drewjocham/mongo-migration-tool
+    homepage: https://github.com/drewjocham/mongo-migration-tool-
     
     # Your project's description
     description: "MongoDB migration tool with AI-powered insights and MCP support"
@@ -148,7 +148,7 @@ dockers:
       - "--label=org.opencontainers.image.title={{.ProjectName}}"
       - "--label=org.opencontainers.image.revision={{.FullCommit}}"
       - "--label=org.opencontainers.image.version={{.Version}}"
-      - "--label=org.opencontainers.image.source=https://github.com/drewjocham/mongo-migration-tool"
+      - "--label=org.opencontainers.image.source=https://github.com/drewjocham/mongo-migration-tool-"
     extra_files:
       - go.mod
       - go.sum
@@ -167,7 +167,7 @@ dockers:
       - "--label=org.opencontainers.image.title={{.ProjectName}}"
       - "--label=org.opencontainers.image.revision={{.FullCommit}}"
       - "--label=org.opencontainers.image.version={{.Version}}"
-      - "--label=org.opencontainers.image.source=https://github.com/drewjocham/mongo-migration-tool"
+      - "--label=org.opencontainers.image.source=https://github.com/drewjocham/mongo-migration-tool-"
     extra_files:
       - go.mod
       - go.sum
@@ -209,7 +209,7 @@ release:
     
     #### Go Install
     ```bash
-    go install github.com/drewjocham/mongo-migration-tool@v{{.Version}}
+    go install github.com/drewjocham/mongo-migration-tool-@v{{.Version}}
     ```
     
     #### Docker
@@ -223,17 +223,17 @@ release:
     Use mongo-migration as a Go library in your projects:
     
     ```bash
-    go get github.com/drewjocham/mongo-migration-tool@v{{.Version}}
+    go get github.com/drewjocham/mongo-migration-tool-@v{{.Version}}
     ```
     
-    See the [documentation](https://pkg.go.dev/github.com/drewjocham/mongo-migration-tool) for detailed API usage.
+    See the [documentation](https://pkg.go.dev/github.com/drewjocham/mongo-migration-tool-) for detailed API usage.
 
 # Package managers
 nfpms:
   - id: packages
     package_name: mongo-migration
     
-    homepage: https://github.com/drewjocham/mongo-migration-tool
+    homepage: https://github.com/drewjocham/mongo-migration-tool-
     description: MongoDB migration tool with AI-powered insights and MCP support
     maintainer: Drew drewjocham <drew.drewjocham@gmail.com>
     license: MIT
