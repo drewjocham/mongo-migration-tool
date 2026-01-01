@@ -6,8 +6,8 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/jocham/mongo-migration/mcp"
-	_ "github.com/jocham/mongo-migration/migrations"
+	"github.com/jocham/mongo-migration-tool/mcp"
+	_ "github.com/jocham/mongo-migration-tool/migrations"
 )
 
 var (

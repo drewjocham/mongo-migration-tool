@@ -15,8 +15,8 @@ COMPOSE_PROJECT_NAME ?= mm-it
 .PHONY: build clean test install deps integration-test
 
 clear-cache: ## Clear build cache is sometimes needed in the pipeline
-	@$(GO_ENV) go clean -modcache # Clear module cache
-	@$(GO_ENV) go clean -cache # Clear build cache
+	@$(GO_ENV) go clean -modcache
+	@$(GO_ENV) go clean -cache
 
 build: deps ## Build the binary
 	@echo "$(GREEN)Building $(BINARY_NAME)...$(NC)"

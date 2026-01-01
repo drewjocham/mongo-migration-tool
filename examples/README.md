@@ -139,7 +139,7 @@ go run library-usage-example.go
 
 To use these examples in your own project:
 
-1. **Install the library**: `go get github.com/jocham/mongo-migration@latest`
+1. **Install the library**: `go get github.com/jocham/mongo-migration-tool@latest`
 2. **Copy migration patterns**: Use the migration structs in `examplemigrations/` as templates
 3. **Use the library example**: Copy and adapt `library-usage-example.go` for your needs
 4. **Configure properly**: Set up your .env file or programmatic configuration

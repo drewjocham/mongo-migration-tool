@@ -1,7 +1,7 @@
 package examplemigrations
 
 import (
-	"github.com/jocham/mongo-migration/migration"
+	"github.com/jocham/mongo-migration-tool/migration"
 )
 
 func init() { //nolint:gochecknoinits // init functions are used for migration registration

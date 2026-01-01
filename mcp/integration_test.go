@@ -16,9 +16,9 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 
-	"github.com/jocham/mongo-migration/config"
-	"github.com/jocham/mongo-migration/mcp"
-	_ "github.com/jocham/mongo-migration/migrations" // ensure built-in migrations register via init()
+	"github.com/jocham/mongo-migration-tool/config"
+	"github.com/jocham/mongo-migration-tool/mcp"
+	_ "github.com/jocham/mongo-migration-tool/migrations" // ensure built-in migrations register via init()
 )
 
 type rpcRequest struct {
