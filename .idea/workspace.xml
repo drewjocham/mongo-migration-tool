@@ -5,38 +5,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="53a82f71-5517-487d-94b0-2d95ee8915ca" name="Changes" comment="preparing for first release">
-      <change beforePath="$PROJECT_DIR$/.goreleaser.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/.goreleaser.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.github/workflows/release.yml" beforeDir="false" afterPath="$PROJECT_DIR$/.github/workflows/release.yml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/CONTRIBUTING.md" beforeDir="false" afterPath="$PROJECT_DIR$/CONTRIBUTING.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Dockerfile" beforeDir="false" afterPath="$PROJECT_DIR$/Dockerfile" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Dockerfile.mcp" beforeDir="false" afterPath="$PROJECT_DIR$/Dockerfile.mcp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/INSTALL.md" beforeDir="false" afterPath="$PROJECT_DIR$/INSTALL.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/LIBRARY.md" beforeDir="false" afterPath="$PROJECT_DIR$/LIBRARY.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Makefile" beforeDir="false" afterPath="$PROJECT_DIR$/Makefile" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmd/create.go" beforeDir="false" afterPath="$PROJECT_DIR$/cmd/create.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmd/force.go" beforeDir="false" afterPath="$PROJECT_DIR$/cmd/force.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmd/mcp.go" beforeDir="false" afterPath="$PROJECT_DIR$/cmd/mcp.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmd/mcp_examples.go" beforeDir="false" afterPath="$PROJECT_DIR$/cmd/mcp_examples.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmd/root.go" beforeDir="false" afterPath="$PROJECT_DIR$/cmd/root.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmd/status.go" beforeDir="false" afterPath="$PROJECT_DIR$/cmd/status.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc.go" beforeDir="false" afterPath="$PROJECT_DIR$/doc.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/examples/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/examples/README.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/examples/examplemigrations/main.go" beforeDir="false" afterPath="$PROJECT_DIR$/examples/examplemigrations/main.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/examples/library-example/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/examples/library-example/README.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/examples/library-example/main.go" beforeDir="false" afterPath="$PROJECT_DIR$/examples/library-example/main.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/examples/main.go" beforeDir="false" afterPath="$PROJECT_DIR$/examples/main.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/go.mod" beforeDir="false" afterPath="$PROJECT_DIR$/go.mod" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/integration/cli_integration_test.go" beforeDir="false" afterPath="$PROJECT_DIR$/integration/cli_integration_test.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/log/logger.go" beforeDir="false" afterPath="$PROJECT_DIR$/log/logger.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/main.go" beforeDir="false" afterPath="$PROJECT_DIR$/main.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/main_examples.go" beforeDir="false" afterPath="$PROJECT_DIR$/main_examples.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/makefiles/build.mk" beforeDir="false" afterPath="$PROJECT_DIR$/makefiles/build.mk" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/makefiles/mcp.mk" beforeDir="false" afterPath="$PROJECT_DIR$/makefiles/mcp.mk" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mcp/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/mcp/README.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mcp/integration_test.go" beforeDir="false" afterPath="$PROJECT_DIR$/mcp/integration_test.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mcp/server.go" beforeDir="false" afterPath="$PROJECT_DIR$/mcp/server.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/migrations/register.go" beforeDir="false" afterPath="$PROJECT_DIR$/migrations/register.go" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -114,6 +84,8 @@
     "Makefile Target.clean.executor": "Run",
     "Makefile Target.create-migration.executor": "Run",
     "Makefile Target.db-up.executor": "Run",
+    "Makefile Target.deploy-dev.executor": "Run",
+    "Makefile Target.deploy-prod.executor": "Run",
     "Makefile Target.deps.executor": "Run",
     "Makefile Target.dev-setup.executor": "Run",
     "Makefile Target.docker-build.executor": "Run",
@@ -184,7 +156,7 @@
       <recent name="$PROJECT_DIR$/mcp/examples" />
     </key>
   </component>
-  <component name="RunManager" selected="Makefile Target.mcp">
+  <component name="RunManager" selected="Makefile Target.release">
     <configuration default="true" type="GoApplicationRunConfiguration" factoryName="Go Application">
       <module name="mongo-migration-tool" />
       <working_directory value="$PROJECT_DIR$" />
@@ -223,20 +195,14 @@
       <framework value="gotest" />
       <method v="2" />
     </configuration>
-    <configuration name="build" type="MAKEFILE_TARGET_RUN_CONFIGURATION" factoryName="Makefile" temporary="true">
-      <makefile filename="$PROJECT_DIR$/makefiles/build.mk" target="build" workingDirectory="" arguments="">
+    <configuration name="deploy-dev" type="MAKEFILE_TARGET_RUN_CONFIGURATION" factoryName="Makefile" temporary="true">
+      <makefile filename="$PROJECT_DIR$/makefiles/release.mk" target="deploy-dev" workingDirectory="" arguments="">
         <envs />
       </makefile>
       <method v="2" />
     </configuration>
-    <configuration name="docker-build" type="MAKEFILE_TARGET_RUN_CONFIGURATION" factoryName="Makefile" temporary="true">
-      <makefile filename="$PROJECT_DIR$/makefiles/docker.mk" target="docker-build" workingDirectory="" arguments="">
-        <envs />
-      </makefile>
-      <method v="2" />
-    </configuration>
-    <configuration name="format" type="MAKEFILE_TARGET_RUN_CONFIGURATION" factoryName="Makefile" temporary="true">
-      <makefile filename="$PROJECT_DIR$/makefiles/linter.mk" target="format" workingDirectory="" arguments="">
+    <configuration name="deploy-prod" type="MAKEFILE_TARGET_RUN_CONFIGURATION" factoryName="Makefile" temporary="true">
+      <makefile filename="$PROJECT_DIR$/makefiles/release.mk" target="deploy-prod" workingDirectory="" arguments="">
         <envs />
       </makefile>
       <method v="2" />
@@ -253,6 +219,12 @@
       </makefile>
       <method v="2" />
     </configuration>
+    <configuration name="release" type="MAKEFILE_TARGET_RUN_CONFIGURATION" factoryName="Makefile" temporary="true">
+      <makefile filename="$PROJECT_DIR$/makefiles/release.mk" target="release" workingDirectory="" arguments="">
+        <envs />
+      </makefile>
+      <method v="2" />
+    </configuration>
     <configuration default="true" type="docker-deploy" factoryName="docker-compose.yml" temporary="true">
       <deployment type="docker-compose.yml">
         <settings />
@@ -261,19 +233,19 @@
     </configuration>
     <list>
       <item itemvalue="Go Build.up" />
+      <item itemvalue="Makefile Target.deploy-dev" />
+      <item itemvalue="Makefile Target.deploy-prod" />
+      <item itemvalue="Makefile Target.release" />
       <item itemvalue="Makefile Target.mcp" />
-      <item itemvalue="Makefile Target.format" />
       <item itemvalue="Makefile Target.lint" />
-      <item itemvalue="Makefile Target.docker-build" />
-      <item itemvalue="Makefile Target.build" />
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="Makefile Target.release" />
+        <item itemvalue="Makefile Target.deploy-prod" />
+        <item itemvalue="Makefile Target.deploy-dev" />
         <item itemvalue="Makefile Target.mcp" />
         <item itemvalue="Makefile Target.lint" />
-        <item itemvalue="Makefile Target.format" />
-        <item itemvalue="Makefile Target.build" />
-        <item itemvalue="Makefile Target.docker-build" />
       </list>
     </recent_temporary>
   </component>
@@ -309,7 +281,7 @@
       <workItem from="1765985023246" duration="174000" />
       <workItem from="1766007617753" duration="4584000" />
       <workItem from="1767228990833" duration="4427000" />
-      <workItem from="1767234282915" duration="748000" />
+      <workItem from="1767234282915" duration="1899000" />
     </task>
     <task id="LOCAL-00001" summary="CLI and mongo-migration-tool">
       <option name="closed" value="true" />
