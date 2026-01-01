@@ -146,6 +146,9 @@ dockers:
       - "--label=org.opencontainers.image.revision={{.FullCommit}}"
       - "--label=org.opencontainers.image.version={{.Version}}"
       - "--label=org.opencontainers.image.source=https://github.com/jocham/mongo-migration-tool"
+    extra_files:
+      - go.mod
+      - go.sum
   
   - image_templates:
       - "ghcr.io/jocham/mongo-migration-tool:{{ .Version }}-arm64"
@@ -159,6 +162,9 @@ dockers:
       - "--label=org.opencontainers.image.revision={{.FullCommit}}"
       - "--label=org.opencontainers.image.version={{.Version}}"
       - "--label=org.opencontainers.image.source=https://github.com/jocham/mongo-migration-tool"
+    extra_files:
+      - go.mod
+      - go.sum
 
 # Multi-platform Docker manifest
 docker_manifests:
