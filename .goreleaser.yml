@@ -134,11 +134,14 @@ brews:
 
 # Docker images
 dockers:
-  - image_templates:
+  - id: docker-amd64
+    image_templates:
       - "ghcr.io/drewjocham/mongo-migration-tool:{{ .Version }}-amd64"
       - "ghcr.io/drewjocham/mongo-migration-tool:latest-amd64"
     dockerfile: Dockerfile
     use: buildx
+    goos: linux
+    goarch: amd64
     build_flag_templates:
       - "--platform=linux/amd64"
       - "--label=org.opencontainers.image.created={{.Date}}"
@@ -146,23 +149,25 @@ dockers:
       - "--label=org.opencontainers.image.revision={{.FullCommit}}"
       - "--label=org.opencontainers.image.version={{.Version}}"
       - "--label=org.opencontainers.image.source=https://github.com/drewjocham/mongo-migration-tool"
-ol"
     extra_files:
       - go.mod
       - go.sum
-  
-  - image_templates:
+
+  - id: docker-arm64
+    image_templates:
       - "ghcr.io/drewjocham/mongo-migration-tool:{{ .Version }}-arm64"
       - "ghcr.io/drewjocham/mongo-migration-tool:latest-arm64"
     dockerfile: Dockerfile
     use: buildx
+    goos: linux
+    goarch: arm64
     build_flag_templates:
       - "--platform=linux/arm64"
       - "--label=org.opencontainers.image.created={{.Date}}"
       - "--label=org.opencontainers.image.title={{.ProjectName}}"
       - "--label=org.opencontainers.image.revision={{.FullCommit}}"
       - "--label=org.opencontainers.image.version={{.Version}}"
-      - "--label=org.opencontainers.image.source=https://github.com/jocham/mongo-migration-tool"
+      - "--label=org.opencontainers.image.source=https://github.com/drewjocham/mongo-migration-tool"
     extra_files:
       - go.mod
       - go.sum
@@ -199,18 +204,18 @@ release:
     
     #### Homebrew (macOS/Linux)
     ```bash
-    brew tap jocham/mongo-migration-tool
+    brew tap drewjocham/mongo-migration-tool
     brew install mongo-migration-tool
     ```
     
     #### Go Install
     ```bash
-    go install github.com/jocham/mongo-migration-tool@v{{.Version}}
+    go install github.com/drewjocham/mongo-migration-tool@v{{.Version}}
     ```
     
     #### Docker
     ```bash
-    docker run --rm ghcr.io/jocham/mongo-migration-tool:{{.Version}} --help
+    docker run --rm ghcr.io/drewjocham/mongo-migration-tool:{{.Version}} --help
     ```
   
   footer: |
@@ -219,17 +224,17 @@ release:
     Use mongo-migration as a Go library in your projects:
     
     ```bash
-    go get github.com/jocham/mongo-migration-tool@v{{.Version}}
+    go get github.com/drewjocham/mongo-migration-tool@v{{.Version}}
     ```
     
-    See the [documentation](https://pkg.go.dev/github.com/jocham/mongo-migration-tool) for detailed API usage.
+    See the [documentation](https://pkg.go.dev/github.com/drewjocham/mongo-migration-tool) for detailed API usage.
 
 # Package managers
 nfpms:
   - id: packages
     package_name: mongo-migration
     
-    homepage: https://github.com/jocham/mongo-migration-tool
+    homepage: https://github.com/drewjocham/mongo-migration-tool
     description: MongoDB migration tool with AI-powered insights and MCP support
     maintainer: Drew Jocham <drew.jocham@gmail.com>
     license: MIT

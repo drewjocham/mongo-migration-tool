@@ -5,8 +5,9 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="53a82f71-5517-487d-94b0-2d95ee8915ca" name="Changes" comment="preparing for first release">
-      <change beforePath="$PROJECT_DIR$/.github/workflows/release.yml" beforeDir="false" afterPath="$PROJECT_DIR$/.github/workflows/release.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.goreleaser.yml" beforeDir="false" afterPath="$PROJECT_DIR$/.goreleaser.yml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/makefiles/release.mk" beforeDir="false" afterPath="$PROJECT_DIR$/makefiles/release.mk" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -94,6 +95,7 @@
     "Makefile Target.docker-build.executor": "Run",
     "Makefile Target.docker-compose-down.executor": "Run",
     "Makefile Target.docker-compose-up.executor": "Run",
+    "Makefile Target.docker-release-login.executor": "Run",
     "Makefile Target.docker-run.executor": "Run",
     "Makefile Target.docs.executor": "Run",
     "Makefile Target.format.executor": "Run",
@@ -159,7 +161,7 @@
       <recent name="$PROJECT_DIR$/mcp/examples" />
     </key>
   </component>
-  <component name="RunManager" selected="Makefile Target.release">
+  <component name="RunManager" selected="Makefile Target.docker-release-login">
     <configuration default="true" type="GoApplicationRunConfiguration" factoryName="Go Application">
       <module name="mongo-migration-tool" />
       <working_directory value="$PROJECT_DIR$" />
@@ -210,8 +212,8 @@
       </makefile>
       <method v="2" />
     </configuration>
-    <configuration name="lint" type="MAKEFILE_TARGET_RUN_CONFIGURATION" factoryName="Makefile" temporary="true">
-      <makefile filename="$PROJECT_DIR$/makefiles/linter.mk" target="lint" workingDirectory="" arguments="">
+    <configuration name="docker-release-login" type="MAKEFILE_TARGET_RUN_CONFIGURATION" factoryName="Makefile" temporary="true">
+      <makefile filename="$PROJECT_DIR$/makefiles/release.mk" target="docker-release-login" workingDirectory="" arguments="">
         <envs />
       </makefile>
       <method v="2" />
@@ -236,19 +238,19 @@
     </configuration>
     <list>
       <item itemvalue="Go Build.up" />
+      <item itemvalue="Makefile Target.docker-release-login" />
       <item itemvalue="Makefile Target.deploy-dev" />
       <item itemvalue="Makefile Target.deploy-prod" />
       <item itemvalue="Makefile Target.release" />
       <item itemvalue="Makefile Target.mcp" />
-      <item itemvalue="Makefile Target.lint" />
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="Makefile Target.docker-release-login" />
         <item itemvalue="Makefile Target.release" />
         <item itemvalue="Makefile Target.deploy-prod" />
         <item itemvalue="Makefile Target.deploy-dev" />
         <item itemvalue="Makefile Target.mcp" />
-        <item itemvalue="Makefile Target.lint" />
       </list>
     </recent_temporary>
   </component>
@@ -285,22 +287,6 @@
       <workItem from="1766007617753" duration="4584000" />
       <workItem from="1767228990833" duration="4427000" />
       <workItem from="1767234282915" duration="1899000" />
-    </task>
-    <task id="LOCAL-00001" summary="CLI and mongo-migration-tool">
-      <option name="closed" value="true" />
-      <created>1759999129520</created>
-      <option name="number" value="00001" />
-      <option name="presentableId" value="LOCAL-00001" />
-      <option name="project" value="LOCAL" />
-      <updated>1759999129520</updated>
-    </task>
-    <task id="LOCAL-00002" summary="CLI and mongo-migration-tool">
-      <option name="closed" value="true" />
-      <created>1759999180304</created>
-      <option name="number" value="00002" />
-      <option name="presentableId" value="LOCAL-00002" />
-      <option name="project" value="LOCAL" />
-      <updated>1759999180304</updated>
     </task>
     <task id="LOCAL-00003" summary="CLI and mongo-migration-tool">
       <option name="closed" value="true" />
@@ -678,7 +664,23 @@
       <option name="project" value="LOCAL" />
       <updated>1767254556261</updated>
     </task>
-    <option name="localTasksCounter" value="50" />
+    <task id="LOCAL-00050" summary="preparing for first release">
+      <option name="closed" value="true" />
+      <created>1767256647114</created>
+      <option name="number" value="00050" />
+      <option name="presentableId" value="LOCAL-00050" />
+      <option name="project" value="LOCAL" />
+      <updated>1767256647114</updated>
+    </task>
+    <task id="LOCAL-00051" summary="preparing for first release">
+      <option name="closed" value="true" />
+      <created>1767257936524</created>
+      <option name="number" value="00051" />
+      <option name="presentableId" value="LOCAL-00051" />
+      <option name="project" value="LOCAL" />
+      <updated>1767257936524</updated>
+    </task>
+    <option name="localTasksCounter" value="52" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">

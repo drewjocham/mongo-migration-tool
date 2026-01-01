@@ -18,3 +18,8 @@ releaser-check:
 
 release:
 	goreleaser release --clean
+
+
+docker-release-login:
+	export CR_PAT=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
+	echo $CR_PAT | docker login ghcr.io -u drewjocham --password-stdin
