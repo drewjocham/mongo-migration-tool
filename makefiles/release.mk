@@ -1,7 +1,5 @@
 .PHONY: release release-check deploy-dev deploy-prod
 
-export GITHUB_TOKEN = "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"
-
 release-check: clean ci-test build-all goreleaser-check ## Create a release build
 	@echo "$(GREEN)Release build completed!$(NC)"
 	@echo "Binaries available in $(BUILD_DIR)/"
