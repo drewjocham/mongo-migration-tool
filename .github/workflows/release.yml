@@ -1,7 +1,9 @@
+name: Release
+
 release:
   github:
     owner: drewjocham
-    name: mongo-migration
+    name: mongo-migration-tool-
 
 on:
   push:
@@ -12,6 +14,10 @@ permissions:
   contents: write
   packages: write
   id-token: write
+  actions: write
+  checks: write
+  issues: write
+  pull-requests: write
 
 env:
   REGISTRY: ghcr.io
