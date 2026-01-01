@@ -5,11 +5,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="53a82f71-5517-487d-94b0-2d95ee8915ca" name="Changes" comment="preparing for first release">
-      <change afterPath="$PROJECT_DIR$/scripts/release-beta.sh" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.github/workflows/release.yml" beforeDir="false" afterPath="$PROJECT_DIR$/.github/workflows/release.yml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.goreleaser.yml" beforeDir="false" afterPath="$PROJECT_DIR$/.goreleaser.yml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/makefiles/release.mk" beforeDir="false" afterPath="$PROJECT_DIR$/makefiles/release.mk" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -289,14 +285,6 @@
       <workItem from="1766007617753" duration="4584000" />
       <workItem from="1767228990833" duration="4427000" />
       <workItem from="1767234282915" duration="1899000" />
-    </task>
-    <task id="LOCAL-00005" summary="CLI and mongo-migration-tool">
-      <option name="closed" value="true" />
-      <created>1760027765572</created>
-      <option name="number" value="00005" />
-      <option name="presentableId" value="LOCAL-00005" />
-      <option name="project" value="LOCAL" />
-      <updated>1760027765572</updated>
     </task>
     <task id="LOCAL-00006" summary="CLI and mongo-migration-tool">
       <option name="closed" value="true" />
@@ -682,7 +670,15 @@
       <option name="project" value="LOCAL" />
       <updated>1767268292023</updated>
     </task>
-    <option name="localTasksCounter" value="54" />
+    <task id="LOCAL-00054" summary="preparing for first release">
+      <option name="closed" value="true" />
+      <created>1767268993194</created>
+      <option name="number" value="00054" />
+      <option name="presentableId" value="LOCAL-00054" />
+      <option name="project" value="LOCAL" />
+      <updated>1767268993194</updated>
+    </task>
+    <option name="localTasksCounter" value="55" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
