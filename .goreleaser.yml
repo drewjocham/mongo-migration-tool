@@ -1,0 +1,38 @@
+# .goreleaser.yml
+builds:
+  - id: "mongo-migration"
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - windows
+      - darwin
+    goarch:
+      - amd64
+      - arm64
+      - arm
+    goarm:
+      - 7
+    main: ./cmd # Assuming your main package is in the 'cmd' directory
+    binary: mongo-migration
+
+docker_builds:
+  - image_templates:
+      - "ghcr.io/jocham/mongo-migration-tool:{{ .Tag }}-amd64"
+      - "ghcr.io/jocham/mongo-migration-tool:latest-amd64"
+    dockerfile: Dockerfile
+    goos: linux
+    goarch: amd64
+    extra_files:
+      - go.mod
+      - go.sum
+
+  - image_templates:
+      - "ghcr.io/jocham/mongo-migration-tool:{{ .Tag }}-arm64"
+      - "ghcr.io/jocham/mongo-migration-tool:latest-arm64"
+    dockerfile: Dockerfile
+    goos: linux
+    goarch: arm64
+    extra_files:
+      - go.mod
+      - go.sum
