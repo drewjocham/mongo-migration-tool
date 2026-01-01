@@ -19,8 +19,8 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 
-	"github.com/drewjocham/mongo-migration-tool-/migration"
-	_ "github.com/drewjocham/mongo-migration-tool-/migrations"
+	"github.com/drewjocham/mongo-migration-tool/migration"
+	_ "github.com/drewjocham/mongo-migration-tool/migrations"
 )
 
 var (

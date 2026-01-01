@@ -106,7 +106,7 @@ brews:
     directory: Formula
     
     # Homepage of your project
-    homepage: https://github.com/drewjocham/mongo-migration-tool-
+    homepage: https://github.com/drewjocham/mongo-migration-tool
     
     # Your project's description
     description: "MongoDB migration tool with AI-powered insights and MCP support"
@@ -145,7 +145,7 @@ dockers:
       - "--label=org.opencontainers.image.title={{.ProjectName}}"
       - "--label=org.opencontainers.image.revision={{.FullCommit}}"
       - "--label=org.opencontainers.image.version={{.Version}}"
-      - "--label=org.opencontainers.image.source=https://github.com/drewjocham/mongo-migration-tool-"
+      - "--label=org.opencontainers.image.source=https://github.com/drewjocham/mongo-migration-tool"
     extra_files:
       - go.mod
       - go.sum
@@ -161,7 +161,7 @@ dockers:
       - "--label=org.opencontainers.image.title={{.ProjectName}}"
       - "--label=org.opencontainers.image.revision={{.FullCommit}}"
       - "--label=org.opencontainers.image.version={{.Version}}"
-      - "--label=org.opencontainers.image.source=https://github.com/drewjocham/mongo-migration-tool-"
+      - "--label=org.opencontainers.image.source=https://github.com/drewjocham/mongo-migration-tool"
     extra_files:
       - go.mod
       - go.sum
@@ -222,7 +222,7 @@ release:
 
     #### Go Install
     ```bash
-    go install github.com/drewjocham/mongo-migration-tool-@v{{.Version}}
+    go install github.com/drewjocham/mongo-migration-tool@v{{.Version}}
     ```
 
     #### Docker
@@ -238,21 +238,21 @@ release:
     *   Deeper integration with popular development tools.
     *   Enhanced reporting and logging.
 
-    We welcome your feedback and contributions. Please feel free to open an issue or pull request on our [GitHub repository](https://github.com/drewjocham/mongo-migration-tool-).
+    We welcome your feedback and contributions. Please feel free to open an issue or pull request on our [GitHub repository](https://github.com/drewjocham/mongo-migration-tool).
   
   footer: |
     ## Thank You!
 
     Thank you for trying out the MongoDB Migration Tool. We hope it makes your development process easier and more enjoyable.
     
-    For more detailed information, please see the [documentation](https://pkg.go.dev/github.com/drewjocham/mongo-migration-tool-).
+    For more detailed information, please see the [documentation](https://pkg.go.dev/github.com/drewjocham/mongo-migration-tool).
 
 # Package managers
 nfpms:
   - id: packages
     package_name: mongo-migration
     
-    homepage: https://github.com/drewjocham/mongo-migration-tool-
+    homepage: https://github.com/drewjocham/mongo-migration-tool
     description: MongoDB migration tool with AI-powered insights and MCP support
     maintainer: Drew Jocham <drew.jocham@gmail.com>
     license: MIT

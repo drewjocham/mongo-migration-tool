@@ -38,7 +38,7 @@ export MONGO_DATABASE="example_db"
 go mod init your-project-name
 
 # Add mongo-migration dependency
-go get github.com/drewjocham/mongo-migration-tool-@latest
+go get github.com/drewjocham/mongo-migration-tool@latest
 
 # Copy and adapt the example code from main.go
 ```

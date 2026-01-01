@@ -87,7 +87,7 @@ import (
 	"context"
 	"log/slog"
 
-	"github.com/drewjocham/mongo-migration-tool-/migration"
+	"github.com/drewjocham/mongo-migration-tool/migration"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
