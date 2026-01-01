@@ -1,8 +1,8 @@
 # mongo-migration
 
-[![Go Report Card](https://goreportcard.com/badge/github.com/drewjocham/mongo-migration-tool)](https://goreportcard.com/report/github.com/drewjocham/mongo-migration-tool)
+[![Go Report Card](https://goreportcard.com/badge/github.com/drewjocham/mongo-migration-tool-)](https://goreportcard.com/report/github.com/drewjocham/mongo-migration-tool-)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Go Reference](https://pkg.go.dev/badge/github.com/drewjocham/mongo-migration-tool.svg)](https://pkg.go.dev/github.com/drewjocham/mongo-migration-tool)
+[![Go Reference](https://pkg.go.dev/badge/github.com/drewjocham/mongo-migration-tool-.svg)](https://pkg.go.dev/github.com/drewjocham/mongo-migration-tool-)
 
 A comprehensive MongoDB migration and database analysis tool with AI-powered insights. Think Liquibase/Flyway for MongoDB, plus intelligent database optimization recommendations.
 
@@ -100,17 +100,17 @@ If you want to run mongo-migration on your local machine:
 ```
 ```bash
     # Add to your Go project
-    go get github.com/drewjocham/mongo-migration-tool@latest
+    go get github.com/drewjocham/mongo-migration-tool-@latest
 ```
 
 ### Binary Download
 
-Download pre-built binaries from [GitHub Releases](https://github.com/drewjocham/mongo-migration-tool/releases) for Linux, macOS, Windows, and FreeBSD.
+Download pre-built binaries from [GitHub Releases](https://github.com/drewjocham/mongo-migration-tool-/releases) for Linux, macOS, Windows, and FreeBSD.
 
 ### Go Install (Development)
 
 ```bash
-    go install github.com/drewjocham/mongo-migration-tool@latest
+    go install github.com/drewjocham/mongo-migration-tool-@latest
 ```
 
 **📚 For detailed installation instructions, platform-specific guides, and troubleshooting, see [INSTALL.md](INSTALL.md)**
@@ -236,8 +236,8 @@ import (
     "context"
     "log"
     
-    "github.com/drewjocham/mongo-migration-tool/config"
-    "github.com/drewjocham/mongo-migration-tool/migration"
+    "github.com/drewjocham/mongo-migration-tool-/config"
+    "github.com/drewjocham/mongo-migration-tool-/migration"
     "go.mongodb.org/mongo-driver/mongo"
     "go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -370,7 +370,7 @@ We welcome contributions! Please see [CONTRIBUTING.md](./CONTRIBUTING.md) for de
 
 ```bash
 # Clone the repository
-git clone https://github.com/drewjocham/mongo-migration-tool.git
+git clone https://github.com/drewjocham/mongo-migration-tool-.git
 cd mongo-migration-tool
 
 # Install dependencies
@@ -413,9 +413,9 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## 🔗 Links & Resources
 
 ### Project Resources
-- **[Go Package Documentation](https://pkg.go.dev/github.com/drewjocham/mongo-migration-tool)** - Complete API reference
-- **[GitHub Repository](https://github.com/drewjocham/mongo-migration-tool)** - Source code and releases
-- **[Issue Tracker](https://github.com/drewjocham/mongo-migration-tool/issues)** - Bug reports and feature requests
+- **[Go Package Documentation](https://pkg.go.dev/github.com/drewjocham/mongo-migration-tool-)** - Complete API reference
+- **[GitHub Repository](https://github.com/drewjocham/mongo-migration-tool-)** - Source code and releases
+- **[Issue Tracker](https://github.com/drewjocham/mongo-migration-tool-/issues)** - Bug reports and feature requests
 - **[Homebrew Formula](https://github.com/drewjocham/homebrew-mongo-migration-tool)** - Homebrew tap repository
 - **[Docker Images](https://ghcr.io/drewjocham/mongo-migration-tool)** - Container registry
 
@@ -428,8 +428,8 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 🐛 Support & Community
 
-- 🐛 **Issues**: [GitHub Issues](https://github.com/drewjocham/mongo-migration-tool/issues)
-- 💬 **Discussions**: [GitHub Discussions](https://github.com/drewjocham/mongo-migration-tool/discussions)
+- 🐛 **Issues**: [GitHub Issues](https://github.com/drewjocham/mongo-migration-tool-/issues)
+- 💬 **Discussions**: [GitHub Discussions](https://github.com/drewjocham/mongo-migration-tool-/discussions)
 - 📧 **Contact**: [Project Maintainer](https://github.com/drewjocham)
 - 📖 **Examples**: See the `examples/` directory in the repository
 

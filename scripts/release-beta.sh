@@ -1,5 +1,6 @@
 #!/bin/bash
 
+# Exit immediately if a command exits with a non-zero status.
 set -e
 
 # --- Helper Functions ---
@@ -16,8 +17,14 @@ error() {
   exit 1
 }
 
+# --- Main Script ---
 
-# Fetch the latest tags from the remote repository
+# Get the directory of this script
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
+# Navigate to the project root
+cd "$SCRIPT_DIR/.."
+
+# 1. Fetch the latest tags from the remote repository
 info "Fetching latest tags from remote..."
 git fetch --tags
 
@@ -34,26 +41,28 @@ if [ -z "$LATEST_BETA_TAG" ]; then
 else
   info "Latest beta tag found: $LATEST_BETA_TAG"
 
-  # Increment the beta version
+  # 3. Increment the beta version
   # Separate the base version from the beta number
   BASE_PART=$(echo "$LATEST_BETA_TAG" | sed -E 's/^(v[0-9]+\.[0-9]+\.[0-9]+-beta\.).*/\1/')
   BETA_NUMBER=$(echo "$LATEST_BETA_TAG" | sed -E 's/.*-beta\.([0-9]+)$/\1/')
 
+  # Increment the beta number
   NEW_BETA_NUMBER=$((BETA_NUMBER + 1))
 
+  # Construct the new tag
   NEW_TAG="${BASE_PART}${NEW_BETA_NUMBER}"
 fi
 
 info "New beta tag will be: $NEW_TAG"
 
-# Create and push the new tag
+# 4. Create and push the new tag
 info "Creating and pushing new tag..."
 git tag "$NEW_TAG"
 git push origin "$NEW_TAG"
 success "Successfully pushed tag $NEW_TAG to remote."
 
-# Run GoReleaser
-#info "Starting GoReleaser..."
-#goreleaser release --clean
+# 5. Run GoReleaser
+info "Starting GoReleaser..."
+goreleaser release --clean
 
 success "Release process completed for $NEW_TAG."

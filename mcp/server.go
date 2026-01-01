@@ -14,8 +14,8 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 
-	"github.com/drewjocham/mongo-migration-tool/config"
-	"github.com/drewjocham/mongo-migration-tool/migration"
+	"github.com/drewjocham/mongo-migration-tool-/config"
+	"github.com/drewjocham/mongo-migration-tool-/migration"
 )
 
 type MCPServer struct {

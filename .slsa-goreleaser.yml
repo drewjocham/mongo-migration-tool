@@ -1,5 +1,5 @@
 # .slsa-goreleaser.yml
 modules:
-  - module: github.com/drewjocham/mongo-migration-tool
+  - module: github.com/drewjocham/mongo-migration-tool-
     main: ./cmd 
     binary_name: mongo-migration

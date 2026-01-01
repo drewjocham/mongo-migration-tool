@@ -1,5 +1,8 @@
 .PHONY: release release-check deploy-dev deploy-prod release-beta
 
+# Define the project root relative to this makefile
+ROOT_DIR := $(patsubst %/,%,$(dir $(abspath $(lastword $(MAKEFILE_LIST)))))/..
+
 release-check: clean ci-test build-all releaser-check ## Create a release build
 	@echo "$(GREEN)Release build completed!$(NC)"
 	@echo "Binaries available in $(BUILD_DIR)/"
@@ -7,22 +10,18 @@ release-check: clean ci-test build-all releaser-check ## Create a release build
 
 deploy-dev: ## Deploy to development environment
 	@echo "$(GREEN)Deploying to development...$(NC)"
-	./scripts/deploy-migrations.sh auto
+	$(ROOT_DIR)/scripts/deploy-migrations.sh auto
 
 deploy-prod: ## Deploy to production environment
 	@echo "$(GREEN)Deploying to production...$(NC)"
-	REQUIRE_SIGNED_IMAGES=true ./scripts/deploy-migrations.sh auto
+	REQUIRE_SIGNED_IMAGES=true $(ROOT_DIR)/scripts/deploy-migrations.sh auto
 
 releaser-check:
-	goreleaser release --skip=publish --snapshot --clean
+	cd $(ROOT_DIR) && goreleaser release --skip=publish --snapshot --clean
 
 release:
-	goreleaser release --clean
+	cd $(ROOT_DIR) && goreleaser release --clean
 
 release-beta: ## Create and release a new beta version
 	@echo "$(GREEN)Starting beta release process...$(NC)"
-	rm -rf dist && ./scripts/release-beta.sh && ./scripts/dist/run.sh release
-	(MAKE) call-release
-
-call-release:
-	GOPROXY=proxy.golang.org go list -m github.com/drewjocham/mongo-migration-tool@$(NC)
+	$(ROOT_DIR)/scripts/release-beta.sh
