@@ -23,7 +23,7 @@ This project adheres to the [Contributor Covenant Code of Conduct](https://www.c
 ### Reporting Bugs
 
 Before reporting a bug:
-1. Check the [existing issues](https://github.com/drewjocham/mongo-migration-tool-/issues) to avoid duplicates
+1. Check the [existing issues](https://github.com/drewjocham/mongo-migration-tool/issues) to avoid duplicates
 2. Use the latest version of mongo-migration
 3. Include detailed information about your environment
 
@@ -70,7 +70,7 @@ git clone https://github.com/YOUR_USERNAME/mongo-migration-tool.git
 cd mongo-migration-tool
 
 # Add the upstream remote
-git remote add upstream https://github.com/drewjocham/mongo-migration-tool-.git
+git remote add upstream https://github.com/drewjocham/mongo-migration-tool.git
 
 # Install dependencies
 go mod tidy

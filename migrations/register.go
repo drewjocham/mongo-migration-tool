@@ -1,6 +1,6 @@
 package migrations
 
-import "github.com/drewjocham/mongo-migration-tool-/migration"
+import "github.com/drewjocham/mongo-migration-tool/migration"
 
 func init() { //nolint:gochecknoinits // auto-registration keeps CLI zero-config
 	migration.Register(

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/drewjocham/mongo-migration-tool-/cmd"
+	"github.com/drewjocham/mongo-migration-tool/cmd"
 )
 
 func main() {

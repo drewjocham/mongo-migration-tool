@@ -52,7 +52,7 @@ brew untap drewjocham/mongo-migration-tool
 
 ## Binary Installation
 
-Download pre-built binaries for your platform from our [GitHub Releases](https://github.com/drewjocham/mongo-migration-tool-/releases).
+Download pre-built binaries for your platform from our [GitHub Releases](https://github.com/drewjocham/mongo-migration-tool/releases).
 
 ### Available Platforms
 
@@ -65,7 +65,7 @@ Download pre-built binaries for your platform from our [GitHub Releases](https:/
 
 ```bash
 # Download the latest release (adjust URL for your platform)
-curl -LO https://github.com/drewjocham/mongo-migration-tool-/releases/latest/download/mongo-migration_linux_amd64.tar.gz
+curl -LO https://github.com/drewjocham/mongo-migration-tool/releases/latest/download/mongo-migration_linux_amd64.tar.gz
 
 # Extract the binary
 tar -xzf mongo-migration_linux_amd64.tar.gz
@@ -80,7 +80,7 @@ mongo-migration version
 
 ### Windows
 
-1. Download the Windows binary from the [releases page](https://github.com/drewjocham/mongo-migration-tool-/releases)
+1. Download the Windows binary from the [releases page](https://github.com/drewjocham/mongo-migration-tool/releases)
 2. Extract the `.zip` file
 3. Add the binary location to your system PATH
 4. Open a new command prompt and verify: `mongo-migration version`
@@ -89,7 +89,7 @@ mongo-migration version
 
 ```bash
 # Install specific version (replace v1.2.3 with desired version)
-curl -LO https://github.com/drewjocham/mongo-migration-tool-/releases/download/v1.2.3/mongo-migration_linux_am
+curl -LO https://github.com/drewjocham/mongo-migration-tool/releases/download/v1.2.3/mongo-migration_linux_am
 ```
 
 ## Docker Installation
@@ -173,10 +173,10 @@ Use mongo-migration as a library in your Go projects.
 
 ```bash
 # Add to your Go project
-go get github.com/drewjocham/mongo-migration-tool-@latest
+go get github.com/drewjocham/mongo-migration-tool@latest
 
 # Or install specific version
-go get github.com/drewjocham/mongo-migration-tool-@v1.2.3
+go get github.com/drewjocham/mongo-migration-tool@v1.2.3
 ```
 
 ### Basic Usage
@@ -188,8 +188,8 @@ import (
     "context"
     "log"
     
-    "github.com/drewjocham/mongo-migration-tool-/config"
-    "github.com/drewjocham/mongo-migration-tool-/migration"
+    "github.com/drewjocham/mongo-migration-tool/config"
+    "github.com/drewjocham/mongo-migration-tool/migration"
     "go.mongodb.org/mongo-driver/mongo"
     "go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -238,7 +238,7 @@ Build mongo-migration from source code.
 
 ```bash
 # Clone the repository
-git clone https://github.com/drewjocham/mongo-migration-tool-.git
+git clone https://github.com/drewjocham/mongo-migration-tool.git
 cd mongo-migration-tool
 
 # Build for your current platform
@@ -390,7 +390,7 @@ package main
 
 import (
     "fmt"
-    "github.com/drewjocham/mongo-migration-tool-/config"
+    "github.com/drewjocham/mongo-migration-tool/config"
 )
 
 func main() {
@@ -406,7 +406,7 @@ Run it:
 
 ```bash
 go mod init test
-go get github.com/drewjocham/mongo-migration-tool-@latest
+go get github.com/drewjocham/mongo-migration-tool@latest
 go run test.go
 ```
 
@@ -461,9 +461,9 @@ go mod download
 
 ### Getting Help
 
-- **Documentation**: [GitHub Repository](https://github.com/drewjocham/mongo-migration-tool-)
-- **Issues**: [GitHub Issues](https://github.com/drewjocham/mongo-migration-tool-/issues)
-- **Library Docs**: [pkg.go.dev](https://pkg.go.dev/github.com/drewjocham/mongo-migration-tool-)
+- **Documentation**: [GitHub Repository](https://github.com/drewjocham/mongo-migration-tool)
+- **Issues**: [GitHub Issues](https://github.com/drewjocham/mongo-migration-tool/issues)
+- **Library Docs**: [pkg.go.dev](https://pkg.go.dev/github.com/drewjocham/mongo-migration-tool)
 
 ## Next Steps
 

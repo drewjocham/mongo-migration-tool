@@ -7,7 +7,7 @@ package main
 //
 // To use this in your own project:
 // 1. go mod init your-project
-// 2. go get github.com/drewjocham/mongo-migration-tool-@latest
+// 2. go get github.com/drewjocham/mongo-migration-tool@latest
 // 3. Copy this code and adapt it to your needs
 
 import (
@@ -21,8 +21,8 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 
-	"github.com/drewjocham/mongo-migration-tool-/config"
-	"github.com/drewjocham/mongo-migration-tool-/migration"
+	"github.com/drewjocham/mongo-migration-tool/config"
+	"github.com/drewjocham/mongo-migration-tool/migration"
 )
 
 const (

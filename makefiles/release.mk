@@ -22,3 +22,7 @@ release:
 release-beta: ## Create and release a new beta version
 	@echo "$(GREEN)Starting beta release process...$(NC)"
 	rm -rf dist && ./scripts/release-beta.sh && ./scripts/dist/run.sh release
+	(MAKE) call-release
+
+call-release:
+	GOPROXY=proxy.golang.org go list -m github.com/drewjocham/mongo-migration-tool@$(NC)

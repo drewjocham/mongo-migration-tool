@@ -7,7 +7,7 @@ import (
 	"strings"
 	"text/tabwriter"
 
-	"github.com/drewjocham/mongo-migration-tool-/migration"
+	"github.com/drewjocham/mongo-migration-tool/migration"
 	"github.com/spf13/cobra"
 )
 

@@ -1,14 +1,14 @@
 # mongo-migration Go Library
 
-[![Go Reference](https://pkg.go.dev/badge/github.com/drewjocham/mongo-migration-tool-.svg)](https://pkg.go.dev/github.com/drewjocham/mongo-migration-tool-)
-[![Go Report Card](https://goreportcard.com/badge/github.com/drewjocham/mongo-migration-tool-)](https://goreportcard.com/report/github.com/drewjocham/mongo-migration-tool-)
+[![Go Reference](https://pkg.go.dev/badge/github.com/drewjocham/mongo-migration-tool.svg)](https://pkg.go.dev/github.com/drewjocham/mongo-migration-tool)
+[![Go Report Card](https://goreportcard.com/badge/github.com/drewjocham/mongo-migration-tool)](https://goreportcard.com/report/github.com/drewjocham/mongo-migration-tool)
 
 Use mongo-migration as a Go library to integrate MongoDB migration capabilities into your applications.
 
 ## Installation
 
 ```bash
-go get github.com/drewjocham/mongo-migration-tool-@latest
+go get github.com/drewjocham/mongo-migration-tool@latest
 ```
 
 ## Quick Start
@@ -26,8 +26,8 @@ import (
     "go.mongodb.org/mongo-driver/mongo"
     "go.mongodb.org/mongo-driver/mongo/options"
 
-    "github.com/drewjocham/mongo-migration-tool-/config"
-    "github.com/drewjocham/mongo-migration-tool-/migration"
+    "github.com/drewjocham/mongo-migration-tool/config"
+    "github.com/drewjocham/mongo-migration-tool/migration"
 )
 
 func main() {
@@ -153,7 +153,7 @@ Handles environment-based configuration with validation.
 package main
 
 import (
-    "github.com/drewjocham/mongo-migration-tool-/config"
+    "github.com/drewjocham/mongo-migration-tool/config"
 )
 
 func main() {
@@ -241,7 +241,7 @@ package main
 
 import (
     "log"
-    "github.com/drewjocham/mongo-migration-tool-/mcp"
+    "github.com/drewjocham/mongo-migration-tool/mcp"
 )
 
 func main() {
@@ -387,7 +387,7 @@ import (
     
     "go.mongodb.org/mongo-driver/mongo/integration/mtest"
     
-    "github.com/drewjocham/mongo-migration-tool-/migration"
+    "github.com/drewjocham/mongo-migration-tool/migration"
 )
 
 func TestAddUserIndexesMigration(t *testing.T) {
@@ -598,7 +598,7 @@ func (m *LargeDataMigration) Up(ctx context.Context, db *mongo.Database) error {
 
 ## API Reference
 
-For complete API documentation, visit [pkg.go.dev/github.com/drewjocham/mongo-migration-tool-](https://pkg.go.dev/github.com/drewjocham/mongo-migration-tool-).
+For complete API documentation, visit [pkg.go.dev/github.com/drewjocham/mongo-migration-tool](https://pkg.go.dev/github.com/drewjocham/mongo-migration-tool).
 
 ## Examples
 
