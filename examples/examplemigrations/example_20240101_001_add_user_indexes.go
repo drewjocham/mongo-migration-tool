@@ -15,7 +15,7 @@ type AddUserIndexesMigration struct{}
 
 // Version returns the unique version identifier for this migration
 func (m *AddUserIndexesMigration) Version() string {
-	return "20240101_001"
+	return "example_20240101_001"
 }
 
 // Description returns a human-readable description of what this migration does

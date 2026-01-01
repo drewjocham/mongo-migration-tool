@@ -17,7 +17,7 @@ type CreateAuditCollectionMigration struct{}
 
 // Version returns the unique version identifier for this migration
 func (m *CreateAuditCollectionMigration) Version() string {
-	return "20240101_003"
+	return "example_20240101_003"
 }
 
 // Description returns a human-readable description of what this migration does

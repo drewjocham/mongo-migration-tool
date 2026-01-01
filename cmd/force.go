@@ -18,8 +18,8 @@ var (
 			Use:   "force [version]",
 			Short: "Force mark a migration as applied without running it",
 			Long: `Force mark a specific migration as applied in the database without 
-actually executing its Up() logic. This updates the migration tracking 
-collection to prevent the engine from trying to run it again.`,
+					actually executing its Up() logic. This updates the migration tracking 
+					collection to prevent the engine from trying to run it again.`,
 			Args: cobra.ExactArgs(1),
 			RunE: func(cmd *cobra.Command, args []string) error {
 				version := args[0]

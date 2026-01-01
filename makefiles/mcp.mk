@@ -1,4 +1,8 @@
-.PHONY: mcp mcp-examples mcp-test mcp-client-test mcp-integration-test
+.PHONY: mcp mcp-build mcp-examples mcp-test mcp-client-test mcp-integration-test
+
+mcp-build: ## Build the combined Docker image for MCP
+	@echo "$(GREEN)Building MCP Docker image mongo-mongodb-combined-mcp:v1...$(NC)"
+	docker build -t mongo-mongodb-combined-mcp:v1 -f Dockerfile.mcp .
 
 mcp: build ## Start MCP server for AI assistant integration
 	@echo "$(GREEN)Starting MCP server...$(NC)"

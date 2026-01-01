@@ -8,8 +8,8 @@ import (
 	"os"
 	"time"
 
-	"github.com/jocham/mongo-migration/config"
-	"github.com/jocham/mongo-migration/migration"
+	"github.com/jocham/mongo-migration-tool/config"
+	"github.com/jocham/mongo-migration-tool/migration"
 	"github.com/spf13/cobra"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"

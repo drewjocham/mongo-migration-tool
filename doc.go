@@ -14,8 +14,8 @@
 //
 //		"go.mongodb.org/mongo-driver/mongo"
 //		"go.mongodb.org/mongo-driver/mongo/options"
-//		"github.com/jocham/mongo-migration/migration"
-//		"github.com/jocham/mongo-migration/config"
+//		"github.com/jocham/mongo-migration-tool/migration"
+//		"github.com/jocham/mongo-migration-tool/config"
 //	)
 //
 //	// Load configuration
@@ -80,7 +80,7 @@
 //		return err
 //	}
 //
-// GitHub Repository: https://github.com/jocham/mongo-migration
+// GitHub Repository: https://github.com/jocham/mongo-migration-tool
 //
-// Documentation: https://pkg.go.dev/github.com/jocham/mongo-migration
+// Documentation: https://pkg.go.dev/github.com/jocham/mongo-migration-tool
 package main

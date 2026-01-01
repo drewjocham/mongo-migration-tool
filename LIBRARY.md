@@ -1,14 +1,14 @@
 # mongo-migration Go Library
 
-[![Go Reference](https://pkg.go.dev/badge/github.com/jocham/mongo-migration.svg)](https://pkg.go.dev/github.com/jocham/mongo-migration)
-[![Go Report Card](https://goreportcard.com/badge/github.com/jocham/mongo-migration)](https://goreportcard.com/report/github.com/jocham/mongo-migration)
+[![Go Reference](https://pkg.go.dev/badge/github.com/jocham/mongo-migration-tool.svg)](https://pkg.go.dev/github.com/jocham/mongo-migration-tool)
+[![Go Report Card](https://goreportcard.com/badge/github.com/jocham/mongo-migration-tool)](https://goreportcard.com/report/github.com/jocham/mongo-migration-tool)
 
 Use mongo-migration as a Go library to integrate MongoDB migration capabilities into your applications.
 
 ## Installation
 
 ```bash
-go get github.com/jocham/mongo-migration@latest
+go get github.com/jocham/mongo-migration-tool@latest
 ```
 
 ## Quick Start
@@ -26,8 +26,8 @@ import (
     "go.mongodb.org/mongo-driver/mongo"
     "go.mongodb.org/mongo-driver/mongo/options"
 
-    "github.com/jocham/mongo-migration/config"
-    "github.com/jocham/mongo-migration/migration"
+    "github.com/jocham/mongo-migration-tool/config"
+    "github.com/jocham/mongo-migration-tool/migration"
 )
 
 func main() {
@@ -153,7 +153,7 @@ Handles environment-based configuration with validation.
 package main
 
 import (
-    "github.com/jocham/mongo-migration/config"
+    "github.com/jocham/mongo-migration-tool/config"
 )
 
 func main() {
@@ -241,7 +241,7 @@ package main
 
 import (
     "log"
-    "github.com/jocham/mongo-migration/mcp"
+    "github.com/jocham/mongo-migration-tool/mcp"
 )
 
 func main() {
@@ -387,7 +387,7 @@ import (
     
     "go.mongodb.org/mongo-driver/mongo/integration/mtest"
     
-    "github.com/jocham/mongo-migration/migration"
+    "github.com/jocham/mongo-migration-tool/migration"
 )
 
 func TestAddUserIndexesMigration(t *testing.T) {
@@ -510,8 +510,10 @@ func (m *CreateIndexMigration) Up(ctx context.Context, db *mongo.Database) error
     
     var existingIndexes []bson.M
     if err := cursor.All(ctx, &existingIndexes); err != nil {
+        cursor.Close(ctx)
         return err
     }
+    cursor.Close(ctx)
     
     // Check if our index already exists
     for _, idx := range existingIndexes {
@@ -596,7 +598,7 @@ func (m *LargeDataMigration) Up(ctx context.Context, db *mongo.Database) error {
 
 ## API Reference
 
-For complete API documentation, visit [pkg.go.dev/github.com/jocham/mongo-migration](https://pkg.go.dev/github.com/jocham/mongo-migration).
+For complete API documentation, visit [pkg.go.dev/github.com/jocham/mongo-migration-tool](https://pkg.go.dev/github.com/jocham/mongo-migration-tool).
 
 ## Examples
 

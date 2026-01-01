@@ -23,7 +23,7 @@ This project adheres to the [Contributor Covenant Code of Conduct](https://www.c
 ### Reporting Bugs
 
 Before reporting a bug:
-1. Check the [existing issues](https://github.com/jocham/mongo-migration/issues) to avoid duplicates
+1. Check the [existing issues](https://github.com/jocham/mongo-migration-tool/issues) to avoid duplicates
 2. Use the latest version of mongo-migration
 3. Include detailed information about your environment
 
@@ -66,11 +66,11 @@ We welcome pull requests for:
 
 ```bash
 # Fork the repository on GitHub, then clone your fork
-git clone https://github.com/YOUR_USERNAME/mongo-migration.git
-cd mongo-migration
+git clone https://github.com/YOUR_USERNAME/mongo-migration-tool.git
+cd mongo-migration-tool
 
 # Add the upstream remote
-git remote add upstream https://github.com/jocham/mongo-migration.git
+git remote add upstream https://github.com/jocham/mongo-migration-tool.git
 
 # Install dependencies
 go mod tidy

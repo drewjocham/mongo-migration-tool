@@ -18,7 +18,7 @@ type TransformUserDataMigration struct{}
 
 // Version returns the unique version identifier for this migration
 func (m *TransformUserDataMigration) Version() string {
-	return "20240101_002"
+	return "example_20240101_002"
 }
 
 // Description returns a human-readable description of what this migration does

@@ -51,17 +51,19 @@ Create a configuration file for Ollama:
 **`~/.config/ollama/mcp-config.json`**:
 ```json
 {
-  "mcpServers": {
-    "mongo-migrate": {
-      "command": "/path/to/mongo-essential",
-      "args": ["mcp", "--with-examples"],
+   "mongo-mcp": {
+      "command": "$GOBIN/mongo-essential",
+      "args": [
+         "mcp"
+      ],
       "env": {
-        "MONGO_URI": "mongodb://localhost:27017",
-        "MONGO_DATABASE": "your_database"
+         "MDB_MCP_CONNECTION_STRING": "",
+         "MONGO_DATABASE": "",
+         "MONGO_URL": ""
       }
-    }
-  }
+   }
 }
+
 ```
 
 Then start Ollama with MCP support:

@@ -20,7 +20,6 @@ func defaultProvider() []LoggerContextKey {
 func CustomLogger(level slog.Level, keyProvider ContextKeyProvider) *slog.Logger {
 	options := &slog.HandlerOptions{}
 	options.Level = level
-	//slog.New(slog.NewTextHandler(io.Discard, nil))
 	options.AddSource = true
 	if keyProvider != nil {
 		return slog.New(customHandler(slog.NewJSONHandler(os.Stdout, options), keyProvider))

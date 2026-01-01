@@ -6,6 +6,7 @@ include $(MAKEFILES_DIR)/variables/vars.mk
 ALL_PACKAGES := $(shell go list $(REPO_ROOT)/...)
 EXAMPLE_PACKAGES := $(shell go list $(REPO_ROOT)/examples/...)
 TEST_PACKAGES := $(filter-out $(EXAMPLE_PACKAGES), $(ALL_PACKAGES))
+MAIN_PACKAGE ?= .
 
 GO_ENV ?= GOWORK=off
 INTEGRATION_MONGO_PORT ?= 37017
@@ -14,27 +15,27 @@ COMPOSE_PROJECT_NAME ?= mm-it
 .PHONY: build clean test install deps integration-test
 
 clear-cache: ## Clear build cache is sometimes needed in the pipeline
-	@$(GO_ENV) go clean -modcache # Clear module cache
-	@$(GO_ENV) go clean -cache # Clear build cache
+	@$(GO_ENV) go clean -modcache
+	@$(GO_ENV) go clean -cache
 
 build: deps ## Build the binary
 	@echo "$(GREEN)Building $(BINARY_NAME)...$(NC)"
 	@mkdir -p $(BUILD_DIR)
-	$(GO_ENV) CGO_ENABLED=0 go build $(LDFLAGS) -o $(BUILD_DIR)/$(BINARY_NAME) $(REPO_ROOT)
+	cd $(REPO_ROOT) && $(GO_ENV) CGO_ENABLED=0 go build $(LDFLAGS) -o $(BUILD_DIR)/$(BINARY_NAME) $(MAIN_PACKAGE)
 
 build-all: deps ## Build for multiple platforms
 	@echo "$(GREEN)Building for multiple platforms...$(NC)"
 	@mkdir -p $(BUILD_DIR)
 	# Linux amd64
-	$(GO_ENV) GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build $(LDFLAGS) -o $(BUILD_DIR)/$(BINARY_NAME)-linux-amd64 $(REPO_ROOT)
+	cd $(REPO_ROOT) && $(GO_ENV) GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build $(LDFLAGS) -o $(BUILD_DIR)/$(BINARY_NAME)-linux-amd64 $(MAIN_PACKAGE)
 	# Linux arm64
-	$(GO_ENV) GOOS=linux GOARCH=arm64 CGO_ENABLED=0 go build $(LDFLAGS) -o $(BUILD_DIR)/$(BINARY_NAME)-linux-arm64 $(REPO_ROOT)
+	cd $(REPO_ROOT) && $(GO_ENV) GOOS=linux GOARCH=arm64 CGO_ENABLED=0 go build $(LDFLAGS) -o $(BUILD_DIR)/$(BINARY_NAME)-linux-arm64 $(MAIN_PACKAGE)
 	# macOS amd64
-	$(GO_ENV) GOOS=darwin GOARCH=amd64 CGO_ENABLED=0 go build $(LDFLAGS) -o $(BUILD_DIR)/$(BINARY_NAME)-darwin-amd64 $(REPO_ROOT)
+	cd $(REPO_ROOT) && $(GO_ENV) GOOS=darwin GOARCH=amd64 CGO_ENABLED=0 go build $(LDFLAGS) -o $(BUILD_DIR)/$(BINARY_NAME)-darwin-amd64 $(MAIN_PACKAGE)
 	# macOS arm64
-	$(GO_ENV) GOOS=darwin GOARCH=arm64 CGO_ENABLED=0 go build $(LDFLAGS) -o $(BUILD_DIR)/$(BINARY_NAME)-darwin-arm64 $(REPO_ROOT)
+	cd $(REPO_ROOT) && $(GO_ENV) GOOS=darwin GOARCH=arm64 CGO_ENABLED=0 go build $(LDFLAGS) -o $(BUILD_DIR)/$(BINARY_NAME)-darwin-arm64 $(MAIN_PACKAGE)
 	# Windows amd64
-	$(GO_ENV) GOOS=windows GOARCH=amd64 CGO_ENABLED=0 go build $(LDFLAGS) -o $(BUILD_DIR)/$(BINARY_NAME)-windows-amd64.exe $(REPO_ROOT)
+	cd $(REPO_ROOT) && $(GO_ENV) GOOS=windows GOARCH=amd64 CGO_ENABLED=0 go build $(LDFLAGS) -o $(BUILD_DIR)/$(BINARY_NAME)-windows-amd64.exe $(MAIN_PACKAGE)
 
 install: build ## Install the binary to GOBIN
 	@echo "$(GREEN)Installing $(BINARY_NAME) to $(GOBIN)...$(NC)"

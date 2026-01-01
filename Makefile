@@ -1,14 +1,37 @@
-include makefiles/variables/vars.mk
-include makefiles/variables/common.mk
+# Makefile for mongo-migration-tool
 
-include $(MAKEFILES_DIR)/build.mk
-include $(MAKEFILES_DIR)/docker.mk
-include $(MAKEFILES_DIR)/linter.mk
-include $(MAKEFILES_DIR)/mcp.mk
-include $(MAKEFILES_DIR)/release.mk
-include $(MAKEFILES_DIR)/migration.mk
-include $(MAKEFILES_DIR)/dev.mk
-help: ## Show this help message
-	@echo "MongoDB Migration Tool - Available commands:"
-	@echo
-	@awk 'BEGIN {FS = ":.*?## "} /^[a-zA-Z_-]+:.*?## / {printf "  \033[36m%-15s\033[0m %s\n", $$1, $$2}' $(MAKEFILE_LIST)
+# Go parameters
+GOCMD=go
+GOMOD=$(GOCMD) mod
+
+# Directories
+BUILD_DIR=./build
+CMD_DIR=./cmd
+
+# Binary name
+BINARY_NAME=mongo-migration
+CMD_PATH=./cmd
+
+# Version
+VERSION ?= $(shell git describe --tags --always --dirty)
+
+# Build flags
+LDFLAGS = -ldflags "-X main.version=$(VERSION)"
+
+# Default target
+all: build
+
+# Include other makefiles
+include makefiles/*.mk
+
+# Help target to display help messages
+help:
+	@echo "Usage: make [target]"
+	@echo ""
+	@echo "Targets:"
+	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-20s\033[0m %s\n", $$1, $$2}'
+	@echo ""
+
+# Colors for echo
+GREEN=\033[0;32m
+NC=\033[0m
