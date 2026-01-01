@@ -190,38 +190,62 @@ release:
   name_template: "Release v{{.Version}}"
   
   header: |
-    ## MongoDB Migration Tool v{{.Version}}
-    
-    A comprehensive MongoDB migration tool with AI-powered insights and MCP (Model Context Protocol) support for AI assistants like Ollama, Claude, and Goose.
-    
-    ### Installation
-    
+    ## Welcome to the First Release of the MongoDB Migration Tool! 🎉
+
+    We are thrilled to announce the first official release of the MongoDB Migration Tool, a powerful command-line utility designed to make your database migrations seamless, intelligent, and efficient.
+
+    This tool is built for developers who need a reliable way to manage their MongoDB schema changes, with the added power of AI to provide insights and suggestions.
+
+    ### ✨ Key Features
+
+    *   **Easy Migrations**: Manage your MongoDB migrations with simple `up` and `down` commands.
+    *   **AI-Powered Insights**: Leverage the power of AI to analyze your migration scripts and provide suggestions for improvement.
+    *   **MCP Support**: Integrates with AI assistants like Ollama, Claude, and Goose through the Model Context Protocol (MCP) to provide a rich, interactive experience.
+    *   **Cross-Platform**: Run the tool on Linux, macOS, and Windows.
+    *   **Multiple Installation Options**: Install via Homebrew, Go, or Docker.
+
+    ### 🚀 Getting Started
+
+    It's easy to get started with the MongoDB Migration Tool. Just follow the installation instructions below and run the `init` command to create a new configuration file.
+
+    ```sh
+    mongo-migration init
+    ```
+
+    ### 📦 Installation
+
     #### Homebrew (macOS/Linux)
     ```bash
     brew tap jocham/mongo-migration
     brew install mongo-migration
     ```
-    
+
     #### Go Install
     ```bash
     go install github.com/jocham/mongo-migration-tool@v{{.Version}}
     ```
-    
+
     #### Docker
     ```bash
-    docker run --rm ghcr.io/jocham/mongo-migration-tool:{{.Version}} --help
+    docker run --rm -v $(pwd):/app ghcr.io/jocham/mongo-migration-tool:{{.Version}} --help
     ```
+
+    ### 🔮 What's Next?
+
+    This is just the beginning! We have a lot of exciting features planned for the future, including:
+
+    *   More advanced AI-powered analysis and code generation.
+    *   Deeper integration with popular development tools.
+    *   Enhanced reporting and logging.
+
+    We welcome your feedback and contributions. Please feel free to open an issue or pull request on our [GitHub repository](https://github.com/jocham/mongo-migration-tool).
   
   footer: |
-    ## Library Usage
+    ## Thank You!
+
+    Thank you for trying out the MongoDB Migration Tool. We hope it makes your development process easier and more enjoyable.
     
-    Use mongo-migration as a Go library in your projects:
-    
-    ```bash
-    go get github.com/jocham/mongo-migration-tool@v{{.Version}}
-    ```
-    
-    See the [documentation](https://pkg.go.dev/github.com/jocham/mongo-migration-tool) for detailed API usage.
+    For more detailed information, please see the [documentation](https://pkg.go.dev/github.com/jocham/mongo-migration-tool).
 
 # Package managers
 nfpms:
