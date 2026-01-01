@@ -1,8 +1,8 @@
 # mongo-migration
 
-[![Go Report Card](https://goreportcard.com/badge/github.com/jocham/mongo-migration-tool)](https://goreportcard.com/report/github.com/drewjocham/mongo-migration-tool)
+[![Go Report Card](https://goreportcard.com/badge/github.com/drewjocham/mongo-migration-tool)](https://goreportcard.com/report/github.com/drewjocham/mongo-migration-tool)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Go Reference](https://pkg.go.dev/badge/github.com/jocham/mongo-migration-tool.svg)](https://pkg.go.dev/github.com/drewjocham/mongo-migration-tool)
+[![Go Reference](https://pkg.go.dev/badge/github.com/drewjocham/mongo-migration-tool.svg)](https://pkg.go.dev/github.com/drewjocham/mongo-migration-tool)
 
 A comprehensive MongoDB migration and database analysis tool with AI-powered insights. Think Liquibase/Flyway for MongoDB, plus intelligent database optimization recommendations.
 
@@ -37,7 +37,7 @@ Choose your preferred installation method:
 
 ```bash
 # Add the tap and install
-brew tap jocham/mongo-migration-tool
+brew tap drewjocham/mongo-migration-tool
 brew install mongo-migration-tool
 
 # Verify installation
@@ -49,7 +49,7 @@ mongo-migration version
 ```bash
   # Pull and run
     docker pull ghcr.io/drewjocham/mongo-migration-tool:latest
-    docker run --rm -v $(pwd):/workspace ghcr.io/jocham/mongo-migration-tool:latest --help
+    docker run --rm -v $(pwd):/workspace ghcr.io/drewjocham/mongo-migration-tool:latest --help
 ```
 
 * Run this command in your project's root directory to create a simple, static key file for development:

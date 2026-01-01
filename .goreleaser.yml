@@ -236,7 +236,7 @@ nfpms:
     
     homepage: https://github.com/drewjocham/mongo-migration-tool
     description: MongoDB migration tool with AI-powered insights and MCP support
-    maintainer: Drew Jocham <drew.jocham@gmail.com>
+    maintainer: Drew drewjocham <drew.drewjocham@gmail.com>
     license: MIT
     
     formats:

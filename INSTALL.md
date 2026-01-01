@@ -24,7 +24,7 @@ The easiest way to install mongo-migration on macOS and Linux is via Homebrew.
 
 ```bash
 # Add our custom Homebrew tap
-brew tap jocham/mongo-migration-tool
+brew tap drewjocham/mongo-migration-tool
 
 # Install mongo-migration
 brew install mongo-migration-tool
@@ -47,12 +47,12 @@ brew upgrade migration-tool
 brew uninstall mongo-migration-tool
 
 # Remove the tap (optional)
-brew untap jocham/mongo-migration-tool
+brew untap drewjocham/mongo-migration-tool
 ```
 
 ## Binary Installation
 
-Download pre-built binaries for your platform from our [GitHub Releases](https://github.com/jocham/mongo-migration-tool/releases).
+Download pre-built binaries for your platform from our [GitHub Releases](https://github.com/drewjocham/mongo-migration-tool/releases).
 
 ### Available Platforms
 
@@ -65,7 +65,7 @@ Download pre-built binaries for your platform from our [GitHub Releases](https:/
 
 ```bash
 # Download the latest release (adjust URL for your platform)
-curl -LO https://github.com/jocham/mongo-migration-tool/releases/latest/download/mongo-migration_linux_amd64.tar.gz
+curl -LO https://github.com/drewjocham/mongo-migration-tool/releases/latest/download/mongo-migration_linux_amd64.tar.gz
 
 # Extract the binary
 tar -xzf mongo-migration_linux_amd64.tar.gz
@@ -80,7 +80,7 @@ mongo-migration version
 
 ### Windows
 
-1. Download the Windows binary from the [releases page](https://github.com/jocham/mongo-migration-tool/releases)
+1. Download the Windows binary from the [releases page](https://github.com/drewjocham/mongo-migration-tool/releases)
 2. Extract the `.zip` file
 3. Add the binary location to your system PATH
 4. Open a new command prompt and verify: `mongo-migration version`
@@ -89,7 +89,7 @@ mongo-migration version
 
 ```bash
 # Install specific version (replace v1.2.3 with desired version)
-curl -LO https://github.com/jocham/mongo-migration-tool/releases/download/v1.2.3/mongo-migration_linux_am
+curl -LO https://github.com/drewjocham/mongo-migration-tool/releases/download/v1.2.3/mongo-migration_linux_am
 ```
 
 ## Docker Installation
@@ -105,21 +105,21 @@ mongo-migration is available as a Docker image for containerized environments.
 
 ```bash
 # Pull the latest image
-docker pull ghcr.io/jocham/mongo-migration-tool:latest
+docker pull ghcr.io/drewjocham/mongo-migration-tool:latest
 
 # Run migrations (mount your migrations directory)
 docker run --rm \
   -v $(pwd)/migrations:/migrations \
   -e MONGO_URL="mongodb://your-mongo-host:27017" \
   -e MONGO_DATABASE="your-database" \
-  ghcr.io/jocham/mongo-migration-tool:latest \
+  ghcr.io/drewjocham/mongo-migration-tool:latest \
   up
 
 # Run with custom configuration file
 docker run --rm \
   -v $(pwd)/.env:/app/.env \
   -v $(pwd)/migrations:/migrations \
-  ghcr.io/jocham/mongo-migration-tool:latest \
+  ghcr.io/drewjocham/mongo-migration-tool:latest \
   status
 ```
 
@@ -132,7 +132,7 @@ version: '3.8'
 
 services:
   mongo-migration:
-    image: ghcr.io/jocham/mongo-migration-tool:latest
+    image: ghcr.io/drewjocham/mongo-migration-tool:latest
     environment:
       - MONGO_URL=mongodb://mongodb:27017
       - MONGO_DATABASE=myapp
@@ -173,10 +173,10 @@ Use mongo-migration as a library in your Go projects.
 
 ```bash
 # Add to your Go project
-go get github.com/jocham/mongo-migration-tool@latest
+go get github.com/drewjocham/mongo-migration-tool@latest
 
 # Or install specific version
-go get github.com/jocham/mongo-migration-tool@v1.2.3
+go get github.com/drewjocham/mongo-migration-tool@v1.2.3
 ```
 
 ### Basic Usage
@@ -188,8 +188,8 @@ import (
     "context"
     "log"
     
-    "github.com/jocham/mongo-migration-tool/config"
-    "github.com/jocham/mongo-migration-tool/migration"
+    "github.com/drewjocham/mongo-migration-tool/config"
+    "github.com/drewjocham/mongo-migration-tool/migration"
     "go.mongodb.org/mongo-driver/mongo"
     "go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -238,7 +238,7 @@ Build mongo-migration from source code.
 
 ```bash
 # Clone the repository
-git clone https://github.com/jocham/mongo-migration-tool.git
+git clone https://github.com/drewjocham/mongo-migration-tool.git
 cd mongo-migration-tool
 
 # Build for your current platform
@@ -371,13 +371,13 @@ mongo-migration status
 
 ```bash
 # Check Docker image
-docker run --rm ghcr.io/jocham/mongo-migration-tool:latest version
+docker run --rm ghcr.io/drewjocham/mongo-migration-tool:latest version
 
 # Test with sample configuration
 docker run --rm \
   -e MONGO_URL="mongodb://host.docker.internal:27017" \
   -e MONGO_DATABASE="test" \
-  ghcr.io/jocham/mongo-migration-tool:latest \
+  ghcr.io/drewjocham/mongo-migration-tool:latest \
   status
 ```
 
@@ -390,7 +390,7 @@ package main
 
 import (
     "fmt"
-    "github.com/jocham/mongo-migration-tool/config"
+    "github.com/drewjocham/mongo-migration-tool/config"
 )
 
 func main() {
@@ -406,7 +406,7 @@ Run it:
 
 ```bash
 go mod init test
-go get github.com/jocham/mongo-migration-tool@latest
+go get github.com/drewjocham/mongo-migration-tool@latest
 go run test.go
 ```
 
@@ -418,8 +418,8 @@ go run test.go
 
 ```bash
 # If tap already exists
-brew untap jocham/mongo-migration-tool
-brew tap jocham/mongo-migration-tool
+brew untap drewjocham/mongo-migration-tool
+brew tap drewjocham/mongo-migration-tool
 
 # Clear Homebrew cache
 brew cleanup
@@ -461,9 +461,9 @@ go mod download
 
 ### Getting Help
 
-- **Documentation**: [GitHub Repository](https://github.com/jocham/mongo-migration-tool)
-- **Issues**: [GitHub Issues](https://github.com/jocham/mongo-migration-tool/issues)
-- **Library Docs**: [pkg.go.dev](https://pkg.go.dev/github.com/jocham/mongo-migration-tool)
+- **Documentation**: [GitHub Repository](https://github.com/drewjocham/mongo-migration-tool)
+- **Issues**: [GitHub Issues](https://github.com/drewjocham/mongo-migration-tool/issues)
+- **Library Docs**: [pkg.go.dev](https://pkg.go.dev/github.com/drewjocham/mongo-migration-tool)
 
 ## Next Steps
 

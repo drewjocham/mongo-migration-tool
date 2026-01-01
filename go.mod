@@ -1,4 +1,4 @@
-module github.com/jocham/mongo-migration-tool
+module github.com/drewjocham/mongo-migration-tool
 
 go 1.25.4
 

@@ -16,8 +16,8 @@ docker-run: docker-build ## Run Docker container
 start-tool: ## Start services with docker-compose
 	@echo "$(GREEN)Running Docker container...$(NC)"
 	docker run --rm -it \
-		-e  "MONGO_URL=mongodb://jocham-user:lbjKMTf8d3sQ8q2M@s-fc0a667a-6ce3-4893-89a5-77e4661a3e2c-0.mongodb.eu01.onstackit.cloud:27017,s-fc0a667a-6ce3-4893-89a5-77e4661a3e2c-1.mongodb.eu01.onstackit.cloud:27017,s-fc0a667a-6ce3-4893-89a5-77e4661a3e2c-2.mongodb.eu01.onstackit.cloud:27017/stackit?authSource=stackit&tls=true&authMechanism=SCRAM-SHA-256" \
-		-e  "MDB_MCP_CONNECTION_STRING=mongodb://jocham-user:lbjKMTf8d3sQ8q2M@s-fc0a667a-6ce3-4893-89a5-77e4661a3e2c-0.mongodb.eu01.onstackit.cloud:27017,s-fc0a667a-6ce3-4893-89a5-77e4661a3e2c-1.mongodb.eu01.onstackit.cloud:27017,s-fc0a667a-6ce3-4893-89a5-77e4661a3e2c-2.mongodb.eu01.onstackit.cloud:27017/stackit?authSource=stackit&tls=true&authMechanism=SCRAM-SHA-256" \
+		-e  "MONGO_URL=mongodb://drewjocham-user:lbjKMTf8d3sQ8q2M@s-fc0a667a-6ce3-4893-89a5-77e4661a3e2c-0.mongodb.eu01.onstackit.cloud:27017,s-fc0a667a-6ce3-4893-89a5-77e4661a3e2c-1.mongodb.eu01.onstackit.cloud:27017,s-fc0a667a-6ce3-4893-89a5-77e4661a3e2c-2.mongodb.eu01.onstackit.cloud:27017/stackit?authSource=stackit&tls=true&authMechanism=SCRAM-SHA-256" \
+		-e  "MDB_MCP_CONNECTION_STRING=mongodb://drewjocham-user:lbjKMTf8d3sQ8q2M@s-fc0a667a-6ce3-4893-89a5-77e4661a3e2c-0.mongodb.eu01.onstackit.cloud:27017,s-fc0a667a-6ce3-4893-89a5-77e4661a3e2c-1.mongodb.eu01.onstackit.cloud:27017,s-fc0a667a-6ce3-4893-89a5-77e4661a3e2c-2.mongodb.eu01.onstackit.cloud:27017/stackit?authSource=stackit&tls=true&authMechanism=SCRAM-SHA-256" \
 		$(DOCKER_IMAGE):$(DOCKER_TAG)
 
 docker-up: ## Start services with docker-compose
