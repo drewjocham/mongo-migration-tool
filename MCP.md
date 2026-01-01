@@ -185,9 +185,9 @@ AI: I'll check the status of your MongoDB migrations.
 [Uses migration_status tool]
 
 Your database has 3 migrations:
-- ✅ 20240101_001 (Applied on 2024-01-15 10:30:00): Add user indexes
-- ✅ 20240101_002 (Applied on 2024-01-15 10:30:05): Transform user data  
-- ❌ 20240101_003 (Pending): Create audit collection
+- ✅ example_20240101_001 (Applied on 2024-01-15 10:30:00): Add user indexes
+- ✅ example_20240101_002 (Applied on 2024-01-15 10:30:05): Transform user data  
+- ❌ example_20240101_003 (Pending): Create audit collection
 
 You have 1 pending migration that needs to be applied.
 ```
@@ -216,7 +216,7 @@ AI: I'll check your migration status and help roll back the problematic migratio
 [Uses migration_status tool]
 [Uses migration_down tool]
 
-I can see that the last applied migration was "20240101_003 - Create audit collection".
+I can see that the last applied migration was "example_20240101_003 - Create audit collection".
 ✅ Successfully rolled back the migration.
 
 Your database is now back to the previous state. You can review and fix the migration before applying it again.

@@ -4,7 +4,7 @@ This directory contains example migrations and a sample CLI application demonstr
 
 ## Example Migrations
 
-### 1. Add User Indexes (`20240101_001_add_user_indexes.go`)
+### 1. Add User Indexes (`example_20240101_001_add_user_indexes.go`)
 
 Demonstrates how to:
 - Create unique indexes
@@ -17,7 +17,7 @@ Demonstrates how to:
 - Creates descending index on `created_at` field
 - Creates compound index on `status` and `created_at` fields
 
-### 2. Transform User Data (`20240101_002_transform_user_data.go`)
+### 2. Transform User Data (`example_20240101_002_transform_user_data.go`)
 
 Shows data transformation patterns:
 - Iterating over collection documents
@@ -26,7 +26,7 @@ Shows data transformation patterns:
 - Adding missing timestamps
 - Conditional updates
 
-### 3. Create Audit Collection (`20240101_003_create_audit_collection.go`)
+### 3. Create Audit Collection (`example_20240101_003_create_audit_collection.go`)
 
 Advanced collection operations:
 - Creating collections with JSON Schema validation
@@ -95,28 +95,28 @@ Migration Status:
 --------------------------------------------------------------------------------
 Version              Applied    Applied At           Description
 --------------------------------------------------------------------------------
-20240101_001         ❌ No      Never                Add indexes to users collection for email and created_at fields
-20240101_002         ❌ No      Never                Transform user data: normalize email case, add full_name field, and update timestamps
-20240101_003         ❌ No      Never                Create audit collection with schema validation and indexes
+example_20240101_001 ❌ No      Never                Add indexes to users collection for email and created_at fields
+example_20240101_002 ❌ No      Never                Transform user data: normalize email case, add full_name field, and update timestamps
+example_20240101_003 ❌ No      Never                Create audit collection with schema validation and indexes
 ```
 
 **Up command:**
 ```
 Running migrations up...
-Running migration: 20240101_001 - Add indexes to users collection for email and created_at fields
-✅ Completed migration: 20240101_001
-Running migration: 20240101_002 - Transform user data: normalize email case, add full_name field, and update timestamps
-✅ Completed migration: 20240101_002
-Running migration: 20240101_003 - Create audit collection with schema validation and indexes
-✅ Completed migration: 20240101_003
+Running migration: example_20240101_001 - Add indexes to users collection for email and created_at fields
+✅ Completed migration: example_20240101_001
+Running migration: example_20240101_002 - Transform user data: normalize email case, add full_name field, and update timestamps
+✅ Completed migration: example_20240101_002
+Running migration: example_20240101_003 - Create audit collection with schema validation and indexes
+✅ Completed migration: example_20240101_003
 All migrations completed!
 ```
 
 **Down command:**
 ```
 Rolling back last migration...
-Rolling back migration: 20240101_003 - Create audit collection with schema validation and indexes
-✅ Rolled back migration: 20240101_003
+Rolling back migration: example_20240101_003 - Create audit collection with schema validation and indexes
+✅ Rolled back migration: example_20240101_003
 ```
 
 ## Library Usage Example
