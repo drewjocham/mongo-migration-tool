@@ -20,6 +20,9 @@
   <component name="Git.Merge.Settings">
     <option name="BRANCH" value="master" />
   </component>
+  <component name="Git.Rebase.Settings">
+    <option name="NEW_BASE" value="origin/main" />
+  </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
@@ -39,7 +42,7 @@
   <component name="GoLibraries">
     <option name="indexEntireGoPath" value="true" />
   </component>
-  <component name="GoLinterSelectedExecutable" path="$USER_HOME$/go/bin/golangci-lint" />
+  <component name="GoLinterSelectedExecutable" path="/opt/homebrew/bin/golangci-lint" />
   <component name="HighlightingSettingsPerFile">
     <setting file="file://$APPLICATION_CONFIG_DIR$/consoles/db/525de36f-734e-4a91-8afa-c1e2c19521b8/console.js" root0="SKIP_HIGHLIGHTING" root1="FORCE_HIGHLIGHTING" />
   </component>
@@ -122,7 +125,7 @@
     "com.google.cloudcode.ide_session_index": "20260101_0004",
     "configurable..is.expanded": "true",
     "dart.analysis.tool.window.visible": "false",
-    "git-widget-placeholder": "testing-updates",
+    "git-widget-placeholder": "first-release",
     "go.import.settings.migrated": "true",
     "last_opened_file_path": "/Users/jocham/programming/mongo-migration-tool",
     "node.js.detected.package.eslint": "true",
@@ -667,7 +670,15 @@
       <option name="project" value="LOCAL" />
       <updated>1765875811379</updated>
     </task>
-    <option name="localTasksCounter" value="49" />
+    <task id="LOCAL-00049" summary="preparing for first release">
+      <option name="closed" value="true" />
+      <created>1767254556261</created>
+      <option name="number" value="00049" />
+      <option name="presentableId" value="LOCAL-00049" />
+      <option name="project" value="LOCAL" />
+      <updated>1767254556261</updated>
+    </task>
+    <option name="localTasksCounter" value="50" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
