@@ -100,7 +100,7 @@ brews:
       owner: drewjocham
       name: homebrew-mongo-migration
       branch: main
-      token: "{{ .Env.GITHUB_TOKEN }}"
+      token: "{{ .Env.HOMEBREW_TAP_TOKEN }}"
     
     # Directory inside the repository to put the formula
     directory: Formula
