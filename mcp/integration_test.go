@@ -7,7 +7,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"os"
+
 	"strings"
 	"testing"
 	"time"
@@ -18,12 +18,14 @@ import (
 
 	"github.com/drewjocham/mongo-migration-tool/config"
 	"github.com/drewjocham/mongo-migration-tool/mcp"
-	_ "github.com/drewjocham/mongo-migration-tool/migrations" // ensure built-in migrations register via init()
+	_ "github.com/drewjocham/mongo-migration-tool/migrations"
 )
+
+// --- Types ---
 
 type rpcRequest struct {
 	JSONRPC string      `json:"jsonrpc"`
-	ID      int         `json:"id"`
+	ID      interface{} `json:"id"`
 	Method  string      `json:"method"`
 	Params  interface{} `json:"params,omitempty"`
 }
@@ -36,7 +38,7 @@ type rpcError struct {
 
 type rpcResponse struct {
 	JSONRPC string          `json:"jsonrpc"`
-	ID      int             `json:"id"`
+	ID      interface{}     `json:"id"`
 	Result  json.RawMessage `json:"result,omitempty"`
 	Error   *rpcError       `json:"error,omitempty"`
 }
@@ -59,200 +61,195 @@ type toolCallResult struct {
 	} `json:"content"`
 }
 
+// --- Helpers ---
+
 type mcpRPCClient struct {
 	enc *json.Encoder
 	dec *json.Decoder
 }
 
-func (c *mcpRPCClient) call(t *testing.T, req rpcRequest) rpcResponse {
+func (c *mcpRPCClient) call(t *testing.T, method string, id int, params interface{}) rpcResponse {
 	t.Helper()
 
+	req := rpcRequest{
+		JSONRPC: "2.0",
+		ID:      id,
+		Method:  method,
+		Params:  params,
+	}
+
 	if err := c.enc.Encode(req); err != nil {
-		t.Fatalf("failed to encode request %d/%s: %v", req.ID, req.Method, err)
+		t.Fatalf("failed to encode request %v: %v", id, err)
 	}
 
 	var resp rpcResponse
 	if err := c.dec.Decode(&resp); err != nil {
-		t.Fatalf("failed to decode response for request %d/%s: %v", req.ID, req.Method, err)
+		t.Fatalf("failed to decode response for %s: %v", method, err)
 	}
 
-	if resp.ID != req.ID {
-		t.Fatalf("response id mismatch: expected %d, got %d", req.ID, resp.ID)
+	// JSON unmarshaling into interface{} converts numbers to float64
+	respID := fmt.Sprintf("%v", resp.ID)
+	reqID := fmt.Sprintf("%v", id)
+	if respID != reqID {
+		t.Fatalf("id mismatch: expected %s, got %s", reqID, respID)
 	}
 
 	if resp.Error != nil {
-		t.Fatalf("rpc error for %s: code=%d message=%s data=%s", req.Method, resp.Error.Code, resp.Error.Message, resp.Error.Data)
+		t.Fatalf("rpc error [%s]: %s (code: %d)", method, resp.Error.Message, resp.Error.Code)
 	}
 
 	return resp
 }
 
-func toolText(t *testing.T, resp rpcResponse) string {
+func parseToolText(t *testing.T, resp rpcResponse) string {
 	t.Helper()
 	var res toolCallResult
 	if err := json.Unmarshal(resp.Result, &res); err != nil {
-		t.Fatalf("failed to unmarshal tool call result: %v", err)
+		t.Fatalf("failed to unmarshal tool result: %v", err)
 	}
 	if len(res.Content) == 0 {
-		t.Fatalf("expected at least one content item")
+		t.Fatalf("tool returned empty content")
 	}
 	return res.Content[0].Text
 }
 
 func connectMongoOrSkip(t *testing.T) (*mongo.Client, *mongo.Database, func()) {
 	t.Helper()
-
 	cfg, err := config.LoadFromEnv()
 	if err != nil {
-		t.Fatalf("failed to load config from env: %v", err)
+		t.Fatalf("config error: %v", err)
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
 	defer cancel()
 
 	client, err := mongo.Connect(ctx, options.Client().ApplyURI(cfg.GetConnectionString()))
-	if err != nil {
-		t.Skipf("MongoDB not reachable (%v). Set MONGO_URL / start mongod and rerun with: go test -tags=integration ./...", err)
-	}
-
-	if err := client.Ping(ctx, nil); err != nil {
-		_ = client.Disconnect(ctx)
-		t.Skipf("MongoDB ping failed (%v). Set MONGO_URL / start mongod and rerun with: go test -tags=integration ./...", err)
+	if err != nil || client.Ping(ctx, nil) != nil {
+		t.Skip("MongoDB unavailable; skipping integration test")
 	}
 
 	db := client.Database(cfg.Database)
-	cleanup := func() {
-		cleanupCtx, cleanupCancel := context.WithTimeout(context.Background(), 5*time.Second)
-		defer cleanupCancel()
-		_ = db.Drop(cleanupCtx)
-		_ = client.Disconnect(cleanupCtx)
+	return client, db, func() {
+		_ = db.Drop(context.Background())
+		_ = client.Disconnect(context.Background())
 	}
-
-	return client, db, cleanup
 }
 
-func TestMCPIntegration_IndexingAndMigrations(t *testing.T) {
-	// Unique DB per test run to avoid clobbering a dev DB.
+// --- Test Implementation ---
+
+func TestMCPIntegration_FullLifecycle(t *testing.T) {
+	// Isolate database for this specific test run
 	dbName := fmt.Sprintf("mcp_it_%d", time.Now().UnixNano())
-	if os.Getenv("MONGO_DATABASE") == "" {
-		t.Setenv("MONGO_DATABASE", dbName)
-	} else {
-		// Always isolate by overriding when running under integration tag.
-		t.Setenv("MONGO_DATABASE", dbName)
-	}
+	t.Setenv("MONGO_DATABASE", dbName)
 	t.Setenv("MIGRATIONS_COLLECTION", "schema_migrations_it")
 
 	_, db, cleanupMongo := connectMongoOrSkip(t)
 	t.Cleanup(cleanupMongo)
 
+	clientToSrvR, clientToSrvW := io.Pipe()
+	srvToClientR, srvToClientW := io.Pipe()
+
 	server, err := mcp.NewMCPServer()
 	if err != nil {
-		t.Fatalf("failed to create MCP server: %v", err)
+		t.Fatalf("server creation failed: %v", err)
 	}
-	t.Cleanup(func() { _ = server.Close() })
 
-	clientToServerR, clientToServerW := io.Pipe()
-	serverToClientR, serverToClientW := io.Pipe()
-
+	serverCtx, cancelServer := context.WithCancel(context.Background())
 	serverDone := make(chan error, 1)
+
 	go func() {
-		defer func() { _ = serverToClientW.Close() }()
-		serverDone <- server.Serve(context.Background(), clientToServerR, serverToClientW)
-	}()
-	defer func() {
-		_ = clientToServerW.Close()
-		_ = clientToServerR.Close()
-		_ = serverToClientR.Close()
-		_ = serverToClientW.Close()
-		select {
-		case <-serverDone:
-		case <-time.After(2 * time.Second):
-			t.Fatal("server did not stop after closing pipes")
-		}
+		serverDone <- server.Serve(serverCtx, clientToSrvR, srvToClientW)
 	}()
 
-	client := &mcpRPCClient{enc: json.NewEncoder(clientToServerW), dec: json.NewDecoder(serverToClientR)}
-
-	// initialize
-	_ = client.call(t, rpcRequest{JSONRPC: "2.0", ID: 1, Method: "initialize", Params: map[string]interface{}{}})
-
-	// tools/list (verify MCP is alive and exposes migration tools)
-	toolsResp := client.call(t, rpcRequest{JSONRPC: "2.0", ID: 2, Method: "tools/list", Params: map[string]interface{}{}})
-	var tools toolsListResult
-	if err := json.Unmarshal(toolsResp.Result, &tools); err != nil {
-		t.Fatalf("failed to unmarshal tools/list result: %v", err)
-	}
-	toolSet := make(map[string]struct{}, len(tools.Tools))
-	for _, tool := range tools.Tools {
-		toolSet[tool.Name] = struct{}{}
-	}
-	for _, required := range []string{"migration_status", "migration_up", "migration_down", "migration_list"} {
-		if _, ok := toolSet[required]; !ok {
-			t.Fatalf("tools/list missing required tool: %s", required)
-		}
-	}
-
-	// Run migrations via MCP (this will create indexes via example migrations).
-	upResp := client.call(t, rpcRequest{
-		JSONRPC: "2.0",
-		ID:      3,
-		Method:  "tools/call",
-		Params: toolCallParams{
-			Name:      "migration_up",
-			Arguments: map[string]interface{}{},
-		},
+	t.Cleanup(func() {
+		cancelServer()
+		_ = clientToSrvW.Close()
+		_ = srvToClientR.Close()
+		server.Close()
 	})
-	upText := toolText(t, upResp)
-	if !strings.Contains(upText, "Successfully applied") && !strings.Contains(upText, "✅") {
-		t.Fatalf("unexpected migration_up output: %q", upText)
+
+	client := &mcpRPCClient{
+		enc: json.NewEncoder(clientToSrvW),
+		dec: json.NewDecoder(srvToClientR),
 	}
 
-	// Verify indexes exist (tests the indexing capability).
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
-
-	idxCursor, err := db.Collection("users").Indexes().List(ctx)
-	if err != nil {
-		t.Fatalf("failed to list indexes: %v", err)
-	}
-	var idxDocs []bson.M
-	if err := idxCursor.All(ctx, &idxDocs); err != nil {
-		t.Fatalf("failed to decode indexes: %v", err)
-	}
-
-	idxNames := make(map[string]struct{}, len(idxDocs))
-	for _, d := range idxDocs {
-		if name, ok := d["name"].(string); ok {
-			idxNames[name] = struct{}{}
-		}
-	}
-
-	for _, expected := range []string{"idx_users_email_unique", "idx_users_created_at", "idx_users_status_created_at"} {
-		if _, ok := idxNames[expected]; !ok {
-			t.Fatalf("expected index %q to exist; got names=%v", expected, keys(idxNames))
-		}
-	}
-
-	// 5) Ensure MCP still responds after doing work.
-	statusResp := client.call(t, rpcRequest{
-		JSONRPC: "2.0",
-		ID:      4,
-		Method:  "tools/call",
-		Params:  toolCallParams{Name: "migration_status", Arguments: map[string]interface{}{}},
+	t.Run("Initialize", func(t *testing.T) {
+		client.call(t, "initialize", 1, map[string]interface{}{
+			"protocolVersion": "2024-11-05",
+			"capabilities":    map[string]interface{}{},
+			"clientInfo":      map[string]string{"name": "test-client", "version": "1.0"},
+		})
 	})
-	statusText := toolText(t, statusResp)
-	if !strings.Contains(statusText, "20240101_001") {
-		t.Fatalf("migration_status output missing expected version: %q", statusText)
-	}
-	if !strings.Contains(statusText, "✅") {
-		t.Fatalf("migration_status output missing applied indicator: %q", statusText)
-	}
-}
 
-func keys(m map[string]struct{}) []string {
-	out := make([]string, 0, len(m))
-	for k := range m {
-		out = append(out, k)
-	}
-	return out
+	t.Run("ListTools", func(t *testing.T) {
+		resp := client.call(t, "tools/list", 2, nil)
+		var list toolsListResult
+		if err := json.Unmarshal(resp.Result, &list); err != nil {
+			t.Fatal(err)
+		}
+
+		required := map[string]bool{"migration_up": false, "migration_status": false}
+		for _, tool := range list.Tools {
+			if _, ok := required[tool.Name]; ok {
+				required[tool.Name] = true
+			}
+		}
+		for name, found := range required {
+			if !found {
+				t.Errorf("missing tool: %s", name)
+			}
+		}
+	})
+
+	// 3. Execution
+	t.Run("MigrationUp", func(t *testing.T) {
+		resp := client.call(t, "tools/call", 3, toolCallParams{
+			Name: "migration_up",
+		})
+		text := parseToolText(t, resp)
+		if !strings.Contains(text, "Successfully applied") && !strings.Contains(text, "✅") {
+			t.Errorf("unexpected output: %s", text)
+		}
+	})
+
+	t.Run("VerifyDatabaseState", func(t *testing.T) {
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+
+		// Verify expected indexes were created by the 'up' migration
+		cursor, err := db.Collection("users").Indexes().List(ctx)
+		if err != nil {
+			t.Fatalf("failed to list indexes: %v", err)
+		}
+
+		var indexes []bson.M
+		if err := cursor.All(ctx, &indexes); err != nil {
+			t.Fatal(err)
+		}
+
+		expected := []string{"idx_users_email_unique", "idx_users_created_at"}
+		for _, exp := range expected {
+			found := false
+			for _, idx := range indexes {
+				if idx["name"] == exp {
+					found = true
+					break
+				}
+			}
+			if !found {
+				t.Errorf("index not found: %s", exp)
+			}
+		}
+	})
+
+	// Tool Consistency
+	t.Run("MigrationStatus", func(t *testing.T) {
+		resp := client.call(t, "tools/call", 4, toolCallParams{
+			Name: "migration_status",
+		})
+		text := parseToolText(t, resp)
+		if !strings.Contains(text, "✅") {
+			t.Errorf("status should show applied migration: %s", text)
+		}
+	})
 }

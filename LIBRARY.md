@@ -198,6 +198,7 @@ type Config struct {
     MigrationsCollection string
     Username             string
     Password             string
+    MongoAuthSource      string
     
     // SSL/TLS settings
     SSLEnabled           bool
@@ -403,10 +404,8 @@ func TestAddUserIndexesMigration(t *testing.T) {
         if err != nil {
             t.Fatalf("Up migration failed: %v", err)
         }
-
-        // Verify index was created (in a real test, you'd check the actual indexes)
-        // This is a simplified example
-        
+        // Verify index was created 
+		
         // Test Down migration
         err = m.Down(context.Background(), mt.DB)
         if err != nil {
@@ -457,6 +456,7 @@ MIGRATIONS_PATH=./migrations
 # MongoDB Authentication (if required)
 MONGO_USERNAME=username
 MONGO_PASSWORD=password
+MONGO_AUTH_SOURCE=admin
 
 # SSL/TLS (for cloud providers like STACKIT)
 MONGO_SSL_ENABLED=true

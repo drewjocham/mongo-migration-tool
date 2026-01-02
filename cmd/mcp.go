@@ -1,8 +1,11 @@
 package cmd
 
 import (
+	"errors"
+	"io"
 	"log/slog"
 	"os"
+	"strings"
 
 	"github.com/spf13/cobra"
 
@@ -56,6 +59,10 @@ func runMCP(cmd *cobra.Command, _ []string) {
 	slog.Info("Starting MCP server", "pid", os.Getpid())
 
 	if err := server.Start(); err != nil {
+		if errors.Is(err, io.EOF) || errors.Is(err, io.ErrClosedPipe) || strings.Contains(err.Error(), "EOF") {
+			slog.Info("MCP server stopped: client closed stdin", "error", err)
+			return
+		}
 		slog.Error("MCP server execution failed", "error", err)
 		os.Exit(1)
 	}

@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"io"
 	"os"
 	"strings"
 	"sync"
@@ -183,6 +184,28 @@ func (s *MCPServer) Start() error {
 	return s.mcpServer.Run(context.Background(), &mcp.StdioTransport{})
 }
 
+// Serve runs the MCP server against arbitrary io streams.
+func (s *MCPServer) Serve(ctx context.Context, reader io.Reader, writer io.Writer) error {
+	var rc io.ReadCloser
+	if r, ok := reader.(io.ReadCloser); ok {
+		rc = r
+	} else {
+		rc = io.NopCloser(reader)
+	}
+
+	var wc io.WriteCloser
+	if w, ok := writer.(io.WriteCloser); ok {
+		wc = w
+	} else {
+		wc = nopWriteCloser{Writer: writer}
+	}
+
+	return s.mcpServer.Run(ctx, &mcp.IOTransport{
+		Reader: rc,
+		Writer: wc,
+	})
+}
+
 func (s *MCPServer) ensureConnection(ctx context.Context) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -225,6 +248,12 @@ func toolTextResult(message string) *mcp.CallToolResult {
 		Content: []mcp.Content{&mcp.TextContent{Text: message}},
 	}
 }
+
+type nopWriteCloser struct {
+	io.Writer
+}
+
+func (nopWriteCloser) Close() error { return nil }
 
 type emptyArgs struct{}
 

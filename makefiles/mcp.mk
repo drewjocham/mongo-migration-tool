@@ -12,9 +12,22 @@ mcp-examples: build ## Start MCP server with example migrations registered
 	@echo "$(GREEN)Starting MCP server with examples...$(NC)"
 	./$(BUILD_DIR)/$(BINARY_NAME) mcp --with-examples
 
-mcp-test: build ## Test MCP server with example request
-	@echo "$(GREEN)Testing MCP server...$(NC)"
-	@echo '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{}}' | ./$(BUILD_DIR)/$(BINARY_NAME) mcp --with-examples
+mcp-test: ## Test MCP server with example request
+	@set -euo pipefail; \
+		cleanup() { \
+			docker compose -f integration-compose.yml down -v >/dev/null 2>&1 || true; \
+		}; \
+		trap cleanup EXIT; \
+		host_port=$${INTEGRATION_MONGO_PORT:-37017}; \
+		echo "$(GREEN)Starting Mongo test container on port $$host_port...$(NC)"; \
+		docker compose -f integration-compose.yml up -d mongo; \
+		if [ -z "$${MONGO_URL:-}" ]; then \
+			export MONGO_URL="mongodb://localhost:$$host_port"; \
+		fi; \
+		echo "$(GREEN)Running MCP integration tests...$(NC)"; \
+		go test -tags=integration ./mcp; \
+		echo "$(GREEN)MCP integration tests finished.$(NC)"
+
 
 mcp-client-test: build ## Test MCP server interactively
 	@echo "$(GREEN)Testing MCP server interactively (Ctrl+C to exit)...$(NC)"
