@@ -1,1 +1,1 @@
-{"project_name":"mongo-migration-tool-","tag":"v0.1.0-beta.14","previous_tag":"v0.1.0-beta.13","version":"0.1.0-beta.14-SNAPSHOT-6395b7b","commit":"6395b7ba4b81c5489dfbf9975dd102aba2b97061","date":"2026-01-01T13:58:45.815291+01:00","runtime":{"goos":"darwin","goarch":"arm64"}}
+{"project_name":"mongo-migration-tool","tag":"v0.1.0-beta.14","previous_tag":"v0.1.0-beta.13","version":"0.1.0-beta.14-SNAPSHOT-6395b7b","commit":"6395b7ba4b81c5489dfbf9975dd102aba2b97061","date":"2026-01-01T13:58:45.815291+01:00","runtime":{"goos":"darwin","goarch":"arm64"}}

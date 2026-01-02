@@ -3,7 +3,7 @@
 
 version: 2
 
-project_name: mongo-migration-tool-
+project_name: mongo-migration-tool
 
 before:
   hooks:
@@ -182,7 +182,7 @@ docker_manifests:
 release:
   github:
     owner: drewjocham
-    name: mongo-migration-tool-
+    name: mongo-migration-tool
   
   draft: false
   prerelease: auto

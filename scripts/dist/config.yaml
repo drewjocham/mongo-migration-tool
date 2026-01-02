@@ -5,7 +5,7 @@ project_name: mongo-migration-tool
 release:
   github:
     owner: drewjocham
-    name: mongo-migration-tool-
+    name: mongo-migration-tool
   name_template: '{{ .Tag }}'
 
 builds:
