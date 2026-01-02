@@ -61,8 +61,3 @@ git tag "$NEW_TAG"
 git push origin "$NEW_TAG"
 success "Successfully pushed tag $NEW_TAG to remote."
 
-# 5. Run GoReleaser
-info "Starting GoReleaser..."
-goreleaser release --clean
-
-success "Release process completed for $NEW_TAG."
