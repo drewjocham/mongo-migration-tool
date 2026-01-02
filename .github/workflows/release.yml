@@ -72,6 +72,6 @@ jobs:
         with:
           token: ${{ secrets.HOMEBREW_TAP_TOKEN }}
           formula: mongo-migration
-          repository: drewjocham/mongo-homebrew-tab
+          repository: drewjocham/homebrew-mongo-migration
           tag: ${{ github.ref_name }}
           commit_message: "mongo-migration: update to ${{ github.ref_name }}"
