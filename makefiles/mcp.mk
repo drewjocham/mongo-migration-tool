@@ -36,6 +36,10 @@ mcp-client-test: build ## Test MCP server interactively
 	@echo "  {\"jsonrpc\":\"2.0\",\"id\":2,\"method\":\"tools/list\",\"params\":{}}"
 	@echo "  {\"jsonrpc\":\"2.0\",\"id\":3,\"method\":\"tools/call\",\"params\":{\"name\":\"migration_status\",\"arguments\":{}}}"
 	@echo ""
+	@export MONGO_URL="mongodb://127.0.0.1:27018/test?connect=direct"; \
+	export MONGO_DATABASE=test; \
+	export MONGO_USERNAME=""; \
+	export MONGO_PASSWORD=""; \
 	./$(BUILD_DIR)/$(BINARY_NAME) mcp --with-examples
 
 mcp-integration-test: ## Run MCP integration test (requires reachable MongoDB via env)

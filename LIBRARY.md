@@ -54,7 +54,7 @@ func main() {
     engine.RegisterMany(
         &AddUserIndexesMigration{},
         &CreateProductCollection{},
-        // ... your migrations
+        // ... migrations
     )
 
     // Run migrations
@@ -458,7 +458,7 @@ MONGO_USERNAME=username
 MONGO_PASSWORD=password
 MONGO_AUTH_SOURCE=admin
 
-# SSL/TLS (for cloud providers like STACKIT)
+# SSL/TLS (for cloud providers )
 MONGO_SSL_ENABLED=true
 MONGO_SSL_INSECURE=false
 MONGO_SSL_CERT_PATH=./certs/client.pem

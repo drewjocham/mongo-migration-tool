@@ -5,8 +5,18 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="53a82f71-5517-487d-94b0-2d95ee8915ca" name="Changes" comment="fixing repo import name">
-      <change beforePath="$PROJECT_DIR$/.github/workflows/release.yml" beforeDir="false" afterPath="$PROJECT_DIR$/.github/workflows/release.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/modules.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/CONTRIBUTING.md" beforeDir="false" afterPath="$PROJECT_DIR$/CONTRIBUTING.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Dockerfile" beforeDir="false" afterPath="$PROJECT_DIR$/Dockerfile" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/INSTALL.md" beforeDir="false" afterPath="$PROJECT_DIR$/INSTALL.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/LIBRARY.md" beforeDir="false" afterPath="$PROJECT_DIR$/LIBRARY.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Makefile" beforeDir="false" afterPath="$PROJECT_DIR$/Makefile" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/go.work" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/makefiles/mcp.mk" beforeDir="false" afterPath="$PROJECT_DIR$/makefiles/mcp.mk" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mcp/integration_test.go" beforeDir="false" afterPath="$PROJECT_DIR$/mcp/integration_test.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mcp/server.go" beforeDir="false" afterPath="$PROJECT_DIR$/mcp/server.go" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -78,6 +88,7 @@
     &quot;Go Build.go build main.go.executor&quot;: &quot;Run&quot;,
     &quot;Go Build.status.executor&quot;: &quot;Run&quot;,
     &quot;Go Build.up.executor&quot;: &quot;Run&quot;,
+    &quot;Go Test.engine_test.go.executor&quot;: &quot;Run&quot;,
     &quot;Makefile Target._download-mockery.executor&quot;: &quot;Run&quot;,
     &quot;Makefile Target.build (1).executor&quot;: &quot;Run&quot;,
     &quot;Makefile Target.build-all.executor&quot;: &quot;Run&quot;,
@@ -124,10 +135,10 @@
     &quot;RunOnceActivity.go.migrated.go.modules.settings&quot;: &quot;true&quot;,
     &quot;SHELLCHECK.PATH&quot;: &quot;I do mind&quot;,
     &quot;SONARLINT_PRECOMMIT_ANALYSIS&quot;: &quot;true&quot;,
-    &quot;com.google.cloudcode.ide_session_index&quot;: &quot;20260101_0004&quot;,
+    &quot;com.google.cloudcode.ide_session_index&quot;: &quot;20260103_0002&quot;,
     &quot;configurable..is.expanded&quot;: &quot;true&quot;,
     &quot;dart.analysis.tool.window.visible&quot;: &quot;false&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;ai-platform-integration&quot;,
     &quot;go.import.settings.migrated&quot;: &quot;true&quot;,
     &quot;last_opened_file_path&quot;: &quot;/Users/jocham/programming/mongo-migration-tool&quot;,
     &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
@@ -135,10 +146,10 @@
     &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
     &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
     &quot;org.rust.cargo.project.model.impl.CargoExternalSystemProjectAware.subscribe.first.balloon&quot;: &quot;&quot;,
-    &quot;project.structure.last.edited&quot;: &quot;Modules&quot;,
+    &quot;project.structure.last.edited&quot;: &quot;Project&quot;,
     &quot;project.structure.proportion&quot;: &quot;0.15&quot;,
     &quot;project.structure.side.proportion&quot;: &quot;0.2&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;com.android.studio.ml.McpConfigurable&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;go.vgo&quot;,
     &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   },
   &quot;keyToStringList&quot;: {
@@ -161,7 +172,7 @@
       <recent name="$PROJECT_DIR$/mcp/examples" />
     </key>
   </component>
-  <component name="RunManager" selected="Makefile Target.mcp-test">
+  <component name="RunManager" selected="Go Test.engine_test.go">
     <configuration default="true" type="GoApplicationRunConfiguration" factoryName="Go Application">
       <module name="mongo-migration-tool" />
       <working_directory value="$PROJECT_DIR$" />
@@ -172,7 +183,7 @@
       <method v="2" />
     </configuration>
     <configuration name="up" type="GoApplicationRunConfiguration" factoryName="Go Application">
-      <module name="mongo-migration-tool-" />
+      <module name="mongo-migration-tool" />
       <working_directory value="$PROJECT_DIR$" />
       <parameters value="up" />
       <EXTENSION ID="net.ashald.envfile">
@@ -200,10 +211,13 @@
       <framework value="gotest" />
       <method v="2" />
     </configuration>
-    <configuration name="deploy-prod" type="MAKEFILE_TARGET_RUN_CONFIGURATION" factoryName="Makefile" temporary="true">
-      <makefile filename="$PROJECT_DIR$/makefiles/release.mk" target="deploy-prod" workingDirectory="" arguments="">
-        <envs />
-      </makefile>
+    <configuration name="engine_test.go" type="GoTestRunConfiguration" factoryName="Go Test" temporary="true" nameIsGenerated="true">
+      <module name="mongo-migration-tool" />
+      <working_directory value="$PROJECT_DIR$/migration" />
+      <kind value="FILE" />
+      <directory value="$PROJECT_DIR$" />
+      <filePath value="$PROJECT_DIR$/migration/engine_test.go" />
+      <framework value="gotest" />
       <method v="2" />
     </configuration>
     <configuration name="docker-release-login" type="MAKEFILE_TARGET_RUN_CONFIGURATION" factoryName="Makefile" temporary="true">
@@ -238,19 +252,19 @@
     </configuration>
     <list>
       <item itemvalue="Go Build.up" />
+      <item itemvalue="Go Test.engine_test.go" />
       <item itemvalue="Makefile Target.mcp-test" />
       <item itemvalue="Makefile Target.releaser-check" />
       <item itemvalue="Makefile Target.docker-release-login" />
-      <item itemvalue="Makefile Target.deploy-prod" />
       <item itemvalue="Makefile Target.release" />
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="Go Test.engine_test.go" />
         <item itemvalue="Makefile Target.mcp-test" />
         <item itemvalue="Makefile Target.releaser-check" />
         <item itemvalue="Makefile Target.docker-release-login" />
         <item itemvalue="Makefile Target.release" />
-        <item itemvalue="Makefile Target.deploy-prod" />
       </list>
     </recent_temporary>
   </component>
@@ -287,6 +301,11 @@
       <workItem from="1766007617753" duration="4584000" />
       <workItem from="1767228990833" duration="4427000" />
       <workItem from="1767234282915" duration="1899000" />
+      <workItem from="1767321493342" duration="14000" />
+      <workItem from="1767322688291" duration="330000" />
+      <workItem from="1767323030452" duration="2455000" />
+      <workItem from="1767400323607" duration="504000" />
+      <workItem from="1767416613513" duration="533000" />
     </task>
     <task id="LOCAL-00021" summary="CLI and mongo-migration-tool">
       <option name="closed" value="true" />
@@ -694,7 +713,11 @@
     <option name="LAST_COMMIT_MESSAGE" value="fixing repo import name" />
   </component>
   <component name="VgoProject">
-    <integration-enabled>false</integration-enabled>
+    <environment>
+      <map>
+        <entry key="GOWORK" value="off" />
+      </map>
+    </environment>
     <settings-migrated>true</settings-migrated>
   </component>
   <component name="XSLT-Support.FileAssociations.UIState">

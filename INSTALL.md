@@ -24,10 +24,10 @@ The easiest way to install mongo-migration on macOS and Linux is via Homebrew.
 
 ```bash
 # Add our custom Homebrew tap
-brew tap drewjocham/mongo-migration-tool
+brew tap drewjocham/mongo-migration
 
 # Install mongo-migration
-brew install mongo-migration-tool
+brew install mongo-migration
 
 # Verify installation
 mongo-migration version
@@ -37,17 +37,17 @@ mongo-migration version
 
 ```bash
 # Upgrade to the latest version
-brew upgrade migration-tool
+brew upgrade mongo-migration
 ```
 
 ### Uninstall
 
 ```bash
 # Uninstall mongo-migration
-brew uninstall mongo-migration-tool
+brew uninstall mongo-migration
 
 # Remove the tap (optional)
-brew untap drewjocham/mongo-migration-tool
+brew untap drewjocham/mongo-migration
 ```
 
 ## Binary Installation

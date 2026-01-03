@@ -4,16 +4,9 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Go Reference](https://pkg.go.dev/badge/github.com/drewjocham/mongo-migration-tool.svg)](https://pkg.go.dev/github.com/drewjocham/mongo-migration-tool)
 
-A comprehensive MongoDB migration and database analysis tool with AI-powered insights. Think Liquibase/Flyway for MongoDB, plus intelligent database optimization recommendations.
+A comprehensive MongoDB migration tool with AI-powered insights via MCP. Think Liquibase/Flyway for MongoDB, with a protocol for intelligent database optimization recommendations from your favorite AI assistant.
 
 ## 🚀 Features
-
-### 📊 **AI-Powered Database Analysis**
-- **Multi-Provider AI Support**: OpenAI GPT-4, Google Gemini, Anthropic Claude
-- **Comprehensive Analysis**: Schema, performance, indexing, and optimization recommendations
-- **Oplog & Replication**: Deep analysis of MongoDB replication health and oplog patterns
-- **Change Stream Optimization**: Real-time data processing pattern analysis
-- **Google Docs Integration**: Export professional reports directly to Google Docs
 
 ### 🔄 **Database Migration Management**
 - **Version Control**: Track and manage database schema changes
@@ -141,41 +134,7 @@ Download pre-built binaries from [GitHub Releases](https://github.com/drewjocham
     mongo-essential down --target 20231201_001
 ```
 
-### 2. AI-Powered Analysis
-
-```bash
-# Basic database analysis
-mongo-migration ai analyze --provider openai
-
-# Detailed schema analysis
-mongo-migration ai schema --provider gemini --detail
-
-# Oplog and replication analysis
-mongo-migration ai oplog --provider openai --google-docs
-
-# Change stream optimization
-mongo-migration ai changestream --collection events --provider gemini
-
-# Performance analysis with Google Docs export
-mongo-migration ai performance --provider openai --google-docs \
-  --docs-title "Production Performance Report" \
-  --docs-share "team@company.com"
-```
-
-### 3. Certificate Troubleshooting
-
-```bash
-# Diagnose certificate issues
-mongo-migration cert diagnose
-
-# Check specific host certificate
-mongo-migration cert check login.microsoftonline.com --verbose
-
-# Fix common certificate problems
-mongo-migration cert fix --apply
-```
-
-### 4. AI Assistant Integration (MCP)
+### 2. AI Assistant Integration (MCP)
 
 ```bash
 # Start MCP server for AI assistants like Ollama, Claude, Goose
@@ -205,18 +164,6 @@ MONGO_URL=mongodb://localhost:27017
 MONGO_DATABASE=your_database
 MONGO_USERNAME=username
 MONGO_PASSWORD=password
-
-# AI Analysis
-AI_ENABLED=true
-AI_PROVIDER=openai  # openai, gemini, claude
-OPENAI_API_KEY=your_openai_key
-GEMINI_API_KEY=your_gemini_key
-
-# Google Docs Integration
-GOOGLE_DOCS_ENABLED=true
-GOOGLE_CREDENTIALS_PATH=./credentials.json
-GOOGLE_DRIVE_FOLDER_ID=folder_id
-GOOGLE_DOCS_SHARE_WITH_EMAIL=team@company.com
 
 # SSL/TLS Settings
 MONGO_SSL_ENABLED=true
@@ -288,7 +235,6 @@ func main() {
 | **[INSTALL.md](INSTALL.md)** | Complete installation guide for all platforms |
 | **[LIBRARY.md](LIBRARY.md)** | Go library usage, API reference, and examples |
 | **[MCP.md](MCP.md)** | Model Context Protocol integration guide |
-| **[AI_ANALYSIS.md](AI_ANALYSIS.md)** | AI-powered database analysis documentation |
 | **[CONTRIBUTING.md](CONTRIBUTING.md)** | Development and contribution guidelines |
 
 ### Commands
@@ -300,39 +246,10 @@ func main() {
 | `mongo-migration status` | Show migration status |
 | `mongo-migration create <name>` | Create new migration |
 | `mongo-migration force <version>` | Force mark migration as applied |
-| `mongo-migration ai analyze` | AI database analysis |
-| `mongo-migration ai schema` | AI schema analysis |
-| `mongo-migration ai performance` | AI performance analysis |
-| `mongo-migration ai oplog` | AI oplog/replication analysis |
-| `mongo-migration ai changestream` | AI change stream analysis |
-| `mongo-migration cert diagnose` | Certificate diagnostics |
-| `mongo-migration cert check <host>` | Check host certificate |
-| `mongo-migration cert fix` | Fix certificate issues |
 | `mongo-migration mcp` | Start MCP server for AI assistants |
 | `mongo-migration mcp --with-examples` | Start MCP server with example migrations |
 
-### AI Providers
-
-| Provider | Models | Setup |
-|----------|---------|-------|
-| **OpenAI** | GPT-4o, GPT-4o-mini, GPT-3.5-turbo | Get API key from [OpenAI](https://platform.openai.com/api-keys) |
-| **Google Gemini** | Gemini-1.5-flash, Gemini-1.5-pro | Get API key from [Google AI Studio](https://ai.google.dev/) |
-| **Anthropic Claude** | Claude-3.5-Sonnet | Get API key from [Anthropic Console](https://console.anthropic.com/) |
-
-### Google Docs Setup
-
-1. Create a [Google Cloud Project](https://console.cloud.google.com/)
-2. Enable Google Docs and Drive APIs
-3. Create a service account and download JSON credentials
-4. Set `GOOGLE_CREDENTIALS_PATH` to the JSON file path
-
 ## 💡 Use Cases
-
-### Database Operations Teams
-- **Health Monitoring**: Regular AI-powered database health checks
-- **Performance Optimization**: Identify and fix performance bottlenecks
-- **Replication Management**: Monitor oplog and replica set health
-- **Change Tracking**: Optimize change stream configurations
 
 ### Development Teams
 - **Schema Evolution**: Version-controlled database migrations
@@ -341,8 +258,7 @@ func main() {
 - **Certificate Issues**: Debug connectivity problems in corporate environments
 
 ### Enterprise Teams
-- **Compliance Reporting**: Professional reports in Google Docs
-- **Knowledge Sharing**: Automated documentation and recommendations
+- **Knowledge Sharing**: Automated documentation and recommendations via MCP
 - **Multi-Environment**: Support for dev, staging, production databases
 - **Security**: SSL/TLS certificate management and troubleshooting
 
@@ -352,8 +268,6 @@ func main() {
 mongo-migration/
 ├── cmd/                    # CLI commands
 │   ├── root.go            # Root command and global flags
-│   ├── ai.go              # AI analysis commands
-│   ├── cert.go            # Certificate utilities
 │   └── migration.go       # Migration commands
 ├── internal/
 │   ├── config/            # Configuration management
@@ -379,7 +293,7 @@ go mod tidy
 # Build the binary
 go build -o mongo-migration .
 
-# Run tests (disable go.work so vendored deps resolve)
+# Run tests (disable go.work.bak so vendored deps resolve)
 GOWORK=off go test ./...
 
 # Run Docker-backed CLI integration tests (requires Docker)
@@ -407,8 +321,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 - [Cobra](https://github.com/spf13/cobra) for CLI framework
 - [MongoDB Go Driver](https://github.com/mongodb/mongo-go-driver) for database connectivity
-- [OpenAI](https://openai.com/), [Google](https://ai.google.dev/), [Anthropic](https://www.anthropic.com/) for AI capabilities
-- [Google APIs](https://developers.google.com/docs/api) for Docs integration
 
 ## 🔗 Links & Resources
 
@@ -423,7 +335,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - **[Installation Guide](INSTALL.md)** - All installation methods and troubleshooting
 - **[Library Documentation](LIBRARY.md)** - Go library usage and examples
 - **[MCP Integration](MCP.md)** - AI assistant integration guide
-- **[AI Analysis Guide](AI_ANALYSIS.md)** - Database analysis documentation
 - **[Contributing Guide](CONTRIBUTING.md)** - Development setup and guidelines
 
 ## 🐛 Support & Community

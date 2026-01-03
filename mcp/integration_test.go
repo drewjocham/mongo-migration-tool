@@ -7,7 +7,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-
 	"strings"
 	"testing"
 	"time"
@@ -20,8 +19,6 @@ import (
 	"github.com/drewjocham/mongo-migration-tool/mcp"
 	_ "github.com/drewjocham/mongo-migration-tool/migrations"
 )
-
-// --- Types ---
 
 type rpcRequest struct {
 	JSONRPC string      `json:"jsonrpc"`
@@ -61,13 +58,12 @@ type toolCallResult struct {
 	} `json:"content"`
 }
 
-// --- Helpers ---
-
 type mcpRPCClient struct {
 	enc *json.Encoder
 	dec *json.Decoder
 }
 
+// call handles the JSON-RPC request/response cycle with basic ID verification.
 func (c *mcpRPCClient) call(t *testing.T, method string, id int, params interface{}) rpcResponse {
 	t.Helper()
 
@@ -87,11 +83,8 @@ func (c *mcpRPCClient) call(t *testing.T, method string, id int, params interfac
 		t.Fatalf("failed to decode response for %s: %v", method, err)
 	}
 
-	// JSON unmarshaling into interface{} converts numbers to float64
-	respID := fmt.Sprintf("%v", resp.ID)
-	reqID := fmt.Sprintf("%v", id)
-	if respID != reqID {
-		t.Fatalf("id mismatch: expected %s, got %s", reqID, respID)
+	if fmt.Sprintf("%v", resp.ID) != fmt.Sprintf("%v", id) {
+		t.Fatalf("id mismatch: expected %v, got %v", id, resp.ID)
 	}
 
 	if resp.Error != nil {
@@ -135,10 +128,7 @@ func connectMongoOrSkip(t *testing.T) (*mongo.Client, *mongo.Database, func()) {
 	}
 }
 
-// --- Test Implementation ---
-
 func TestMCPIntegration_FullLifecycle(t *testing.T) {
-	// Isolate database for this specific test run
 	dbName := fmt.Sprintf("mcp_it_%d", time.Now().UnixNano())
 	t.Setenv("MONGO_DATABASE", dbName)
 	t.Setenv("MIGRATIONS_COLLECTION", "schema_migrations_it")
@@ -173,7 +163,7 @@ func TestMCPIntegration_FullLifecycle(t *testing.T) {
 		dec: json.NewDecoder(srvToClientR),
 	}
 
-	t.Run("Initialize", func(t *testing.T) {
+	t.Run("Protocol: Initialize", func(t *testing.T) {
 		client.call(t, "initialize", 1, map[string]interface{}{
 			"protocolVersion": "2024-11-05",
 			"capabilities":    map[string]interface{}{},
@@ -181,7 +171,7 @@ func TestMCPIntegration_FullLifecycle(t *testing.T) {
 		})
 	})
 
-	t.Run("ListTools", func(t *testing.T) {
+	t.Run("Discovery: ListTools", func(t *testing.T) {
 		resp := client.call(t, "tools/list", 2, nil)
 		var list toolsListResult
 		if err := json.Unmarshal(resp.Result, &list); err != nil {
@@ -201,8 +191,7 @@ func TestMCPIntegration_FullLifecycle(t *testing.T) {
 		}
 	})
 
-	// 3. Execution
-	t.Run("MigrationUp", func(t *testing.T) {
+	t.Run("Execution: MigrationUp", func(t *testing.T) {
 		resp := client.call(t, "tools/call", 3, toolCallParams{
 			Name: "migration_up",
 		})
@@ -212,11 +201,10 @@ func TestMCPIntegration_FullLifecycle(t *testing.T) {
 		}
 	})
 
-	t.Run("VerifyDatabaseState", func(t *testing.T) {
+	t.Run("Verification: Database State", func(t *testing.T) {
 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
 
-		// Verify expected indexes were created by the 'up' migration
 		cursor, err := db.Collection("users").Indexes().List(ctx)
 		if err != nil {
 			t.Fatalf("failed to list indexes: %v", err)
@@ -227,23 +215,32 @@ func TestMCPIntegration_FullLifecycle(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		expected := []string{"idx_users_email_unique", "idx_users_created_at"}
-		for _, exp := range expected {
-			found := false
-			for _, idx := range indexes {
-				if idx["name"] == exp {
-					found = true
-					break
+		expected := map[string]bool{
+			"idx_users_email_unique": false,
+			"idx_users_created_at":   false,
+		}
+
+		for _, idx := range indexes {
+			name := idx["name"].(string)
+			if _, ok := expected[name]; ok {
+				expected[name] = true
+
+				if name == "idx_users_email_unique" {
+					if unique, ok := idx["unique"].(bool); !ok || !unique {
+						t.Errorf("expected %s to be unique, but it wasn't", name)
+					}
 				}
 			}
+		}
+
+		for name, found := range expected {
 			if !found {
-				t.Errorf("index not found: %s", exp)
+				t.Errorf("index not found: %s", name)
 			}
 		}
 	})
 
-	// Tool Consistency
-	t.Run("MigrationStatus", func(t *testing.T) {
+	t.Run("Consistency: MigrationStatus", func(t *testing.T) {
 		resp := client.call(t, "tools/call", 4, toolCallParams{
 			Name: "migration_status",
 		})

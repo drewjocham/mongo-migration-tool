@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/modelcontextprotocol/go-sdk/mcp"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 
@@ -72,6 +73,12 @@ func (s *MCPServer) registerTools() {
 		Name:        "migration_create",
 		Description: "Generate a new Go migration file template.",
 	}, s.handleCreate)
+
+	mcp.AddTool(s.mcpServer, &mcp.Tool{
+		Name:        "database_schema",
+		Description: "Get the schema of the database, including collections and their indexes.",
+		Annotations: &mcp.ToolAnnotations{ReadOnlyHint: true},
+	}, s.handleSchema)
 }
 
 // --- Handlers ---
@@ -176,6 +183,69 @@ func (s *MCPServer) handleCreate(
 	}
 
 	return toolTextResult(fmt.Sprintf("🚀 Created new migration file: %s", fname)), nil, nil
+}
+
+func (s *MCPServer) handleSchema(
+	ctx context.Context,
+	req *mcp.CallToolRequest,
+	_ emptyArgs,
+) (*mcp.CallToolResult, any, error) {
+	if err := s.ensureConnection(ctx); err != nil {
+		return toolErrorResult(fmt.Sprintf("Database error: %v", err)), nil, nil
+	}
+
+	var b strings.Builder
+	b.WriteString(fmt.Sprintf("### Database Schema for '%s'\n\n", s.db.Name()))
+
+	collections, err := s.db.ListCollectionNames(ctx, bson.D{})
+	if err != nil {
+		return toolErrorResult(fmt.Sprintf("Failed to list collections: %v", err)), nil, nil
+	}
+
+	for _, collName := range collections {
+		b.WriteString(fmt.Sprintf("#### Collection: `%s`\n\n", collName))
+		b.WriteString("| Index Name | Keys | Unique |\n")
+		b.WriteString("| :--- | :--- | :--- |\n")
+
+		coll := s.db.Collection(collName)
+		cursor, err := coll.Indexes().List(ctx)
+		if err != nil {
+			b.WriteString(fmt.Sprintf("| *Error fetching indexes: %v* | | |\n", err))
+			continue
+		}
+
+		var indexes []bson.M
+		if err = cursor.All(ctx, &indexes); err != nil {
+			b.WriteString(fmt.Sprintf("| *Error decoding indexes: %v* | | |\n", err))
+			continue
+		}
+
+		for _, index := range indexes {
+			name, ok := index["name"].(string)
+			if !ok {
+				name = "[unknown]"
+			}
+			keys := formatIndexKeys(index["key"])
+			unique := "No"
+			if u, ok := index["unique"].(bool); ok && u {
+				unique = "Yes"
+			}
+			b.WriteString(fmt.Sprintf("| `%s` | `%s` | %s |\n", name, keys, unique))
+		}
+		b.WriteString("\n")
+	}
+
+	return toolTextResult(b.String()), nil, nil
+}
+
+func formatIndexKeys(keys interface{}) string {
+	var keyParts []string
+	if doc, ok := keys.(bson.D); ok {
+		for _, elem := range doc {
+			keyParts = append(keyParts, fmt.Sprintf("%s: %v", elem.Key, elem.Value))
+		}
+	}
+	return strings.Join(keyParts, ", ")
 }
 
 // --- Lifecycle & Helpers ---
