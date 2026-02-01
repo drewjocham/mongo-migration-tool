@@ -8,7 +8,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/drewjocham/mongo-migration-tool/config"
+	"github.com/drewjocham/mongo-migration-tool/internal/config"
 	"github.com/drewjocham/mongo-migration-tool/migration"
 	"github.com/spf13/cobra"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -38,16 +38,6 @@ var (
 	appVersion = "dev"
 	commit     = "none"
 	date       = "unknown"
-
-	// Flag variables for subcommands, declared here to be accessible in root's init()
-	upTarget          string
-	downTargetVersion string
-	downConfirm       bool
-	forceYes          bool
-	outputFormat      string
-	mcpConfigFilePath string // For mcpConfigCmd's --config flag
-	mcpCmdConfigPath  string // For mcpCmd's --config flag (if it's different)
-	mcpWithExamples   bool   // Shared with mcp.go
 )
 
 var rootCmd = &cobra.Command{
@@ -63,30 +53,14 @@ func init() { //nolint:gochecknoinits // cobra init function
 	rootCmd.PersistentFlags().BoolVar(&debugMode, "debug", false, "Enable debug logging")
 
 	rootCmd.AddCommand(
-		upCmd,
-		downCmd,
-		forceCmd,
-		mcpCmd,
-		mcpConfigCmd,
-		createCmd,
-		statusCmd,
+		newUpCmd(),
+		newDownCmd(),
+		newForceCmd(),
+		newStatusCmd(),
+		newCreateCmd(),
+		NewMCPCmd(),
 		versionCmd,
 	)
-
-	mcpCmd.Flags().BoolVar(&mcpWithExamples, "with-examples", false, "Register example migrations")
-
-	// Bind subcommand flags to variables declared in this file
-	// Note: mcpStartCmd is likely a sub-command of mcpCmd, so its flags should be defined in mcp.go
-	// For now, assuming mcpStartCmd is a direct child of rootCmd if its flags are here.
-	// If mcpStartCmd is not a direct child, these lines will need to be moved to mcp.go
-	// mcpStartCmd.Flags().StringVar(&mcpConfigFilePath, "config", "", "Path to config file (optional)")
-	// mcpCmd.Flags().StringVar(&mcpCmdConfigPath, "config", "", "The recommended config to apply to your AI client.")
-
-	upCmd.Flags().StringVar(&upTarget, "target", "", "Target version to migrate up to")
-	downCmd.Flags().StringVarP(&downTargetVersion, "target", "t", "", "Version to roll back to (exclusive)")
-	downCmd.Flags().BoolVarP(&downConfirm, "yes", "y", false, "Confirm the action without prompting")
-	forceCmd.Flags().BoolVarP(&forceYes, "yes", "y", false, "Confirm without prompting")
-	statusCmd.Flags().StringVarP(&outputFormat, "output", "o", "table", "Output format (table, json)")
 }
 
 func setupDependencies(cmd *cobra.Command, _ []string) error {
@@ -126,7 +100,12 @@ func isOffline(cmd *cobra.Command) bool {
 	if cmd.Annotations[annotationOffline] == "true" {
 		return true
 	}
-	return cmd.Name() == "help" || cmd.Name() == "version" || cmd.Name() == "create"
+	switch cmd.Name() {
+	case "help", "version", "create", "config":
+		return true
+	default:
+		return false
+	}
 }
 
 func initLogging() {

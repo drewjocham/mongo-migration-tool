@@ -8,28 +8,33 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var createCmd = &cobra.Command{
-	Use:   "create [migration_name]",
-	Short: "Create a new migration file",
-	Args:  cobra.ExactArgs(1),
-	RunE: func(cmd *cobra.Command, args []string) error {
-		cfg, err := getConfig(cmd.Context())
-		if err != nil {
-			return err
-		}
+func newCreateCmd() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:         "create [migration_name]",
+		Short:       "Create a new migration file",
+		Args:        cobra.ExactArgs(1),
+		Annotations: map[string]string{annotationOffline: "true"},
+		RunE: func(cmd *cobra.Command, args []string) error {
+			cfg, err := getConfig(cmd.Context())
+			if err != nil {
+				return err
+			}
 
-		gen := &migration.Generator{
-			OutputPath: cfg.MigrationsPath,
-		}
+			gen := &migration.Generator{
+				OutputPath: cfg.MigrationsPath,
+			}
 
-		path, version, err := gen.Create(args[0])
-		if err != nil {
-			return err
-		}
+			path, version, err := gen.Create(args[0])
+			if err != nil {
+				return err
+			}
 
-		renderSuccess(path, version)
-		return nil
-	},
+			renderSuccess(path, version)
+			return nil
+		},
+	}
+
+	return cmd
 }
 
 func renderSuccess(path, version string) {

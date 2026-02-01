@@ -21,7 +21,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 
-	"github.com/drewjocham/mongo-migration-tool/config"
+	"github.com/drewjocham/mongo-migration-tool/internal/config"
 	"github.com/drewjocham/mongo-migration-tool/migration"
 )
 

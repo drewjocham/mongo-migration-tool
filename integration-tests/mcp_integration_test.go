@@ -1,6 +1,6 @@
 //go:build integration
 
-package mcp_test
+package integration_tests_test
 
 import (
 	"context"
@@ -15,8 +15,8 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 
-	"github.com/drewjocham/mongo-migration-tool/config"
-	"github.com/drewjocham/mongo-migration-tool/mcp"
+	"github.com/drewjocham/mongo-migration-tool/internal/config"
+	"github.com/drewjocham/mongo-migration-tool/internal/mcp"
 	_ "github.com/drewjocham/mongo-migration-tool/migrations"
 )
 
@@ -108,7 +108,7 @@ func parseToolText(t *testing.T, resp rpcResponse) string {
 
 func connectMongoOrSkip(t *testing.T) (*mongo.Client, *mongo.Database, func()) {
 	t.Helper()
-	cfg, err := config.LoadFromEnv()
+	cfg, err := config.Load()
 	if err != nil {
 		t.Fatalf("config error: %v", err)
 	}

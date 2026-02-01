@@ -9,8 +9,8 @@ import (
 	"os"
 	"time"
 
-	"github.com/drewjocham/mongo-migration-tool/config"
 	_ "github.com/drewjocham/mongo-migration-tool/examples/examplemigrations"
+	"github.com/drewjocham/mongo-migration-tool/internal/config"
 	"github.com/drewjocham/mongo-migration-tool/migration"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"

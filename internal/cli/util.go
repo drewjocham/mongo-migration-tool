@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/drewjocham/mongo-migration-tool/config"
+	"github.com/drewjocham/mongo-migration-tool/internal/config"
 	"github.com/drewjocham/mongo-migration-tool/migration"
 )
 

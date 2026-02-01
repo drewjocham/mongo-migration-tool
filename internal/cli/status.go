@@ -11,32 +11,39 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var statusCmd = &cobra.Command{
-	Use:   "status",
-	Short: "Show migration status",
-	RunE: func(cmd *cobra.Command, _ []string) error {
-		engine, err := getEngine(cmd.Context())
-		if err != nil {
-			return err
-		}
+func newStatusCmd() *cobra.Command {
+	var format string
 
-		status, err := engine.GetStatus(cmd.Context())
-		if err != nil {
-			return fmt.Errorf("failed to get migration status: %w", err)
-		}
+	cmd := &cobra.Command{
+		Use:   "status",
+		Short: "Show migration status",
+		RunE: func(cmd *cobra.Command, _ []string) error {
+			engine, err := getEngine(cmd.Context())
+			if err != nil {
+				return err
+			}
 
-		out := cmd.OutOrStdout()
+			status, err := engine.GetStatus(cmd.Context())
+			if err != nil {
+				return fmt.Errorf("failed to get migration status: %w", err)
+			}
 
-		switch strings.ToLower(outputFormat) {
-		case "json":
-			return renderJSON(out, status)
-		case "table":
-			renderTable(out, status)
-			return nil
-		default:
-			return fmt.Errorf("unsupported output format: %s", outputFormat)
-		}
-	},
+			out := cmd.OutOrStdout()
+
+			switch strings.ToLower(format) {
+			case "json":
+				return renderJSON(out, status)
+			case "table":
+				renderTable(out, status)
+				return nil
+			default:
+				return fmt.Errorf("unsupported output format: %s", format)
+			}
+		},
+	}
+
+	cmd.Flags().StringVarP(&format, "output", "o", "table", "Output format (table, json)")
+	return cmd
 }
 
 func renderJSON(w io.Writer, status []migration.MigrationStatus) error {

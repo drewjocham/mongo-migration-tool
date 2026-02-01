@@ -4,23 +4,51 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="53a82f71-5517-487d-94b0-2d95ee8915ca" name="Changes" comment="restructuring project">
+    <list default="true" id="53a82f71-5517-487d-94b0-2d95ee8915ca" name="Changes" comment="updating ci.yaml dockerfile paths">
+      <change afterPath="$PROJECT_DIR$/integration-tests/mcp_integration_test.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/internal/config/config.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/internal/config/config_test.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/internal/mcp/README.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/internal/mcp/config.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/internal/mcp/formatters.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/internal/mcp/handlers.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/internal/mcp/migration.go.tmpl" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/internal/mcp/server.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/internal/mcp/templates.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/internal/mcp/types.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/migration/cmd/main.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/config/config.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/config/config_test.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/deployments/Dockerfile" beforeDir="false" afterPath="$PROJECT_DIR$/docker/Dockerfile" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/deployments/Dockerfile.local" beforeDir="false" afterPath="$PROJECT_DIR$/docker/Dockerfile.local" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/deployments/Dockerfile.mcp" beforeDir="false" afterPath="$PROJECT_DIR$/docker/Dockerfile.mcp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/deployments/docker-compose.yml" beforeDir="false" afterPath="$PROJECT_DIR$/docker/compose.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/deployments/integration-compose.yml" beforeDir="false" afterPath="$PROJECT_DIR$/docker/integration-compose.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/deployments/supervisord.conf" beforeDir="false" afterPath="$PROJECT_DIR$/docker/supervisord.conf" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/examples/library-example/main.go" beforeDir="false" afterPath="$PROJECT_DIR$/examples/library-example/main.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/examples/main.go" beforeDir="false" afterPath="$PROJECT_DIR$/examples/main.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/integration/cli_integration_stub_test.go" beforeDir="false" afterPath="$PROJECT_DIR$/integration-tests/cli_integration_stub_test.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/integration/cli_integration_test.go" beforeDir="false" afterPath="$PROJECT_DIR$/integration-tests/cli_integration_test.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/cli/create.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/cli/create.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/internal/cli/down.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/cli/down.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/internal/cli/force.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/cli/force.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/internal/cli/mcp.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/cli/mcp.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/internal/cli/root.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/cli/root.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/internal/cli/status.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/cli/status.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/internal/cli/up.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/cli/up.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/cli/util.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/cli/util.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/internal/cli/version.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/cli/version.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/makefiles/build.mk" beforeDir="false" afterPath="$PROJECT_DIR$/makefiles/build.mk" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/makefiles/dev.mk" beforeDir="false" afterPath="$PROJECT_DIR$/makefiles/dev.mk" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/makefiles/docker.mk" beforeDir="false" afterPath="$PROJECT_DIR$/makefiles/docker.mk" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/makefiles/linter.mk" beforeDir="false" afterPath="$PROJECT_DIR$/makefiles/linter.mk" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/makefiles/mcp.mk" beforeDir="false" afterPath="$PROJECT_DIR$/makefiles/mcp.mk" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/makefiles/migration.mk" beforeDir="false" afterPath="$PROJECT_DIR$/makefiles/migration.mk" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/makefiles/release.mk" beforeDir="false" afterPath="$PROJECT_DIR$/makefiles/release.mk" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/makefiles/variables/vars.mk" beforeDir="false" afterPath="$PROJECT_DIR$/makefiles/variables/vars.mk" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mcp/README.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/mcp/config.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/mcp/integration_test.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/mcp/server.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/migration/registry.go" beforeDir="false" afterPath="$PROJECT_DIR$/migration/registry.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/migrations/register.go" beforeDir="false" afterPath="$PROJECT_DIR$/migrations/register.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/start.sh" beforeDir="false" afterPath="$PROJECT_DIR$/start.sh" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -152,7 +180,7 @@
     "RunOnceActivity.go.migrated.go.modules.settings": "true",
     "SHELLCHECK.PATH": "I do mind",
     "SONARLINT_PRECOMMIT_ANALYSIS": "true",
-    "com.google.cloudcode.ide_session_index": "20260201_0001",
+    "com.google.cloudcode.ide_session_index": "20260201_0005",
     "configurable..is.expanded": "true",
     "dart.analysis.tool.window.visible": "false",
     "git-widget-placeholder": "ai-platform-integration",
@@ -166,7 +194,7 @@
     "project.structure.last.edited": "Project",
     "project.structure.proportion": "0.15",
     "project.structure.side.proportion": "0.2",
-    "settings.editor.selected.configurable": "go.vgo",
+    "settings.editor.selected.configurable": "com.android.studio.ml.McpConfigurable",
     "vue.rearranger.settings.migration": "true"
   },
   "keyToStringList": {
@@ -184,10 +212,11 @@
       <recent name="$PROJECT_DIR$/examples" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
-      <recent name="$PROJECT_DIR$/cmd" />
+      <recent name="$PROJECT_DIR$/integration" />
       <recent name="$PROJECT_DIR$/mcp" />
-      <recent name="$PROJECT_DIR$" />
-      <recent name="$PROJECT_DIR$/mcp/examples" />
+      <recent name="$PROJECT_DIR$/migration" />
+      <recent name="$PROJECT_DIR$/migration/internal" />
+      <recent name="$PROJECT_DIR$/mcp/internal/mcp" />
     </key>
   </component>
   <component name="RunManager" selected="Makefile Target.download-mockery">
@@ -330,23 +359,9 @@
       <workItem from="1769762405584" duration="3497000" />
       <workItem from="1769771142755" duration="1798000" />
       <workItem from="1769777220929" duration="5000" />
-      <workItem from="1769909161413" duration="14516000" />
-    </task>
-    <task id="LOCAL-00026" summary="CLI and mongo-migration-tool">
-      <option name="closed" value="true" />
-      <created>1765146970038</created>
-      <option name="number" value="00026" />
-      <option name="presentableId" value="LOCAL-00026" />
-      <option name="project" value="LOCAL" />
-      <updated>1765146970038</updated>
-    </task>
-    <task id="LOCAL-00027" summary="CLI and mongo-migration-tool">
-      <option name="closed" value="true" />
-      <created>1765180338647</created>
-      <option name="number" value="00027" />
-      <option name="presentableId" value="LOCAL-00027" />
-      <option name="project" value="LOCAL" />
-      <updated>1765180338647</updated>
+      <workItem from="1769909161413" duration="14801000" />
+      <workItem from="1769927547171" duration="26000" />
+      <workItem from="1769927947212" duration="8788000" />
     </task>
     <task id="LOCAL-00028" summary="CLI and mongo-migration-tool">
       <option name="closed" value="true" />
@@ -724,7 +739,23 @@
       <option name="project" value="LOCAL" />
       <updated>1769923216241</updated>
     </task>
-    <option name="localTasksCounter" value="75" />
+    <task id="LOCAL-00075" summary="restructuring project">
+      <option name="closed" value="true" />
+      <created>1769927315786</created>
+      <option name="number" value="00075" />
+      <option name="presentableId" value="LOCAL-00075" />
+      <option name="project" value="LOCAL" />
+      <updated>1769927315786</updated>
+    </task>
+    <task id="LOCAL-00076" summary="updating ci.yaml dockerfile paths">
+      <option name="closed" value="true" />
+      <created>1769927461168</created>
+      <option name="number" value="00076" />
+      <option name="presentableId" value="LOCAL-00076" />
+      <option name="project" value="LOCAL" />
+      <updated>1769927461169</updated>
+    </task>
+    <option name="localTasksCounter" value="77" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -737,7 +768,8 @@
     <MESSAGE value="fixing repo import name" />
     <MESSAGE value="updating docs and AI keys" />
     <MESSAGE value="restructuring project" />
-    <option name="LAST_COMMIT_MESSAGE" value="restructuring project" />
+    <MESSAGE value="updating ci.yaml dockerfile paths" />
+    <option name="LAST_COMMIT_MESSAGE" value="updating ci.yaml dockerfile paths" />
   </component>
   <component name="VgoProject">
     <environment>

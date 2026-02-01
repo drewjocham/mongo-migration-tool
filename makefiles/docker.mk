@@ -9,15 +9,12 @@ include $(MAKEFILES_DIR)/variables/vars.mk
 DOCKER_TAG=v0.1.0
 
 docker-build: ## Build Docker image
-	@echo "$(GREEN)Building Docker image $(DOCKER_IMAGE):$(DOCKER_TAG)...$(NC)"
-	docker build -t $(DOCKER_IMAGE):$(DOCKER_TAG) -f $(DOCKERFILE_LOCAL) .
+	@echo "$(GREEN)Building Docker image $(DOCKER_IMAGE):$(DOCKER_TAG) for arch $(HOST_ARCH)...$(NC)"
+		$(COMPOSE_CMD) --profile build build
 
 docker-run: docker-build ## Run Docker container
 	@echo "$(GREEN)Running Docker container...$(NC)"
-	docker run --rm -it \
-		-e MONGO_URL=mongodb://host.docker.internal:27017 \
-		-e MONGO_DATABASE=test_db \
-		$(DOCKER_IMAGE):$(DOCKER_TAG) status
+	$(COMPOSE_CMD) --profile build up
 
 start-tool: ## Start services with docker-compose
 	@echo "$(GREEN)Running Docker container...$(NC)"
@@ -28,11 +25,11 @@ start-tool: ## Start services with docker-compose
 
 docker-up: ## Start services with docker-compose
 	@echo "$(GREEN)Starting services with docker-compose...$(NC)"
-	docker-compose up -d --remove-orphans
+	$(COMPOSE_CMD) up -d --remove-orphans
 
 docker-down: ## Stop services with docker-compose
 	@echo "$(YELLOW)Stopping services with docker-compose...$(NC)"
-	docker-compose down --remove-orphans -v
+	$(COMPOSE_CMD) down --remove-orphans -v
 
 security-scan: ## Run security scan on Docker image
 	@echo "$(GREEN)Running security scan...$(NC)"

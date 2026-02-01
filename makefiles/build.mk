@@ -22,19 +22,29 @@ build: deps ## Build the binary
 	@mkdir -p $(BUILD_DIR)
 	cd $(REPO_ROOT) && $(GO_ENV) CGO_ENABLED=0 go build $(LDFLAGS) -o $(BUILD_DIR)/$(BINARY_NAME) $(MAIN_PACKAGE)
 
-build-all: deps ## Build for multiple platforms
+# --- Configuration ---
+BINARY_NAME  := mongo-migration
+BIN_DIR     := $(REPO_ROOT)/bin
+MAIN_PACKAGE := ./cmd
+
+.PHONY: build-all
+build-all: deps ## Build for all supported platforms
 	@echo "$(GREEN)Building for multiple platforms...$(NC)"
-	@mkdir -p $(BUILD_DIR)
-	# Linux amd64
-	cd $(REPO_ROOT) && $(GO_ENV) GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build $(LDFLAGS) -o $(BUILD_DIR)/$(BINARY_NAME)-linux-amd64 $(MAIN_PACKAGE)
-	# Linux arm64
-	cd $(REPO_ROOT) && $(GO_ENV) GOOS=linux GOARCH=arm64 CGO_ENABLED=0 go build $(LDFLAGS) -o $(BUILD_DIR)/$(BINARY_NAME)-linux-arm64 $(MAIN_PACKAGE)
-	# macOS amd64
-	cd $(REPO_ROOT) && $(GO_ENV) GOOS=darwin GOARCH=amd64 CGO_ENABLED=0 go build $(LDFLAGS) -o $(BUILD_DIR)/$(BINARY_NAME)-darwin-amd64 $(MAIN_PACKAGE)
-	# macOS arm64
-	cd $(REPO_ROOT) && $(GO_ENV) GOOS=darwin GOARCH=arm64 CGO_ENABLED=0 go build $(LDFLAGS) -o $(BUILD_DIR)/$(BINARY_NAME)-darwin-arm64 $(MAIN_PACKAGE)
-	# Windows amd64
-	cd $(REPO_ROOT) && $(GO_ENV) GOOS=windows GOARCH=amd64 CGO_ENABLED=0 go build $(LDFLAGS) -o $(BUILD_DIR)/$(BINARY_NAME)-windows-amd64.exe $(MAIN_PACKAGE)
+	@mkdir -p $(BIN_DIR)
+	@$(foreach PLATFORM,$(PLATFORMS), \
+		$(eval OS := $(word 1,$(subst /, ,$(PLATFORM)))) \
+		$(eval ARCH := $(word 2,$(subst /, ,$(PLATFORM)))) \
+		$(eval BINARY := $(BIN_DIR)/$(BINARY_NAME)-$(OS)-$(ARCH)$(if $(filter windows,$(OS)),.exe)) \
+		echo "$(YELLOW)  > Building $(OS)/$(ARCH)...$(NC)"; \
+		cd $(REPO_ROOT) && GOOS=$(OS) GOARCH=$(ARCH) CGO_ENABLED=0 \
+		go build $(LDFLAGS) -o $(BINARY) $(MAIN_PACKAGE); \
+	)
+	@echo "$(GREEN)Done! Binaries are in $(BIN_DIR)$(NC)"
+
+.PHONY: clean
+clean: ## Remove build artifacts
+	@echo "$(RED)Cleaning $(BIN_DIR)...$(NC)"
+	@rm -rf $(BIN_DIR)
 
 install: build ## Install the binary to GOBIN
 	@echo "$(GREEN)Installing $(BINARY_NAME) to $(GOBIN)...$(NC)"

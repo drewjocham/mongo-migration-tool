@@ -1,0 +1,79 @@
+
+x-dev-base: &base
+  profiles: ["build"]
+  networks:
+    - mcp_network
+
+services:
+  mongo-cli:
+    <<: *base
+    build:
+      context: ..
+      dockerfile: ./docker/Dockerfile.local
+    environment:
+      - MONGO_URL=${MONGO_URL:-mongodb://mongo-mcp:27017}
+      - MONGO_DATABASE=${MONGO_DATABASE:-test_db}test_db
+      - MIGRATIONS_PATH=${MIGRATIONS_PATH:-./app/migrations}
+      - MIGRATIONS_COLLECTION=${MIGRATIONS_COLLECTION:-schema_migrations}
+      - MONGO_TIMEOUT=30
+    volumes:
+      - ./migrations:/app/migrations
+    depends_on:
+      mongo-db:
+        condition: service_healthy
+    command: ["--help"]
+    env_file:
+      - .env
+
+  mongo-mcp:
+    <<: *base
+    build:
+      context: ..
+      dockerfile: ./docker/Dockerfile.mcp
+    environment:
+      - MONGO_URL=${MONGO_URL:-mongodb://mongo-mcp:27017}
+      - MONGO_DATABASE=${MONGO_DATABASE:-test_db}test_db
+      - MIGRATIONS_PATH=${MIGRATIONS_PATH:-./app/migrations}
+      - MIGRATIONS_COLLECTION=${MIGRATIONS_COLLECTION:-schema_migrations}
+      - MONGO_TIMEOUT=${MONGO_TIMEOUT:-30}
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./migrations:/app/migrations
+    depends_on:
+      mongo-db:
+        condition: service_healthy
+    env_file:
+      - .env
+
+  mongo-db:
+    <<: *base
+    image: mongo:8.0
+    container_name: mongo-mcp
+    command: [
+      "--bind_ip_all",
+      "--port", "27017"
+    ]
+    ports:
+      - "27017:27017"
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=admin
+      - MONGO_INITDB_ROOT_PASSWORD=password
+      - MONGO_INITDB_DATABASE=test_db
+    healthcheck:
+      test: |
+        echo 'db.runCommand("ping").ok' | mongosh --port 27017 --quiet
+      interval: 5s
+      timeout: 30s
+      start_period: 10s
+      start_interval: 1s
+      retries: 30
+    volumes:
+      - mongo_data:/data/db
+
+volumes:
+  mongo_data:
+
+networks:
+  mcp_network:
+    driver: bridge

@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/drewjocham/mongo-migration-tool/internal/mcp"
 	"io"
 	"log/slog"
 	"os"
@@ -11,94 +12,93 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/drewjocham/mongo-migration-tool/mcp"
 	_ "github.com/drewjocham/mongo-migration-tool/migrations"
 )
 
-// mcpWithExamples and mcpConfigPath are now declared in internal/cli/root.go
+func NewMCPCmd() *cobra.Command {
+	var withExamples bool
 
-var mcpCmd = &cobra.Command{
-	Use:   "mcp",
-	Short: "Start MCP server for AI assistant integration",
-	Long: `Start the Model Context Protocol (MCP) server for AI assistants.
-IMPORTANT: This command uses stdin/stdout for communication.
-Logs are automatically redirected to stderr.`,
-	RunE: runMCP,
+	mcpCmd := &cobra.Command{
+		Use:   "mcp",
+		Short: "Start MCP server for AI assistant integration",
+		Long:  "Starts the MCP server using stdin/stdout. Logs are redirected to stderr to avoid protocol corruption.",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return runMCP(cmd, withExamples)
+		},
+	}
+	mcpCmd.Flags().BoolVar(&withExamples, "with-examples", false, "Register example migrations on startup")
+
+	mcpCmd.AddCommand(&cobra.Command{
+		Use:   "config",
+		Short: "Generate MCP configuration JSON for Claude/IDE",
+		Annotations: map[string]string{
+			annotationOffline: "true",
+		},
+		RunE: runMCPConfig,
+	})
+
+	return mcpCmd
 }
 
-var mcpConfigCmd = &cobra.Command{
-	Use:   "config",
-	Short: "Generate MCP configuration JSON for AI assistants",
-	RunE: func(cmd *cobra.Command, args []string) error {
-		exePath, err := os.Executable()
-		if err != nil {
-			return fmt.Errorf("could not determine executable path: %w", err)
-		}
-
-		uri := os.Getenv("MONGO_URI")
-		if uri == "" {
-			uri = "mongodb://localhost:27017"
-		}
-
-		db := os.Getenv("MONGO_DATABASE")
-		if db == "" {
-			db = "your_database"
-		}
-
-		config := map[string]interface{}{
-			"mcpServers": map[string]interface{}{
-				"mongo-migration": map[string]interface{}{
-					"command": exePath,
-					"args":    []string{"mcp"},
-					"env": map[string]string{
-						"MONGO_URI":      uri,
-						"MONGO_DATABASE": db,
-					},
-				},
-			},
-		}
-
-		encoder := json.NewEncoder(cmd.OutOrStdout())
-		encoder.SetIndent("", "  ")
-		return encoder.Encode(config)
-	},
-}
-
-func runMCP(cmd *cobra.Command, _ []string) error {
-
-	if mcpWithExamples { // Accessing mcpWithExamples from root.go's package-level variable
-		slog.Info("Registering example migrations")
+func runMCP(_ *cobra.Command, withExamples bool) error {
+	slog.SetDefault(slog.New(slog.NewTextHandler(os.Stderr, nil)))
+	if withExamples {
+		slog.Info("Registering example migrations...")
 		if err := registerExampleMigrations(); err != nil {
-			return fmt.Errorf("failed to register example migrations: %w", err)
+			return fmt.Errorf("failed to register examples: %w", err)
 		}
 	}
 
 	server, err := mcp.NewMCPServer()
 	if err != nil {
-		return fmt.Errorf("failed to create MCP server: %w", err)
+		return fmt.Errorf("mcp init failed: %w", err)
 	}
-
-	defer func() {
-		if err := server.Close(); err != nil {
-			slog.Error("Error closing MCP server", "error", err)
-		}
-	}()
+	defer server.Close()
 
 	slog.Info("Starting MCP server", "pid", os.Getpid())
 
-	if err := server.Start(); err != nil {
-		if isClosingError(err) {
-			slog.Info("MCP server session ended", "reason", "client disconnected")
-			return nil
-		}
+	if err := server.Start(); err != nil && !isClosingError(err) {
 		return fmt.Errorf("mcp server failure: %w", err)
 	}
 
+	slog.Info("MCP server session ended")
 	return nil
+}
+
+func runMCPConfig(cmd *cobra.Command, _ []string) error {
+	exePath, err := os.Executable()
+	if err != nil {
+		return fmt.Errorf("could not determine path: %w", err)
+	}
+
+	getEnv := func(key, fallback string) string {
+		if v := os.Getenv(key); v != "" {
+			return v
+		}
+		return fallback
+	}
+
+	config := map[string]any{
+		"mcpServers": map[string]any{
+			"mongo-migration": map[string]any{
+				"command": exePath,
+				"args":    []string{"mcp"},
+				"env": map[string]string{
+					"MONGO_URI":      getEnv("MONGO_URI", "mongodb://localhost:27017"),
+					"MONGO_DATABASE": getEnv("MONGO_DATABASE", "your_database"),
+				},
+			},
+		},
+	}
+
+	enc := json.NewEncoder(cmd.OutOrStdout())
+	enc.SetIndent("", "  ")
+	return enc.Encode(config)
 }
 
 func isClosingError(err error) bool {
 	return errors.Is(err, io.EOF) ||
 		errors.Is(err, io.ErrClosedPipe) ||
+		strings.Contains(err.Error(), "broken pipe") ||
 		strings.Contains(err.Error(), "EOF")
 }
