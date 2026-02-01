@@ -1,7 +1,12 @@
+THIS_MK := $(abspath $(lastword $(MAKEFILE_LIST)))
+MAKEFILES_DIR := $(dir $(THIS_MK))
+REPO_ROOT := $(abspath $(MAKEFILES_DIR)/..)
+
+include $(MAKEFILES_DIR)/variables/vars.mk
+
 .PHONY: release release-check deploy-dev deploy-prod release-beta
 
-# Define the project root relative to this makefile
-ROOT_DIR := $(patsubst %/,%,$(dir $(abspath $(lastword $(MAKEFILE_LIST)))))/..
+
 
 release-check: clean ci-test build-all releaser-check ## Create a release build
 	@echo "$(GREEN)Release build completed!$(NC)"

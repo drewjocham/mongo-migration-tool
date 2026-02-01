@@ -4,7 +4,7 @@ This document explains how to use mongo-essential as a Model Context Protocol (M
 
 ## What is MCP?
 
-The Model Context Protocol (MCP) is an open standard that enables AI assistants to securely connect to external data sources and tools. By implementing MCP, mongo-essential can be controlled by AI assistants, allowing you to manage MongoDB migrations using natural language.
+The Model Context Protocol (MCP) is an open standard that enables AI assistants to connect to external data sources and tools. By implementing MCP, mongo-essential can be controlled by AI assistants, allowing you to manage MongoDB migrations using natural language.
 
 ## Quick Start
 
@@ -269,7 +269,6 @@ To add custom tools to the MCP server:
 
 1. **Extend the MCP server** (`mcp/server.go`):
    ```go
-   // Add new tool to handleToolsList
    {
        Name:        "my_custom_tool",
        Description: "Description of what it does",
@@ -283,8 +282,7 @@ To add custom tools to the MCP server:
            },
        },
    }
-
-   // Add handler in handleToolsCall
+   
    case "my_custom_tool":
        result, err = s.myCustomFunction(ctx, params.Arguments)
    ```

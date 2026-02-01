@@ -1,5 +1,10 @@
-.PHONY: dev-setup docs tidy version download-mockery
+THIS_MK := $(abspath $(lastword $(MAKEFILE_LIST)))
+MAKEFILES_DIR := $(dir $(THIS_MK))
+REPO_ROOT := $(abspath $(MAKEFILES_DIR)/..)
 
+include $(MAKEFILES_DIR)/variables/vars.mk
+
+.PHONY: dev-setup docs tidy version download-mockery
 dev-setup: ## Set up development environment
 	@echo "$(GREEN)Setting up development environment...$(NC)"
 	@if ! command -v golangci-lint >/dev/null 2>&1; then \

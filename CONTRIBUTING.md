@@ -118,9 +118,9 @@ go test -v ./...
 
 ```bash
 # Install MongoDB locally
-# macOS with Homebrew
-brew tap mongodb/brew
-brew install mongodb-community
+brew tap mongo-migration
+brew install mongo-migration
+
 
 # Start MongoDB
 brew services start mongodb-community

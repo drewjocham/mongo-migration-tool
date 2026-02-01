@@ -1,3 +1,9 @@
+THIS_MK := $(abspath $(lastword $(MAKEFILE_LIST)))
+MAKEFILES_DIR := $(dir $(THIS_MK))
+REPO_ROOT := $(abspath $(MAKEFILES_DIR)/..)
+
+include $(MAKEFILES_DIR)/variables/vars.mk
+
 .PHONY: create-migration migration-status migration-up migration-down
 
 create-migration: build ## Create a new migration (usage: make create-migration DESC="description")

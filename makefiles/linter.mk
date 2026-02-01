@@ -1,3 +1,10 @@
+THIS_MK := $(abspath $(lastword $(MAKEFILE_LIST)))
+MAKEFILES_DIR := $(dir $(THIS_MK))
+REPO_ROOT := $(abspath $(MAKEFILES_DIR)/..)
+
+# Include vars.mk relative to this Makefile's directory
+include $(MAKEFILES_DIR)/variables/vars.mk
+
 .PHONY: lint format vet
 
 lint: ## Run golangci-lint

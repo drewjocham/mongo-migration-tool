@@ -1,0 +1,18 @@
+# syntax=docker/dockerfile:1.4
+ARG TARGETARCH=amd64
+
+FROM alpine:3.23.3
+
+ARG TARGETARCH
+
+RUN apk --no-cache add ca-certificates tzdata && \
+    adduser -D -s /bin/sh migration
+
+WORKDIR /app
+
+COPY --chown=migration:migration /bin/mongo-migration-linux-${TARGETARCH} /app/mongo-migration
+
+USER migration
+
+ENTRYPOINT ["/app/mongo-migration"]
+CMD ["--help"]

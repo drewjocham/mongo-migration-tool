@@ -11,8 +11,8 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        go-version: ['1.25']
-    
+        go-version: ['1.25.4', '1.25.5']
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -21,27 +21,15 @@ jobs:
         uses: actions/setup-go@v5
         with:
           go-version: ${{ matrix.go-version }}
-
-      - name: Cache dependencies
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.cache/go-build
-            ~/go/pkg/mod
-          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
-          restore-keys: |
-            ${{ runner.os }}-go-
+          cache: true
 
       - name: Download dependencies
         run: make deps
 
-      - name: Build
-        run: make build
-
       - name: Run vet
         run: make vet
 
-      - name: Run tests
+      - name: Run tests with coverage
         run: make test
 
       - name: Upload coverage to Codecov
@@ -49,26 +37,22 @@ jobs:
         with:
           file: ./coverage.out
           flags: unittests
-          name: codecov-umbrella
+          token: ${{ secrets.CODECOV_TOKEN }}
 
   lint:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+          cache: true
 
-      - name: Set up Go
-        uses: actions/setup-go@v5
-        with:
-          go-version: '1.25'
-      - name: Run linter
-        uses: golangci/golangci-lint-action@v7
-        with:
-          version: v2.6.1
       - name: Run golangci-lint
-        run: make lint
+        uses: golangci/golangci-lint-action@v6
+        with:
+          version: v1.58.0
+          args: --timeout=5m
 
-  build-examples:
+  build-and-validate:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -77,15 +61,19 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
-          go-version: '1.25'
+          go-version: '1.25.5'
+          cache: true
+
+      - name: Build Binary
+        run: |
+          VERSION=$(git describe --tags --always)
+          COMMIT=$(git rev-parse HEAD)
+          DATE=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+          # Inject build metadata without overriding ldflags quoting
+          VERSION=${VERSION} COMMIT=${COMMIT} DATE=${DATE} make build
 
       - name: Build examples
-        run: |
-          go build -o examples/example examples/main.go
-          chmod +x examples/example
-          go build -o examples/library-example/library-example examples/library-example/main.go
-          chmod +x examples/library-example/library-example
-          echo "✅ Both example binaries built successfully"
+        run: make test-examples
 
   docker:
     runs-on: ubuntu-latest
@@ -93,21 +81,44 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Prepare build metadata
+        run: |
+          VERSION=$(git describe --tags --always)
+          COMMIT=$(git rev-parse HEAD)
+          DATE=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+          {
+            echo "VERSION=$VERSION"
+            echo "COMMIT=$COMMIT"
+            echo "DATE=$DATE"
+          } >> $GITHUB_ENV
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Build Docker mongo-migration image
+      - name: Build Docker images (with cache)
         uses: docker/build-push-action@v5
         with:
           context: .
-          file: Dockerfile
+          file: docker/Dockerfile
           push: false
           tags: drewjocham-mongo-migration:test
+          build-args: |
+            VERSION=${{ env.VERSION }}
+            COMMIT=${{ env.COMMIT }}
+            DATE=${{ env.DATE }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
-      - name: Build Docker mongo-mcp image
+      - name: Build Docker MCP image
         uses: docker/build-push-action@v5
         with:
           context: .
-          file: Dockerfile.mcp
+          file: docker/Dockerfile.mcp
           push: false
           tags: drewjocham-mongo-mcp:test
+          build-args: |
+            VERSION=${{ env.VERSION }}
+            COMMIT=${{ env.COMMIT }}
+            DATE=${{ env.DATE }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
