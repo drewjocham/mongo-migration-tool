@@ -25,18 +25,16 @@ const (
 	annotationOffline = "offline"
 
 	maxPingRetries = 5
-	pingRetryDelay = 2 * time.Second
+	pingRetryDelay = 1 * time.Second
 	pingTimeout    = 2 * time.Second
 )
 
 var (
 	configFile string
 	debugMode  bool
-	logFile    string // Variable for the log file path
+	logFile    string
 
-	appVersion = "dev"
-	commit     = "none"
-	date       = "unknown"
+	appVersion, commit, date = "dev", "none", "unknown"
 )
 
 var rootCmd = &cobra.Command{
@@ -45,6 +43,7 @@ var rootCmd = &cobra.Command{
 	Version:           fmt.Sprintf("%s (commit: %s, build date: %s)", appVersion, commit, date),
 	PersistentPreRunE: setupDependencies,
 	PersistentPostRun: teardown,
+	SilenceUsage:      true, // Prevents printing help on actual execution errors
 }
 
 func init() { //nolint:gochecknoinits // cobra init function
@@ -63,54 +62,6 @@ func init() { //nolint:gochecknoinits // cobra init function
 	)
 }
 
-func setupDependencies(cmd *cobra.Command, _ []string) error {
-	if _, err := logging.New(debugMode, logFile); err != nil {
-		return fmt.Errorf("failed to initialize logger: %w", err)
-	}
-	defer zap.S().Sync()
-
-	cfg, err := loadConfig()
-	if err != nil {
-		return err
-	}
-
-	ctx := context.WithValue(cmd.Context(), ctxConfigKey, cfg)
-
-	if isOffline(cmd) {
-		cmd.SetContext(ctx)
-		return nil
-	}
-
-	engine, cancel, err := initEngine(ctx, cfg)
-	if err != nil {
-		return err
-	}
-
-	ctx = context.WithValue(ctx, ctxEngineKey, engine)
-	ctx = context.WithValue(ctx, ctxCancelKey, cancel)
-
-	cmd.SetContext(ctx)
-	return nil
-}
-
-func teardown(cmd *cobra.Command, _ []string) {
-	if cancel, ok := cmd.Context().Value(ctxCancelKey).(context.CancelFunc); ok {
-		cancel()
-	}
-}
-
-func isOffline(cmd *cobra.Command) bool {
-	if cmd.Annotations[annotationOffline] == "true" {
-		return true
-	}
-	switch cmd.Name() {
-	case "help", "version", "create", "config":
-		return true
-	default:
-		return false
-	}
-}
-
 func loadConfig() (*config.Config, error) {
 	var cfg *config.Config
 	var err error
@@ -127,8 +78,57 @@ func loadConfig() (*config.Config, error) {
 	return cfg, nil
 }
 
+func init() {
+	pFlags := rootCmd.PersistentFlags()
+	pFlags.StringVarP(&configFile, "config", "c", "", "Path to config file")
+	pFlags.BoolVar(&debugMode, "debug", false, "Enable debug logging")
+	pFlags.StringVar(&logFile, "log-file", "", "Path to write logs to a file")
+
+	rootCmd.AddCommand(
+		newUpCmd(), newDownCmd(), newForceCmd(),
+		newStatusCmd(), newCreateCmd(), NewMCPCmd(),
+		versionCmd,
+	)
+}
+
+func setupDependencies(cmd *cobra.Command, _ []string) error {
+	if _, err := logging.New(debugMode, logFile); err != nil {
+		return fmt.Errorf("logger init: %w", err)
+	}
+
+	cfg, err := config.Load()
+	if err != nil {
+		return err
+	}
+
+	if isOffline(cmd) {
+		cmd.SetContext(context.WithValue(cmd.Context(), ctxConfigKey, cfg))
+		return nil
+	}
+
+	engine, cancel, err := initEngine(cmd.Context(), cfg)
+	if err != nil {
+		return err
+	}
+
+	ctx := context.WithValue(cmd.Context(), ctxConfigKey, cfg)
+	ctx = context.WithValue(ctx, ctxEngineKey, engine)
+	ctx = context.WithValue(ctx, ctxCancelKey, cancel)
+
+	cmd.SetContext(ctx)
+	return nil
+}
+
+func isOffline(cmd *cobra.Command) bool {
+	if cmd.Annotations[annotationOffline] == "true" {
+		return true
+	}
+	offlineNames := map[string]bool{"help": true, "version": true, "create": true, "config": true}
+	return offlineNames[cmd.Name()]
+}
+
 func initEngine(ctx context.Context, cfg *config.Config) (*migration.Engine, context.CancelFunc, error) {
-	timeoutCtx, cancel := context.WithTimeout(ctx, time.Duration(cfg.Timeout)*time.Second)
+	connCtx, cancel := context.WithTimeout(ctx, time.Duration(cfg.Timeout)*time.Second)
 
 	opts := options.Client().
 		ApplyURI(cfg.GetConnectionString()).
@@ -139,13 +139,14 @@ func initEngine(ctx context.Context, cfg *config.Config) (*migration.Engine, con
 		opts.SetTLSConfig(&tls.Config{InsecureSkipVerify: cfg.SSLInsecure})
 	}
 
-	client, err := mongo.Connect(timeoutCtx, opts)
+	client, err := mongo.Connect(connCtx, opts)
 	if err != nil {
 		cancel()
-		return nil, nil, fmt.Errorf("mongo connect failed: %w", err)
+		return nil, nil, fmt.Errorf("mongo connect: %w", err)
 	}
 
-	if err := retryPing(timeoutCtx, client); err != nil {
+	if err := retryPing(connCtx, client, 5); err != nil {
+		_ = client.Disconnect(context.Background())
 		cancel()
 		return nil, nil, err
 	}
@@ -153,26 +154,38 @@ func initEngine(ctx context.Context, cfg *config.Config) (*migration.Engine, con
 	db := client.Database(cfg.Database)
 	engine := migration.NewEngine(db, cfg.MigrationsCollection, migration.RegisteredMigrations())
 
-	zap.S().Debugw("Engine initialized", "db", cfg.Database)
 	return engine, cancel, nil
 }
 
-func retryPing(ctx context.Context, client *mongo.Client) error {
-	for i := 1; i <= maxPingRetries; i++ {
-		pCtx, pCancel := context.WithTimeout(ctx, pingTimeout)
-		err := client.Ping(pCtx, nil)
-		pCancel()
+func retryPing(ctx context.Context, client *mongo.Client, attempt int) error {
+	pCtx, cancel := context.WithTimeout(ctx, pingTimeout)
+	err := client.Ping(pCtx, nil)
+	cancel()
 
-		if err == nil {
-			return nil
-		}
-
-		zap.S().Warnw("MongoDB not ready, retrying...", "attempt", i, "error", err)
-		if i < maxPingRetries {
-			time.Sleep(pingRetryDelay)
-		}
+	// Success
+	if err == nil {
+		return nil
 	}
-	return fmt.Errorf("mongodb unreachable after %d attempts", maxPingRetries)
+
+	if attempt >= maxPingRetries {
+		return fmt.Errorf("mongodb unreachable after %d attempts: %w", maxPingRetries, err)
+	}
+
+	zap.S().Warnf("MongoDB attempt %d/%d failed: %v", attempt, maxPingRetries, err)
+
+	select {
+	case <-ctx.Done():
+		return ctx.Err()
+	case <-time.After(pingRetryDelay):
+		return retryPing(ctx, client, attempt+1)
+	}
+}
+
+func teardown(cmd *cobra.Command, _ []string) {
+	if cancel, ok := cmd.Context().Value(ctxCancelKey).(context.CancelFunc); ok {
+		cancel()
+	}
+	_ = zap.L().Sync()
 }
 
 func Execute() error {

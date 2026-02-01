@@ -1,5 +1,3 @@
-//go:build ignore
-
 package main
 
 import (
@@ -12,7 +10,7 @@ import (
 	"text/tabwriter"
 
 	"github.com/drewjocham/mongo-migration-tool/internal/config"
-	"github.com/drewjocham/mongo-migration-tool/internal/migration"
+	"github.com/drewjocham/mongo-migration-tool/migration"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )

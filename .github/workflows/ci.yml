@@ -77,16 +77,24 @@ jobs:
           VERSION=${VERSION} COMMIT=${COMMIT} DATE=${DATE} make build
 
       - name: Build examples
-        run: |
-          go build -o examples/example examples/main.go
-          go build -o examples/library-example/library-example examples/library-example/main.go
-          echo "Example binaries built successfully"
+        run: make test-examples
 
   docker:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
+      - name: Prepare build metadata
+        run: |
+          VERSION=$(git describe --tags --always)
+          COMMIT=$(git rev-parse HEAD)
+          DATE=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+          {
+            echo "VERSION=$VERSION"
+            echo "COMMIT=$COMMIT"
+            echo "DATE=$DATE"
+          } >> $GITHUB_ENV
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -98,6 +106,10 @@ jobs:
           file: docker/Dockerfile
           push: false
           tags: drewjocham-mongo-migration:test
+          build-args: |
+            VERSION=${{ env.VERSION }}
+            COMMIT=${{ env.COMMIT }}
+            DATE=${{ env.DATE }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -108,5 +120,9 @@ jobs:
           file: docker/Dockerfile.mcp
           push: false
           tags: drewjocham-mongo-mcp:test
+          build-args: |
+            VERSION=${{ env.VERSION }}
+            COMMIT=${{ env.COMMIT }}
+            DATE=${{ env.DATE }}
           cache-from: type=gha
           cache-to: type=gha,mode=max

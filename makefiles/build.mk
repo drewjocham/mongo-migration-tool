@@ -77,8 +77,8 @@ test-coverage: ## Run tests with coverage
 
 test-examples: ## Test the examples
 	@echo "$(GREEN)Testing examples...$(NC)"
-	cd $(REPO_ROOT) && $(GO_ENV) go build -o examples/example examples/main.go
-	cd $(REPO_ROOT) && $(GO_ENV) go build -o examples/library-example/library-example examples/library-example/main.go
+	cd $(REPO_ROOT) && $(GO_ENV) go build -o examples/example ./examples
+	cd $(REPO_ROOT) && $(GO_ENV) go build -o examples/library-example/library-example ./examples/library-example
 	@echo "✅ Examples build successfully!"
 	@echo "  - CLI example: examples/example"
 	@echo "  - Library example: examples/library-example/library-example"
