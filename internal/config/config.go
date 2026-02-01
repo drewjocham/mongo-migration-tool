@@ -54,7 +54,7 @@ func (c *Config) GetConnectionString() string {
 		return c.MongoURL
 	}
 
-	if c.Username != "" && c.Password != "" && u.User == nil {
+	if c.Username != "" && u.User == nil {
 		u.User = url.UserPassword(c.Username, c.Password)
 	}
 
@@ -68,6 +68,10 @@ func (c *Config) GetConnectionString() string {
 		q.Set("authSource", c.MongoAuthSource)
 	}
 
+	if c.SSLEnabled && q.Get("ssl") == "" {
+		q.Set("ssl", "true")
+	}
+
 	u.RawQuery = q.Encode()
 	return u.String()
 }
@@ -76,10 +80,10 @@ func (c *Config) Validate() error {
 	if c.Database == "" {
 		return fmt.Errorf("MONGO_DATABASE is required")
 	}
-
-	if c.GoogleDocsEnabled && c.GoogleCredentialsPath == "" && c.GoogleCredentialsJSON == "" {
-		return fmt.Errorf("google Docs enabled but credentials missing")
+	if c.GoogleDocsEnabled {
+		if c.GoogleCredentialsPath == "" && c.GoogleCredentialsJSON == "" {
+			return fmt.Errorf("Google Docs enabled but credentials missing")
+		}
 	}
-
 	return nil
 }

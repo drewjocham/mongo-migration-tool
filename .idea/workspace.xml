@@ -175,7 +175,7 @@
       <recent name="$PROJECT_DIR$/migration" />
     </key>
   </component>
-  <component name="RunManager" selected="Makefile Target.mcp-test">
+  <component name="RunManager" selected="Go Build.go build github.com/drewjocham/mongo-migration-tool/cmd">
     <configuration default="true" type="GoApplicationRunConfiguration" factoryName="Go Application">
       <module name="mongo-migration-tool" />
       <working_directory value="$PROJECT_DIR$" />
@@ -263,10 +263,10 @@
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="Go Build.go build github.com/drewjocham/mongo-migration-tool/cmd" />
         <item itemvalue="Makefile Target.mcp-test" />
         <item itemvalue="Makefile Target.mcp-client-test" />
         <item itemvalue="Makefile Target.mcp-config" />
-        <item itemvalue="Go Build.go build github.com/drewjocham/mongo-migration-tool/cmd" />
         <item itemvalue="Makefile Target.download-mockery" />
       </list>
     </recent_temporary>
@@ -315,23 +315,7 @@
       <workItem from="1769777220929" duration="5000" />
       <workItem from="1769909161413" duration="14801000" />
       <workItem from="1769927547171" duration="26000" />
-      <workItem from="1769927947212" duration="13152000" />
-    </task>
-    <task id="LOCAL-00033" summary="CLI and mongo-migration-tool">
-      <option name="closed" value="true" />
-      <created>1765354751091</created>
-      <option name="number" value="00033" />
-      <option name="presentableId" value="LOCAL-00033" />
-      <option name="project" value="LOCAL" />
-      <updated>1765354751091</updated>
-    </task>
-    <task id="LOCAL-00034" summary="CLI and mongo-migration-tool">
-      <option name="closed" value="true" />
-      <created>1765355204362</created>
-      <option name="number" value="00034" />
-      <option name="presentableId" value="LOCAL-00034" />
-      <option name="project" value="LOCAL" />
-      <updated>1765355204362</updated>
+      <workItem from="1769927947212" duration="13476000" />
     </task>
     <task id="LOCAL-00035" summary="CLI and mongo-migration-tool">
       <option name="closed" value="true" />
@@ -709,7 +693,23 @@
       <option name="project" value="LOCAL" />
       <updated>1769963392941</updated>
     </task>
-    <option name="localTasksCounter" value="82" />
+    <task id="LOCAL-00082" summary="large refactor">
+      <option name="closed" value="true" />
+      <created>1769963568378</created>
+      <option name="number" value="00082" />
+      <option name="presentableId" value="LOCAL-00082" />
+      <option name="project" value="LOCAL" />
+      <updated>1769963568378</updated>
+    </task>
+    <task id="LOCAL-00083" summary="large refactor">
+      <option name="closed" value="true" />
+      <created>1769963704580</created>
+      <option name="number" value="00083" />
+      <option name="presentableId" value="LOCAL-00083" />
+      <option name="project" value="LOCAL" />
+      <updated>1769963704580</updated>
+    </task>
+    <option name="localTasksCounter" value="84" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
