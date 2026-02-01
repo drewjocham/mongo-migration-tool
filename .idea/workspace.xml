@@ -4,51 +4,22 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="53a82f71-5517-487d-94b0-2d95ee8915ca" name="Changes" comment="updating ci.yaml dockerfile paths">
-      <change afterPath="$PROJECT_DIR$/integration-tests/mcp_integration_test.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/internal/config/config.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/internal/config/config_test.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/internal/mcp/README.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/internal/mcp/config.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/internal/mcp/formatters.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/internal/mcp/handlers.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/internal/mcp/migration.go.tmpl" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/internal/mcp/server.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/internal/mcp/templates.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/internal/mcp/types.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/migration/cmd/main.go" afterDir="false" />
+    <list default="true" id="53a82f71-5517-487d-94b0-2d95ee8915ca" name="Changes" comment="large refactor">
+      <change afterPath="$PROJECT_DIR$/internal/logging/logger.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/config/config.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/config/config_test.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/deployments/Dockerfile" beforeDir="false" afterPath="$PROJECT_DIR$/docker/Dockerfile" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/deployments/Dockerfile.local" beforeDir="false" afterPath="$PROJECT_DIR$/docker/Dockerfile.local" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/deployments/Dockerfile.mcp" beforeDir="false" afterPath="$PROJECT_DIR$/docker/Dockerfile.mcp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/deployments/docker-compose.yml" beforeDir="false" afterPath="$PROJECT_DIR$/docker/compose.yml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/deployments/integration-compose.yml" beforeDir="false" afterPath="$PROJECT_DIR$/docker/integration-compose.yml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/deployments/supervisord.conf" beforeDir="false" afterPath="$PROJECT_DIR$/docker/supervisord.conf" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Makefile" beforeDir="false" afterPath="$PROJECT_DIR$/Makefile" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/examples/init-mongo.js" beforeDir="false" afterPath="$PROJECT_DIR$/examples/init-mongo.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/examples/library-example/main.go" beforeDir="false" afterPath="$PROJECT_DIR$/examples/library-example/main.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/examples/main.go" beforeDir="false" afterPath="$PROJECT_DIR$/examples/main.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/integration/cli_integration_stub_test.go" beforeDir="false" afterPath="$PROJECT_DIR$/integration-tests/cli_integration_stub_test.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/integration/cli_integration_test.go" beforeDir="false" afterPath="$PROJECT_DIR$/integration-tests/cli_integration_test.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/internal/cli/create.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/cli/create.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/go.mod" beforeDir="false" afterPath="$PROJECT_DIR$/go.mod" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/go.sum" beforeDir="false" afterPath="$PROJECT_DIR$/go.sum" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/internal/cli/down.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/cli/down.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/internal/cli/force.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/cli/force.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/internal/cli/mcp.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/cli/mcp.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/cli/mcp_examples.go" beforeDir="false" afterPath="$PROJECT_DIR$/examples/mcp_examples.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/cli/mcp_examples_stub.go" beforeDir="false" afterPath="$PROJECT_DIR$/examples/mcp_examples_stub.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/internal/cli/root.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/cli/root.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/internal/cli/status.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/cli/status.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/internal/cli/up.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/cli/up.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/internal/cli/util.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/cli/util.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/internal/cli/version.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/cli/version.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/makefiles/build.mk" beforeDir="false" afterPath="$PROJECT_DIR$/makefiles/build.mk" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/makefiles/docker.mk" beforeDir="false" afterPath="$PROJECT_DIR$/makefiles/docker.mk" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/makefiles/variables/vars.mk" beforeDir="false" afterPath="$PROJECT_DIR$/makefiles/variables/vars.mk" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mcp/README.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/mcp/config.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/mcp/integration_test.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/mcp/server.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/migration/registry.go" beforeDir="false" afterPath="$PROJECT_DIR$/migration/registry.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/migrations/register.go" beforeDir="false" afterPath="$PROJECT_DIR$/migrations/register.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/start.sh" beforeDir="false" afterPath="$PROJECT_DIR$/start.sh" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/makefiles/mcp.mk" beforeDir="false" afterPath="$PROJECT_DIR$/makefiles/mcp.mk" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -157,6 +128,7 @@
     "Makefile Target.install.executor": "Run",
     "Makefile Target.lint.executor": "Run",
     "Makefile Target.mcp-client-test.executor": "Run",
+    "Makefile Target.mcp-config.executor": "Run",
     "Makefile Target.mcp-test.executor": "Run",
     "Makefile Target.mcp.executor": "Run",
     "Makefile Target.migration-status.executor": "Run",
@@ -212,14 +184,14 @@
       <recent name="$PROJECT_DIR$/examples" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/examples" />
       <recent name="$PROJECT_DIR$/integration" />
       <recent name="$PROJECT_DIR$/mcp" />
       <recent name="$PROJECT_DIR$/migration" />
       <recent name="$PROJECT_DIR$/migration/internal" />
-      <recent name="$PROJECT_DIR$/mcp/internal/mcp" />
     </key>
   </component>
-  <component name="RunManager" selected="Makefile Target.download-mockery">
+  <component name="RunManager" selected="Makefile Target.mcp-test">
     <configuration default="true" type="GoApplicationRunConfiguration" factoryName="Go Application">
       <module name="mongo-migration-tool" />
       <working_directory value="$PROJECT_DIR$" />
@@ -227,6 +199,15 @@
       <kind value="FILE" />
       <directory value="$PROJECT_DIR$" />
       <filePath value="$PROJECT_DIR$" />
+      <method v="2" />
+    </configuration>
+    <configuration name="go build github.com/drewjocham/mongo-migration-tool/cmd" type="GoApplicationRunConfiguration" factoryName="Go Application" temporary="true" nameIsGenerated="true">
+      <module name="mongo-migration-tool" />
+      <working_directory value="$PROJECT_DIR$" />
+      <kind value="PACKAGE" />
+      <package value="github.com/drewjocham/mongo-migration-tool/cmd" />
+      <directory value="$PROJECT_DIR$" />
+      <filePath value="$PROJECT_DIR$/cmd/main.go" />
       <method v="2" />
     </configuration>
     <configuration name="up" type="GoApplicationRunConfiguration" factoryName="Go Application">
@@ -258,37 +239,26 @@
       <framework value="gotest" />
       <method v="2" />
     </configuration>
-    <configuration name="go test github.com/drewjocham/mongo-migration-tool/integration" type="GoTestRunConfiguration" factoryName="Go Test" temporary="true" nameIsGenerated="true">
-      <module name="mongo-migration-tool" />
-      <working_directory value="$PROJECT_DIR$/integration" />
-      <root_directory value="$PROJECT_DIR$" />
-      <kind value="PACKAGE" />
-      <package value="github.com/drewjocham/mongo-migration-tool/integration" />
-      <directory value="$PROJECT_DIR$" />
-      <filePath value="$PROJECT_DIR$" />
-      <framework value="gotest" />
-      <method v="2" />
-    </configuration>
-    <configuration name="ci-test" type="MAKEFILE_TARGET_RUN_CONFIGURATION" factoryName="Makefile" temporary="true">
-      <makefile filename="$PROJECT_DIR$/makefiles/linter.mk" target="ci-test" workingDirectory="" arguments="">
-        <envs />
-      </makefile>
-      <method v="2" />
-    </configuration>
-    <configuration name="docker-build" type="MAKEFILE_TARGET_RUN_CONFIGURATION" factoryName="Makefile" temporary="true">
-      <makefile filename="$PROJECT_DIR$/makefiles/docker.mk" target="docker-build" workingDirectory="" arguments="">
-        <envs />
-      </makefile>
-      <method v="2" />
-    </configuration>
     <configuration name="download-mockery" type="MAKEFILE_TARGET_RUN_CONFIGURATION" factoryName="Makefile" temporary="true">
       <makefile filename="$PROJECT_DIR$/makefiles/dev.mk" target="download-mockery" workingDirectory="" arguments="">
         <envs />
       </makefile>
       <method v="2" />
     </configuration>
-    <configuration name="version" type="MAKEFILE_TARGET_RUN_CONFIGURATION" factoryName="Makefile" temporary="true">
-      <makefile filename="$PROJECT_DIR$/makefiles/dev.mk" target="version" workingDirectory="" arguments="">
+    <configuration name="mcp-client-test" type="MAKEFILE_TARGET_RUN_CONFIGURATION" factoryName="Makefile" temporary="true">
+      <makefile filename="$PROJECT_DIR$/makefiles/mcp.mk" target="mcp-client-test" workingDirectory="" arguments="">
+        <envs />
+      </makefile>
+      <method v="2" />
+    </configuration>
+    <configuration name="mcp-config" type="MAKEFILE_TARGET_RUN_CONFIGURATION" factoryName="Makefile" temporary="true">
+      <makefile filename="$PROJECT_DIR$/makefiles/mcp.mk" target="mcp-config" workingDirectory="" arguments="">
+        <envs />
+      </makefile>
+      <method v="2" />
+    </configuration>
+    <configuration name="mcp-test" type="MAKEFILE_TARGET_RUN_CONFIGURATION" factoryName="Makefile" temporary="true">
+      <makefile filename="$PROJECT_DIR$/makefiles/mcp.mk" target="mcp-test" workingDirectory="" arguments="">
         <envs />
       </makefile>
       <method v="2" />
@@ -301,19 +271,19 @@
     </configuration>
     <list>
       <item itemvalue="Go Build.up" />
-      <item itemvalue="Go Test.go test github.com/drewjocham/mongo-migration-tool/integration" />
-      <item itemvalue="Makefile Target.ci-test" />
-      <item itemvalue="Makefile Target.docker-build" />
+      <item itemvalue="Go Build.go build github.com/drewjocham/mongo-migration-tool/cmd" />
+      <item itemvalue="Makefile Target.mcp-client-test" />
+      <item itemvalue="Makefile Target.mcp-config" />
+      <item itemvalue="Makefile Target.mcp-test" />
       <item itemvalue="Makefile Target.download-mockery" />
-      <item itemvalue="Makefile Target.version" />
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="Makefile Target.mcp-test" />
+        <item itemvalue="Makefile Target.mcp-client-test" />
+        <item itemvalue="Makefile Target.mcp-config" />
+        <item itemvalue="Go Build.go build github.com/drewjocham/mongo-migration-tool/cmd" />
         <item itemvalue="Makefile Target.download-mockery" />
-        <item itemvalue="Makefile Target.version" />
-        <item itemvalue="Makefile Target.docker-build" />
-        <item itemvalue="Go Test.go test github.com/drewjocham/mongo-migration-tool/integration" />
-        <item itemvalue="Makefile Target.ci-test" />
       </list>
     </recent_temporary>
   </component>
@@ -361,15 +331,7 @@
       <workItem from="1769777220929" duration="5000" />
       <workItem from="1769909161413" duration="14801000" />
       <workItem from="1769927547171" duration="26000" />
-      <workItem from="1769927947212" duration="8788000" />
-    </task>
-    <task id="LOCAL-00028" summary="CLI and mongo-migration-tool">
-      <option name="closed" value="true" />
-      <created>1765180509817</created>
-      <option name="number" value="00028" />
-      <option name="presentableId" value="LOCAL-00028" />
-      <option name="project" value="LOCAL" />
-      <updated>1765180509817</updated>
+      <workItem from="1769927947212" duration="10261000" />
     </task>
     <task id="LOCAL-00029" summary="CLI and mongo-migration-tool">
       <option name="closed" value="true" />
@@ -755,7 +717,15 @@
       <option name="project" value="LOCAL" />
       <updated>1769927461169</updated>
     </task>
-    <option name="localTasksCounter" value="77" />
+    <task id="LOCAL-00077" summary="large refactor">
+      <option name="closed" value="true" />
+      <created>1769959119851</created>
+      <option name="number" value="00077" />
+      <option name="presentableId" value="LOCAL-00077" />
+      <option name="project" value="LOCAL" />
+      <updated>1769959119851</updated>
+    </task>
+    <option name="localTasksCounter" value="78" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -769,7 +739,8 @@
     <MESSAGE value="updating docs and AI keys" />
     <MESSAGE value="restructuring project" />
     <MESSAGE value="updating ci.yaml dockerfile paths" />
-    <option name="LAST_COMMIT_MESSAGE" value="updating ci.yaml dockerfile paths" />
+    <MESSAGE value="large refactor" />
+    <option name="LAST_COMMIT_MESSAGE" value="large refactor" />
   </component>
   <component name="VgoProject">
     <environment>

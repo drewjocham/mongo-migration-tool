@@ -2,9 +2,9 @@ package cli
 
 import (
 	"fmt"
-	"log/slog"
 
 	"github.com/spf13/cobra"
+	"go.uber.org/zap"
 )
 
 func newUpCmd() *cobra.Command {
@@ -36,8 +36,8 @@ func newUpCmd() *cobra.Command {
 
 func logIntent(target string) {
 	if target != "" {
-		slog.Info("Running migrations up to target", "target", target)
+		zap.S().Infow("Running migrations up to target", "target", target)
 		return
 	}
-	slog.Info("Running all pending migrations")
+	zap.S().Info("Running all pending migrations")
 }

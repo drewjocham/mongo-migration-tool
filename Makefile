@@ -1,7 +1,7 @@
 GOCMD=go
 GOMOD=$(GOCMD) mod
 
-BUILD_DIR=./build
+BUILD_DIR=./bin
 CMD_DIR=./cmd
 
 BINARY_NAME=mongo-migration

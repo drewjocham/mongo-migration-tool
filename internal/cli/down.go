@@ -1,61 +1,67 @@
 package cli
 
 import (
-	"bufio"
 	"fmt"
-	"log/slog"
 	"strings"
 
 	"github.com/spf13/cobra"
+	"go.uber.org/zap"
 )
 
 func newDownCmd() *cobra.Command {
-	var targetVersion string
-	var confirm bool
+	var (
+		target  string
+		confirm bool
+	)
 
 	cmd := &cobra.Command{
 		Use:   "down",
 		Short: "Roll back migrations",
-		Long:  `Roll back applied migrations in reverse chronological order. Use --target to specify a version to stop *before*.`,
-		RunE: func(cmd *cobra.Command, args []string) error {
+		Long:  "Roll back applied migrations in reverse order. Use --target to stop before a specific version.",
+		Example: `  mongo-essential down --target 20240101_001
+  mongo-essential down --yes  # Rollback ALL migrations without prompting`,
+		RunE: func(cmd *cobra.Command, _ []string) error {
 			engine, err := getEngine(cmd.Context())
 			if err != nil {
 				return err
 			}
 
-			if !confirm {
-				prompt := "⚠️  WARNING: This will roll back all applied migrations. Continue? [y/N]: "
-				if targetVersion != "" {
-					prompt = fmt.Sprintf("⚠️  WARNING: You are about to roll back migrations to just before version %s. Continue? [y/N]: ", targetVersion)
-				}
-				fmt.Fprint(cmd.OutOrStdout(), prompt)
-
-				reader := bufio.NewReader(cmd.InOrStdin())
-				response, err := reader.ReadString('\n')
-				if err != nil {
-					slog.Error("Error reading confirmation", "error", err)
-					return nil // Abort gracefully
-				}
-				response = strings.ToLower(strings.TrimSpace(response))
-				if response != "y" && response != "yes" {
-					fmt.Fprintln(cmd.OutOrStdout(), "Rollback aborted by user.")
-					return nil
-				}
+			if !confirm && !askForConfirmation(cmd, target) {
+				fmt.Fprintln(cmd.OutOrStdout(), "Operation cancelled.")
+				return nil
 			}
 
-			slog.Info("Starting migration rollback", "target", targetVersion)
-
-			if err := engine.Down(cmd.Context(), targetVersion); err != nil {
+			zap.S().Infow("Starting migration rollback", "target", target)
+			if err := engine.Down(cmd.Context(), target); err != nil {
 				return fmt.Errorf("rollback failed: %w", err)
 			}
 
-			slog.Info("Rollback completed successfully")
+			zap.S().Info("Rollback completed successfully")
 			return nil
 		},
 	}
 
-	cmd.Flags().StringVarP(&targetVersion, "target", "t", "", "Version to roll back to (exclusive)")
-	cmd.Flags().BoolVarP(&confirm, "yes", "y", false, "Confirm the action without prompting")
+	cmd.Flags().StringVarP(&target, "target", "t", "", "Version to roll back to (exclusive)")
+	cmd.Flags().BoolVarP(&confirm, "yes", "y", false, "Skip confirmation prompt")
 
 	return cmd
+}
+
+func askForConfirmation(cmd *cobra.Command, target string) bool {
+	msg := "⚠️  WARNING: You are about to roll back ALL migrations."
+	if target != "" {
+		msg = fmt.Sprintf("⚠️  WARNING: Rolling back migrations to version %s.", target)
+	}
+
+	fmt.Fprintf(cmd.OutOrStdout(), "%s Continue? [y/N]: ", msg)
+
+	var response string
+	_, err := fmt.Fscanln(cmd.InOrStdin(), &response)
+	if err != nil {
+		zap.S().Errorw("Failed to read confirmation", "error", err)
+		return false
+	}
+
+	response = strings.ToLower(strings.TrimSpace(response))
+	return response == "y" || response == "yes"
 }

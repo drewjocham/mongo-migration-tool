@@ -5,87 +5,85 @@ package main
 import (
 	"context"
 	"fmt"
+	_ "github.com/drewjocham/mongo-migration-tool/examples/examplemigrations"
 	"log"
 	"os"
-	"time"
+	"os/signal"
+	"text/tabwriter"
 
-	_ "github.com/drewjocham/mongo-migration-tool/examples/examplemigrations"
 	"github.com/drewjocham/mongo-migration-tool/internal/config"
-	"github.com/drewjocham/mongo-migration-tool/migration"
+	"github.com/drewjocham/mongo-migration-tool/internal/migration"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-const connectionTimeout = 10 * time.Second
-
 func main() {
 	if len(os.Args) < 2 {
-		fmt.Println("Usage: go run main.go [up|down|status]")
+		fmt.Printf("Usage: go run %s [up|down|status]\n", os.Args[0])
 		os.Exit(1)
 	}
 
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
+	defer stop()
 
 	cfg, err := config.Load()
 	if err != nil {
-		log.Fatalf("Config error: %v", err)
+		log.Fatalf("Configuration error: %v", err)
 	}
 
 	client, err := mongo.Connect(ctx, options.Client().ApplyURI(cfg.GetConnectionString()))
 	if err != nil {
-		log.Fatalf("Connection error: %v", err)
+		log.Fatalf("Failed to connect to MongoDB: %v", err)
 	}
-	defer client.Disconnect(ctx)
+
+	defer client.Disconnect(context.Background())
 
 	db := client.Database(cfg.Database)
 	engine := migration.NewEngine(db, cfg.MigrationsCollection, migration.RegisteredMigrations())
 
-	command := os.Args[1]
-	if err := execute(ctx, command, engine); err != nil {
-		log.Fatalf("Execution failed: %v", err)
-	}
-}
-
-func execute(ctx context.Context, cmd string, e *migration.Engine) error {
-	switch cmd {
+	switch cmd := os.Args[1]; cmd {
 	case "up":
-		fmt.Println("Running pending migrations...")
-		return e.Up(ctx, "")
+		fmt.Println("Applying pending migrations...")
+		err = engine.Up(ctx, "")
 	case "down":
 		fmt.Println("Rolling back last migration...")
-		return e.Down(ctx, "")
+		err = engine.Down(ctx, "")
 	case "status":
-		return showStatus(ctx, e)
+		err = printStatus(ctx, engine)
 	default:
-		return fmt.Errorf("unknown command: %s", cmd)
+		err = fmt.Errorf("unknown command: %s", cmd)
+	}
+
+	if err != nil {
+		log.Fatalf("Command failed: %v", err)
 	}
 }
 
-func showStatus(ctx context.Context, e *migration.Engine) error {
+func printStatus(ctx context.Context, e *migration.Engine) error {
 	stats, err := e.GetStatus(ctx)
 	if err != nil {
 		return err
 	}
 
 	w := tabwriter.NewWriter(os.Stdout, 0, 0, 3, ' ', 0)
+	defer w.Flush()
 
 	fmt.Fprintln(w, "VERSION\tSTATE\tAPPLIED AT\tDESCRIPTION")
 	fmt.Fprintln(w, "-------\t-----\t----------\t-----------")
 
 	for _, s := range stats {
-		state := "Pending"
+		statusIcon := "⏳ Pending"
 		appliedAt := "-"
 
 		if s.Applied {
-			state = "Applied"
+			statusIcon = "✅ Applied"
 			if s.AppliedAt != nil {
 				appliedAt = s.AppliedAt.Format("2006-01-02 15:04")
 			}
 		}
 
-		fmt.Fprintf(w, "%s\t%s\t%s\t%s\n", s.Version, state, appliedAt, s.Description)
+		fmt.Fprintf(w, "%s\t%s\t%s\t%s\n", s.Version, statusIcon, appliedAt, s.Description)
 	}
 
-	return w.Flush()
+	return nil
 }

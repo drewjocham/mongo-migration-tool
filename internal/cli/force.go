@@ -2,10 +2,10 @@ package cli
 
 import (
 	"fmt"
-	"log/slog"
 	"strings"
 
 	"github.com/spf13/cobra"
+	"go.uber.org/zap"
 )
 
 func newForceCmd() *cobra.Command {
@@ -19,7 +19,7 @@ func newForceCmd() *cobra.Command {
 			version := args[0]
 
 			if !assumeYes && !confirmForce(cmd, version) {
-				slog.Info("Operation cancelled")
+				zap.S().Info("Operation cancelled")
 				return nil
 			}
 
@@ -28,12 +28,11 @@ func newForceCmd() *cobra.Command {
 				return err
 			}
 
-			// Assuming migration.Engine has a Force method
 			if err := engine.Force(cmd.Context(), version); err != nil {
 				return fmt.Errorf("failed to force mark %s: %w", version, err)
 			}
 
-			slog.Info("Migration force marked successfully", "version", version)
+			zap.S().Infow("Migration force marked successfully", "version", version)
 			return nil
 		},
 	}
@@ -49,7 +48,7 @@ func confirmForce(cmd *cobra.Command, version string) bool {
 	var response string
 	_, err := fmt.Fscanln(cmd.InOrStdin(), &response)
 	if err != nil {
-		slog.Error("Error reading confirmation", "error", err)
+		zap.S().Errorw("Error reading confirmation", "error", err)
 		return false
 	}
 

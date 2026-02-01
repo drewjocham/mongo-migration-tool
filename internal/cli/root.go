@@ -4,15 +4,15 @@ import (
 	"context"
 	"crypto/tls"
 	"fmt"
-	"log/slog"
-	"os"
 	"time"
 
 	"github.com/drewjocham/mongo-migration-tool/internal/config"
+	"github.com/drewjocham/mongo-migration-tool/internal/logging"
 	"github.com/drewjocham/mongo-migration-tool/migration"
 	"github.com/spf13/cobra"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"go.uber.org/zap"
 )
 
 type contextKey string
@@ -32,9 +32,8 @@ const (
 var (
 	configFile string
 	debugMode  bool
-	logLevel   = new(slog.LevelVar)
+	logFile    string // Variable for the log file path
 
-	// These are set at build time
 	appVersion = "dev"
 	commit     = "none"
 	date       = "unknown"
@@ -43,7 +42,7 @@ var (
 var rootCmd = &cobra.Command{
 	Use:               "mongo-essential",
 	Short:             "Essential MongoDB toolkit",
-	Version:           fmt.Sprintf("%s (commit: %s, build date: %s)", appVersion, commit, date), // Set the version here
+	Version:           fmt.Sprintf("%s (commit: %s, build date: %s)", appVersion, commit, date),
 	PersistentPreRunE: setupDependencies,
 	PersistentPostRun: teardown,
 }
@@ -51,6 +50,7 @@ var rootCmd = &cobra.Command{
 func init() { //nolint:gochecknoinits // cobra init function
 	rootCmd.PersistentFlags().StringVarP(&configFile, "config", "c", "", "Path to config file (optional)")
 	rootCmd.PersistentFlags().BoolVar(&debugMode, "debug", false, "Enable debug logging")
+	rootCmd.PersistentFlags().StringVar(&logFile, "log-file", "", "Path to write logs to a file instead of stderr")
 
 	rootCmd.AddCommand(
 		newUpCmd(),
@@ -64,7 +64,10 @@ func init() { //nolint:gochecknoinits // cobra init function
 }
 
 func setupDependencies(cmd *cobra.Command, _ []string) error {
-	initLogging()
+	if _, err := logging.New(debugMode, logFile); err != nil {
+		return fmt.Errorf("failed to initialize logger: %w", err)
+	}
+	defer zap.S().Sync()
 
 	cfg, err := loadConfig()
 	if err != nil {
@@ -106,15 +109,6 @@ func isOffline(cmd *cobra.Command) bool {
 	default:
 		return false
 	}
-}
-
-func initLogging() {
-	if debugMode {
-		logLevel.Set(slog.LevelDebug)
-	}
-	slog.SetDefault(slog.New(slog.NewTextHandler(os.Stderr, &slog.HandlerOptions{
-		Level: logLevel,
-	})))
 }
 
 func loadConfig() (*config.Config, error) {
@@ -159,7 +153,7 @@ func initEngine(ctx context.Context, cfg *config.Config) (*migration.Engine, con
 	db := client.Database(cfg.Database)
 	engine := migration.NewEngine(db, cfg.MigrationsCollection, migration.RegisteredMigrations())
 
-	slog.Debug("Engine initialized", "db", cfg.Database)
+	zap.S().Debugw("Engine initialized", "db", cfg.Database)
 	return engine, cancel, nil
 }
 
@@ -173,7 +167,7 @@ func retryPing(ctx context.Context, client *mongo.Client) error {
 			return nil
 		}
 
-		slog.Warn("MongoDB not ready, retrying...", "attempt", i, "err", err)
+		zap.S().Warnw("MongoDB not ready, retrying...", "attempt", i, "error", err)
 		if i < maxPingRetries {
 			time.Sleep(pingRetryDelay)
 		}

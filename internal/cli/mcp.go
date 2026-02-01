@@ -4,13 +4,14 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/drewjocham/mongo-migration-tool/internal/mcp"
 	"io"
-	"log/slog"
 	"os"
 	"strings"
 
+	"github.com/drewjocham/mongo-migration-tool/internal/logging"
+	"github.com/drewjocham/mongo-migration-tool/internal/mcp"
 	"github.com/spf13/cobra"
+	"go.uber.org/zap"
 
 	_ "github.com/drewjocham/mongo-migration-tool/migrations"
 )
@@ -41,9 +42,14 @@ func NewMCPCmd() *cobra.Command {
 }
 
 func runMCP(_ *cobra.Command, withExamples bool) error {
-	slog.SetDefault(slog.New(slog.NewTextHandler(os.Stderr, nil)))
+	_, err := logging.New(debugMode, logFile)
+	if err != nil {
+		return fmt.Errorf("failed to re-initialize logger for mcp: %w", err)
+	}
+	defer zap.S().Sync()
+
 	if withExamples {
-		slog.Info("Registering example migrations...")
+		zap.S().Info("Registering example migrations...")
 		if err := registerExampleMigrations(); err != nil {
 			return fmt.Errorf("failed to register examples: %w", err)
 		}
@@ -55,13 +61,13 @@ func runMCP(_ *cobra.Command, withExamples bool) error {
 	}
 	defer server.Close()
 
-	slog.Info("Starting MCP server", "pid", os.Getpid())
+	zap.S().Infow("Starting MCP server", "pid", os.Getpid())
 
 	if err := server.Start(); err != nil && !isClosingError(err) {
 		return fmt.Errorf("mcp server failure: %w", err)
 	}
 
-	slog.Info("MCP server session ended")
+	zap.S().Info("MCP server session ended")
 	return nil
 }
 
