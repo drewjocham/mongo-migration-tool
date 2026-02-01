@@ -64,10 +64,6 @@ var mcpConfigCmd = &cobra.Command{
 	},
 }
 
-func init() {
-	mcpCmd.Flags().BoolVar(&mcpWithExamples, "with-examples", false, "Register example migrations")
-}
-
 func runMCP(cmd *cobra.Command, _ []string) error {
 
 	if mcpWithExamples {

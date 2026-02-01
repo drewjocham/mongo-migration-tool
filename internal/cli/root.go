@@ -42,7 +42,7 @@ var rootCmd = &cobra.Command{
 	PersistentPostRun: teardown,
 }
 
-func init() {
+func init() { //nolint:gochecknoinits // cobra init function
 	rootCmd.PersistentFlags().StringVarP(&configFile, "config", "c", "", "Path to config file (optional)")
 	rootCmd.PersistentFlags().BoolVar(&debugMode, "debug", false, "Enable debug logging")
 
