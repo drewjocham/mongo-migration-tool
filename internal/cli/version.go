@@ -12,6 +12,6 @@ var versionCmd = &cobra.Command{
 	Long:        `Print the version, commit hash, and build date of mongo-essential.`,
 	Annotations: map[string]string{annotationOffline: "true"},
 	Run: func(cmd *cobra.Command, _ []string) {
-		fmt.Fprintln(cmd.OutOrStdout(), rootCmd.Version)
+		fmt.Fprintln(cmd.OutOrStdout(), cmd.Root().Version)
 	},
 }
