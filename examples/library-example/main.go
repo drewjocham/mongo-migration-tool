@@ -78,7 +78,11 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer client.Disconnect(context.Background())
+	defer func() {
+		if err := client.Disconnect(context.Background()); err != nil {
+			log.Printf("failed to disconnect MongoDB client: %v", err)
+		}
+	}()
 
 	migration.Register(&ExampleMigration{})
 

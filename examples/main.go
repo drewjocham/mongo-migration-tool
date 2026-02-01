@@ -34,7 +34,11 @@ func main() {
 		log.Fatalf("Failed to connect to MongoDB: %v", err)
 	}
 
-	defer client.Disconnect(context.Background())
+	defer func() {
+		if err := client.Disconnect(context.Background()); err != nil {
+			log.Printf("failed to disconnect MongoDB client: %v", err)
+		}
+	}()
 
 	db := client.Database(cfg.Database)
 	engine := migration.NewEngine(db, cfg.MigrationsCollection, migration.RegisteredMigrations())

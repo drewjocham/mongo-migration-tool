@@ -37,29 +37,28 @@ var (
 	appVersion, commit, date = "dev", "none", "unknown"
 )
 
-var rootCmd = &cobra.Command{
-	Use:               "mongo-essential",
-	Short:             "Essential MongoDB toolkit",
-	Version:           fmt.Sprintf("%s (commit: %s, build date: %s)", appVersion, commit, date),
-	PersistentPreRunE: setupDependencies,
-	PersistentPostRun: teardown,
-	SilenceUsage:      true, // Prevents printing help on actual execution errors
-}
+func newRootCmd() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:               "mongo-essential",
+		Short:             "Essential MongoDB toolkit",
+		Version:           fmt.Sprintf("%s (commit: %s, build date: %s)", appVersion, commit, date),
+		PersistentPreRunE: setupDependencies,
+		PersistentPostRun: teardown,
+		SilenceUsage:      true, // Prevents printing help on actual execution errors
+	}
 
-func init() { //nolint:gochecknoinits // cobra init function
-	rootCmd.PersistentFlags().StringVarP(&configFile, "config", "c", "", "Path to config file (optional)")
-	rootCmd.PersistentFlags().BoolVar(&debugMode, "debug", false, "Enable debug logging")
-	rootCmd.PersistentFlags().StringVar(&logFile, "log-file", "", "Path to write logs to a file instead of stderr")
+	pFlags := cmd.PersistentFlags()
+	pFlags.StringVarP(&configFile, "config", "c", "", "Path to config file")
+	pFlags.BoolVar(&debugMode, "debug", false, "Enable debug logging")
+	pFlags.StringVar(&logFile, "log-file", "", "Path to write logs to a file")
 
-	rootCmd.AddCommand(
-		newUpCmd(),
-		newDownCmd(),
-		newForceCmd(),
-		newStatusCmd(),
-		newCreateCmd(),
-		NewMCPCmd(),
+	cmd.AddCommand(
+		newUpCmd(), newDownCmd(), newForceCmd(),
+		newStatusCmd(), newCreateCmd(), NewMCPCmd(),
 		versionCmd,
 	)
+
+	return cmd
 }
 
 func loadConfig() (*config.Config, error) {
@@ -78,25 +77,22 @@ func loadConfig() (*config.Config, error) {
 	return cfg, nil
 }
 
-func init() {
-	pFlags := rootCmd.PersistentFlags()
-	pFlags.StringVarP(&configFile, "config", "c", "", "Path to config file")
-	pFlags.BoolVar(&debugMode, "debug", false, "Enable debug logging")
-	pFlags.StringVar(&logFile, "log-file", "", "Path to write logs to a file")
-
-	rootCmd.AddCommand(
-		newUpCmd(), newDownCmd(), newForceCmd(),
-		newStatusCmd(), newCreateCmd(), NewMCPCmd(),
-		versionCmd,
-	)
-}
-
 func setupDependencies(cmd *cobra.Command, _ []string) error {
-	if _, err := logging.New(debugMode, logFile); err != nil {
+	cfgPath, _ := cmd.Flags().GetString("config")
+	debug, _ := cmd.Flags().GetBool("debug")
+	logPath, _ := cmd.Flags().GetString("log-file")
+
+	if _, err := logging.New(debug, logPath); err != nil {
 		return fmt.Errorf("logger init: %w", err)
 	}
-
-	cfg, err := config.Load()
+	var cfg *config.Config
+	var err error
+	if cfgPath != "" {
+		cfg, err = config.Load(cfgPath)
+	} else {
+		cfg, err = config.Load(".env", ".env.local")
+	}
+	cfg, err = config.Load()
 	if err != nil {
 		return err
 	}
@@ -189,5 +185,5 @@ func teardown(cmd *cobra.Command, _ []string) {
 }
 
 func Execute() error {
-	return rootCmd.Execute()
+	return newRootCmd().Execute()
 }
