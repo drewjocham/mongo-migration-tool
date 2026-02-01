@@ -61,22 +61,6 @@ func newRootCmd() *cobra.Command {
 	return cmd
 }
 
-func loadConfig() (*config.Config, error) {
-	var cfg *config.Config
-	var err error
-
-	if configFile != "" {
-		cfg, err = config.Load(configFile)
-	} else {
-		cfg, err = config.Load(".env", ".env.local")
-	}
-
-	if err != nil {
-		return nil, fmt.Errorf("config load failed: %w", err)
-	}
-	return cfg, nil
-}
-
 func setupDependencies(cmd *cobra.Command, _ []string) error {
 	cfgPath, _ := cmd.Flags().GetString("config")
 	debug, _ := cmd.Flags().GetBool("debug")
@@ -85,14 +69,7 @@ func setupDependencies(cmd *cobra.Command, _ []string) error {
 	if _, err := logging.New(debug, logPath); err != nil {
 		return fmt.Errorf("logger init: %w", err)
 	}
-	var cfg *config.Config
-	var err error
-	if cfgPath != "" {
-		cfg, err = config.Load(cfgPath)
-	} else {
-		cfg, err = config.Load(".env", ".env.local")
-	}
-	cfg, err = config.Load()
+	cfg, err := loadConfigFromFlags(cfgPath)
 	if err != nil {
 		return err
 	}
@@ -181,9 +158,27 @@ func teardown(cmd *cobra.Command, _ []string) {
 	if cancel, ok := cmd.Context().Value(ctxCancelKey).(context.CancelFunc); ok {
 		cancel()
 	}
-	_ = zap.L().Sync()
+	if err := zap.L().Sync(); err != nil {
+		zap.S().Warnf("failed to sync logger: %v", err)
+	}
 }
 
 func Execute() error {
 	return newRootCmd().Execute()
+}
+
+func loadConfigFromFlags(path string) (*config.Config, error) {
+	if path != "" {
+		cfg, err := config.Load(path)
+		if err != nil {
+			return nil, fmt.Errorf("config load failed: %w", err)
+		}
+		return cfg, nil
+	}
+
+	cfg, err := config.Load(".env", ".env.local")
+	if err != nil {
+		return nil, fmt.Errorf("config load failed: %w", err)
+	}
+	return cfg, nil
 }

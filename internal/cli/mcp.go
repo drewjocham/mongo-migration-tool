@@ -46,7 +46,11 @@ func runMCP(_ *cobra.Command, withExamples bool) error {
 	if err != nil {
 		return fmt.Errorf("failed to re-initialize logger for mcp: %w", err)
 	}
-	defer zap.S().Sync()
+	defer func() {
+		if syncErr := zap.S().Sync(); syncErr != nil {
+			zap.L().Warn("failed to flush sugared logger", zap.Error(syncErr))
+		}
+	}()
 
 	if withExamples {
 		zap.S().Info("Registering example migrations...")

@@ -13,14 +13,21 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 )
 
-func (s *MCPServer) withConnection(ctx context.Context, fn func() (*mcp.CallToolResult, any, error)) (*mcp.CallToolResult, any, error) {
+func (s *MCPServer) withConnection(
+	ctx context.Context,
+	fn func() (*mcp.CallToolResult, any, error),
+) (*mcp.CallToolResult, any, error) {
 	if err := s.ensureConnection(ctx); err != nil {
 		return toolErrorResult("Database Connection Error", err), nil, nil
 	}
 	return fn()
 }
 
-func (s *MCPServer) handleStatus(ctx context.Context, _ *mcp.CallToolRequest, _ emptyArgs) (*mcp.CallToolResult, any, error) {
+func (s *MCPServer) handleStatus(
+	ctx context.Context,
+	_ *mcp.CallToolRequest,
+	_ emptyArgs,
+) (*mcp.CallToolResult, any, error) {
 	return s.withConnection(ctx, func() (*mcp.CallToolResult, any, error) {
 		status, err := s.engine.GetStatus(ctx)
 		if err != nil {
@@ -30,7 +37,11 @@ func (s *MCPServer) handleStatus(ctx context.Context, _ *mcp.CallToolRequest, _ 
 	})
 }
 
-func (s *MCPServer) handleUp(ctx context.Context, _ *mcp.CallToolRequest, args versionArgs) (*mcp.CallToolResult, any, error) {
+func (s *MCPServer) handleUp(
+	ctx context.Context,
+	_ *mcp.CallToolRequest,
+	args versionArgs,
+) (*mcp.CallToolResult, any, error) {
 	return s.withConnection(ctx, func() (*mcp.CallToolResult, any, error) {
 		if err := s.engine.Up(ctx, args.Version); err != nil {
 			return toolErrorResult("Migration 'Up' failed", err), nil, nil
@@ -39,7 +50,11 @@ func (s *MCPServer) handleUp(ctx context.Context, _ *mcp.CallToolRequest, args v
 	})
 }
 
-func (s *MCPServer) handleDown(ctx context.Context, _ *mcp.CallToolRequest, args versionArgs) (*mcp.CallToolResult, any, error) {
+func (s *MCPServer) handleDown(
+	ctx context.Context,
+	_ *mcp.CallToolRequest,
+	args versionArgs,
+) (*mcp.CallToolResult, any, error) {
 	return s.withConnection(ctx, func() (*mcp.CallToolResult, any, error) {
 		if err := s.engine.Down(ctx, args.Version); err != nil {
 			return toolErrorResult("Migration 'Down' failed", err), nil, nil
@@ -48,7 +63,11 @@ func (s *MCPServer) handleDown(ctx context.Context, _ *mcp.CallToolRequest, args
 	})
 }
 
-func (s *MCPServer) handleSchema(ctx context.Context, _ *mcp.CallToolRequest, _ emptyArgs) (*mcp.CallToolResult, any, error) {
+func (s *MCPServer) handleSchema(
+	ctx context.Context,
+	_ *mcp.CallToolRequest,
+	_ emptyArgs,
+) (*mcp.CallToolResult, any, error) {
 	return s.withConnection(ctx, func() (*mcp.CallToolResult, any, error) {
 		collections, err := s.db.ListCollectionNames(ctx, bson.D{})
 		if err != nil {
@@ -56,7 +75,7 @@ func (s *MCPServer) handleSchema(ctx context.Context, _ *mcp.CallToolRequest, _ 
 		}
 
 		var b strings.Builder
-		b.WriteString(fmt.Sprintf("### Database Schema: `%s`\n\n", s.db.Name()))
+		fmt.Fprintf(&b, "### Database Schema: `%s`\n\n", s.db.Name())
 
 		for _, name := range collections {
 			s.appendCollectionSchema(&b, ctx, name)
@@ -65,20 +84,24 @@ func (s *MCPServer) handleSchema(ctx context.Context, _ *mcp.CallToolRequest, _ 
 	})
 }
 
-func (s *MCPServer) appendCollectionSchema(b *strings.Builder, ctx context.Context, name string) {
-	b.WriteString(fmt.Sprintf("#### Collection: `%s`\n\n", name))
+func (s *MCPServer) appendCollectionSchema(
+	b *strings.Builder,
+	ctx context.Context,
+	name string,
+) {
+	fmt.Fprintf(b, "#### Collection: `%s`\n\n", name)
 	b.WriteString("| Index Name | Keys | Unique |\n| :--- | :--- | :--- |\n")
 
 	cursor, err := s.db.Collection(name).Indexes().List(ctx)
 	if err != nil {
-		b.WriteString(fmt.Sprintf("| *Error listing indexes: %v* | | |\n\n", err))
+		fmt.Fprintf(b, "| *Error listing indexes: %v* | | |\n\n", err)
 		return
 	}
 	defer cursor.Close(ctx)
 
 	var idxs []bson.M
 	if err := cursor.All(ctx, &idxs); err != nil {
-		b.WriteString(fmt.Sprintf("| *Error decoding indexes: %v* | | |\n\n", err))
+		fmt.Fprintf(b, "| *Error decoding indexes: %v* | | |\n\n", err)
 		return
 	}
 
@@ -87,12 +110,22 @@ func (s *MCPServer) appendCollectionSchema(b *strings.Builder, ctx context.Conte
 		if u, ok := idx["unique"].(bool); ok && u {
 			unique = "Yes"
 		}
-		b.WriteString(fmt.Sprintf("| `%v` | `%s` | %s |\n", idx["name"], formatIndexKeys(idx["key"]), unique))
+		fmt.Fprintf(
+			b,
+			"| `%v` | `%s` | %s |\n",
+			idx["name"],
+			formatIndexKeys(idx["key"]),
+			unique,
+		)
 	}
 	b.WriteString("\n")
 }
 
-func (s *MCPServer) handleCreate(ctx context.Context, _ *mcp.CallToolRequest, args createMigrationArgs) (*mcp.CallToolResult, any, error) {
+func (s *MCPServer) handleCreate(
+	ctx context.Context,
+	_ *mcp.CallToolRequest,
+	args createMigrationArgs,
+) (*mcp.CallToolResult, any, error) {
 	version := time.Now().Format("20060102_150405")
 	cleanName := strings.ToLower(strings.ReplaceAll(args.Name, " ", "_"))
 
