@@ -73,8 +73,8 @@ jobs:
           VERSION=$(git describe --tags --always)
           COMMIT=$(git rev-parse HEAD)
           DATE=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
-          # Using -o to verify the build artifact is created
-          make build LDFLAGS="-X github.com/drewjocham/mongo-migration-tool/internal/cli.appVersion=${VERSION} -X github.com/drewjocham/mongo-migration-tool/internal/cli.commit=${COMMIT} -X github.com/drewjocham/mongo-migration-tool/internal/cli.date=${DATE}"
+          # Inject build metadata without overriding ldflags quoting
+          VERSION=${VERSION} COMMIT=${COMMIT} DATE=${DATE} make build
 
       - name: Build examples
         run: |
@@ -95,7 +95,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: .
-          file: dockerfiles/Dockerfile
+          file: docker/Dockerfile
           push: false
           tags: drewjocham-mongo-migration:test
           cache-from: type=gha
@@ -105,7 +105,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: .
-          file: dockerfiles/Dockerfile.mcp
+          file: docker/Dockerfile.mcp
           push: false
           tags: drewjocham-mongo-mcp:test
           cache-from: type=gha
