@@ -1,10 +1,16 @@
+THIS_MK := $(abspath $(lastword $(MAKEFILE_LIST)))
+MAKEFILES_DIR := $(dir $(THIS_MK))
+REPO_ROOT := $(abspath $(MAKEFILES_DIR)/..)
+
+include $(MAKEFILES_DIR)/variables/vars.mk
+
 .PHONY: docker-build docker-run docker-compose-up docker-compose-down security-scan
 
-#DOCKER_TAG=v0.1.0
+DOCKER_TAG=v0.1.0
 
 docker-build: ## Build Docker image
 	@echo "$(GREEN)Building Docker image $(DOCKER_IMAGE):$(DOCKER_TAG)...$(NC)"
-	docker build -t $(DOCKER_IMAGE):$(DOCKER_TAG) -f Dockerfile.local .
+	docker build -t $(DOCKER_IMAGE):$(DOCKER_TAG) -f $(DOCKERFILE_LOCAL) .
 
 docker-run: docker-build ## Run Docker container
 	@echo "$(GREEN)Running Docker container...$(NC)"
@@ -16,8 +22,8 @@ docker-run: docker-build ## Run Docker container
 start-tool: ## Start services with docker-compose
 	@echo "$(GREEN)Running Docker container...$(NC)"
 	docker run --rm -it \
-		-e  "MONGO_URL=mongodb://drewjocham-user:lbjKMTf8d3sQ8q2M@s-fc0a667a-6ce3-4893-89a5-77e4661a3e2c-0.mongodb.eu01.onstackit.cloud:27017,s-fc0a667a-6ce3-4893-89a5-77e4661a3e2c-1.mongodb.eu01.onstackit.cloud:27017,s-fc0a667a-6ce3-4893-89a5-77e4661a3e2c-2.mongodb.eu01.onstackit.cloud:27017/stackit?authSource=stackit&tls=true&authMechanism=SCRAM-SHA-256" \
-		-e  "MDB_MCP_CONNECTION_STRING=mongodb://drewjocham-user:lbjKMTf8d3sQ8q2M@s-fc0a667a-6ce3-4893-89a5-77e4661a3e2c-0.mongodb.eu01.onstackit.cloud:27017,s-fc0a667a-6ce3-4893-89a5-77e4661a3e2c-1.mongodb.eu01.onstackit.cloud:27017,s-fc0a667a-6ce3-4893-89a5-77e4661a3e2c-2.mongodb.eu01.onstackit.cloud:27017/stackit?authSource=stackit&tls=true&authMechanism=SCRAM-SHA-256" \
+		-e  "MONGO_URL=..." \
+		-e  "MDB_MCP_CONNECTION_STRING=..." \
 		$(DOCKER_IMAGE):$(DOCKER_TAG)
 
 docker-up: ## Start services with docker-compose

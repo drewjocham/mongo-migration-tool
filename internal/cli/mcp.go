@@ -15,13 +15,13 @@ import (
 	_ "github.com/drewjocham/mongo-migration-tool/migrations"
 )
 
-var mcpWithExamples bool
+// mcpWithExamples and mcpConfigPath are now declared in internal/cli/root.go
 
 var mcpCmd = &cobra.Command{
 	Use:   "mcp",
 	Short: "Start MCP server for AI assistant integration",
 	Long: `Start the Model Context Protocol (MCP) server for AI assistants.
-IMPORTANT: This command uses stdin/stdout for communication. 
+IMPORTANT: This command uses stdin/stdout for communication.
 Logs are automatically redirected to stderr.`,
 	RunE: runMCP,
 }
@@ -66,7 +66,7 @@ var mcpConfigCmd = &cobra.Command{
 
 func runMCP(cmd *cobra.Command, _ []string) error {
 
-	if mcpWithExamples {
+	if mcpWithExamples { // Accessing mcpWithExamples from root.go's package-level variable
 		slog.Info("Registering example migrations")
 		if err := registerExampleMigrations(); err != nil {
 			return fmt.Errorf("failed to register example migrations: %w", err)

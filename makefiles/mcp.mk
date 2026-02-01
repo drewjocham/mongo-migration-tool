@@ -1,8 +1,14 @@
+THIS_MK := $(abspath $(lastword $(MAKEFILE_LIST)))
+MAKEFILES_DIR := $(dir $(THIS_MK))
+REPO_ROOT := $(abspath $(MAKEFILES_DIR)/..)
+
+include $(MAKEFILES_DIR)/variables/vars.mk
+
 .PHONY: mcp mcp-build mcp-examples mcp-test mcp-client-test mcp-integration-test
 
 mcp-build: ## Build the combined Docker image for MCP
 	@echo "$(GREEN)Building MCP Docker image mongo-mongodb-combined-mcp:v1...$(NC)"
-	docker build -t mongo-mongodb-combined-mcp:v1 -f Dockerfile.mcp .
+	docker build -t mongo-mongodb-combined-mcp:v1 -f deployments/Dockerfile.mcp .
 
 mcp: build ## Start MCP server for AI assistant integration
 	@echo "$(GREEN)Starting MCP server...$(NC)"
@@ -15,12 +21,12 @@ mcp-examples: build ## Start MCP server with example migrations registered
 mcp-test: ## Test MCP server with example request
 	@set -euo pipefail; \
 		cleanup() { \
-			docker compose -f integration-compose.yml down -v >/dev/null 2>&1 || true; \
+			docker compose -f $(COMPOSE_FILE_INTEGRATION) down -v >/dev/null 2>&1 || true; \
 		}; \
 		trap cleanup EXIT; \
 		host_port=$${INTEGRATION_MONGO_PORT:-37017}; \
 		echo "$(GREEN)Starting Mongo test container on port $$host_port...$(NC)"; \
-		docker compose -f integration-compose.yml up -d mongo; \
+		docker compose -f $(COMPOSE_FILE_INTEGRATION) up -d mongo; \
 		if [ -z "$${MONGO_URL:-}" ]; then \
 			export MONGO_URL="mongodb://localhost:$$host_port"; \
 		fi; \

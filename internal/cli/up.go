@@ -7,8 +7,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var upTarget string
-
 var upCmd = &cobra.Command{
 	Use:   "up",
 	Short: "Run pending migrations",

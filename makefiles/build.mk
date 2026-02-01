@@ -1,12 +1,11 @@
-# Calculate the path to the variables file dynamically
-BUILD_MK_PATH := $(abspath $(lastword $(MAKEFILE_LIST)))
-MAKEFILES_DIR := $(abspath $(dir $(BUILD_MK_PATH)))
-include $(MAKEFILES_DIR)/variables/vars.mk
+THIS_MK := $(abspath $(lastword $(MAKEFILE_LIST)))
+MAKEFILES_DIR := $(dir $(THIS_MK))
+REPO_ROOT := $(abspath $(MAKEFILES_DIR)/..)
 
-ALL_PACKAGES := $(shell go list $(REPO_ROOT)/...)
-EXAMPLE_PACKAGES := $(shell go list $(REPO_ROOT)/examples/...)
+ALL_PACKAGES := $(shell cd $(REPO_ROOT) && go list ./...)
+EXAMPLE_PACKAGES := $(shell cd $(REPO_ROOT) && go list ./examples/...)
 TEST_PACKAGES := $(filter-out $(EXAMPLE_PACKAGES), $(ALL_PACKAGES))
-MAIN_PACKAGE ?= .
+include $(MAKEFILES_DIR)/variables/vars.mk
 
 GO_ENV ?=
 INTEGRATION_MONGO_PORT ?= 37017
@@ -77,16 +76,14 @@ test-examples: ## Test the examples
 integration-test: ## Run Docker-based CLI integration tests via docker compose
 	@echo "$(GREEN)Running CLI integration tests with docker compose...$(NC)"
 	cd $(REPO_ROOT) && INTEGRATION_MONGO_PORT=$(INTEGRATION_MONGO_PORT) COMPOSE_PROJECT_NAME=$(COMPOSE_PROJECT_NAME) \
-		docker-compose -f integration-compose.yml build cli
+		docker-compose -f $(COMPOSE_FILE_INTEGRATION) build cli
 	cd $(REPO_ROOT) && INTEGRATION_MONGO_PORT=$(INTEGRATION_MONGO_PORT) COMPOSE_PROJECT_NAME=$(COMPOSE_PROJECT_NAME) \
-		docker-compose -f integration-compose.yml up -d mongo
+		docker-compose -f $(COMPOSE_FILE_INTEGRATION) up -d mongo
 	cd $(REPO_ROOT) && INTEGRATION_MONGO_PORT=$(INTEGRATION_MONGO_PORT) COMPOSE_PROJECT_NAME=$(COMPOSE_PROJECT_NAME) \
 		$(GO_ENV) go test -v -tags=integration ./integration; \
 	status=$$?; \
-	cd $(REPO_ROOT) && INTEGRATION_MONGO_PORT=$(INTEGRATION_MONGO_PORT) COMPOSE_PROJECT_NAME=$(COMPOSE_PROJECT_NAME) docker-compose -f integration-compose.yml down -v; \
+	cd $(REPO_ROOT) && INTEGRATION_MONGO_PORT=$(INTEGRATION_MONGO_PORT) COMPOSE_PROJECT_NAME=$(COMPOSE_PROJECT_NAME) docker-compose -f $(COMPOSE_FILE_INTEGRATION) down -v; \
 	exit $$status
 
 ci-build: clean build-all test ## Build and test for CI
 	@echo "$(GREEN)CI build completed!$(NC)"
-
-

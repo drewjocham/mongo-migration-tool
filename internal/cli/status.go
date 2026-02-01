@@ -11,8 +11,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var outputFormat string
-
 var statusCmd = &cobra.Command{
 	Use:   "status",
 	Short: "Show migration status",
@@ -32,9 +30,11 @@ var statusCmd = &cobra.Command{
 		switch strings.ToLower(outputFormat) {
 		case "json":
 			return renderJSON(out, status)
-		default:
+		case "table":
 			renderTable(out, status)
 			return nil
+		default:
+			return fmt.Errorf("unsupported output format: %s", outputFormat)
 		}
 	},
 }

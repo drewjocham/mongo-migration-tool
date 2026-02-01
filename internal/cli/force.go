@@ -8,7 +8,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var forceYes bool
+// forceYes is now declared in internal/cli/root.go
 
 var forceCmd = &cobra.Command{
 	Use:   "force [version]",

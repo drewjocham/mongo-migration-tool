@@ -33,11 +33,27 @@ var (
 	configFile string
 	debugMode  bool
 	logLevel   = new(slog.LevelVar)
+
+	// These are set at build time
+	appVersion = "dev"
+	commit     = "none"
+	date       = "unknown"
+
+	// Flag variables for subcommands, declared here to be accessible in root's init()
+	upTarget          string
+	downTargetVersion string
+	downConfirm       bool
+	forceYes          bool
+	outputFormat      string
+	mcpConfigFilePath string // For mcpConfigCmd's --config flag
+	mcpCmdConfigPath  string // For mcpCmd's --config flag (if it's different)
+	mcpWithExamples   bool   // Shared with mcp.go
 )
 
 var rootCmd = &cobra.Command{
 	Use:               "mongo-essential",
 	Short:             "Essential MongoDB toolkit",
+	Version:           fmt.Sprintf("%s (commit: %s, build date: %s)", appVersion, commit, date), // Set the version here
 	PersistentPreRunE: setupDependencies,
 	PersistentPostRun: teardown,
 }
@@ -57,8 +73,15 @@ func init() { //nolint:gochecknoinits // cobra init function
 		versionCmd,
 	)
 
-	mcpStartCmd.Flags().StringVar(&configFile, "config", "", "Path to config file (optional)")
-	mcpCmd.Flags().StringVar(&configFile, "config", "", "The recommended config to apply to your AI client.")
+	mcpCmd.Flags().BoolVar(&mcpWithExamples, "with-examples", false, "Register example migrations")
+
+	// Bind subcommand flags to variables declared in this file
+	// Note: mcpStartCmd is likely a sub-command of mcpCmd, so its flags should be defined in mcp.go
+	// For now, assuming mcpStartCmd is a direct child of rootCmd if its flags are here.
+	// If mcpStartCmd is not a direct child, these lines will need to be moved to mcp.go
+	// mcpStartCmd.Flags().StringVar(&mcpConfigFilePath, "config", "", "Path to config file (optional)")
+	// mcpCmd.Flags().StringVar(&mcpCmdConfigPath, "config", "", "The recommended config to apply to your AI client.")
+
 	upCmd.Flags().StringVar(&upTarget, "target", "", "Target version to migrate up to")
 	downCmd.Flags().StringVarP(&downTargetVersion, "target", "t", "", "Version to roll back to (exclusive)")
 	downCmd.Flags().BoolVarP(&downConfirm, "yes", "y", false, "Confirm the action without prompting")
