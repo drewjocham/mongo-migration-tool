@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -23,6 +24,44 @@ var mcpCmd = &cobra.Command{
 IMPORTANT: This command uses stdin/stdout for communication. 
 Logs are automatically redirected to stderr.`,
 	RunE: runMCP,
+}
+
+var mcpConfigCmd = &cobra.Command{
+	Use:   "config",
+	Short: "Generate MCP configuration JSON for AI assistants",
+	RunE: func(cmd *cobra.Command, args []string) error {
+		exePath, err := os.Executable()
+		if err != nil {
+			return fmt.Errorf("could not determine executable path: %w", err)
+		}
+
+		uri := os.Getenv("MONGO_URI")
+		if uri == "" {
+			uri = "mongodb://localhost:27017"
+		}
+
+		db := os.Getenv("MONGO_DATABASE")
+		if db == "" {
+			db = "your_database"
+		}
+
+		config := map[string]interface{}{
+			"mcpServers": map[string]interface{}{
+				"mongo-migration": map[string]interface{}{
+					"command": exePath,
+					"args":    []string{"mcp"},
+					"env": map[string]string{
+						"MONGO_URI":      uri,
+						"MONGO_DATABASE": db,
+					},
+				},
+			},
+		}
+
+		encoder := json.NewEncoder(cmd.OutOrStdout())
+		encoder.SetIndent("", "  ")
+		return encoder.Encode(config)
+	},
 }
 
 func init() {

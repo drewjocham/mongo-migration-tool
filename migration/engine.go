@@ -193,33 +193,6 @@ func (e *Engine) planExecution(dir Direction, target string, applied map[string]
 	return plan, nil
 }
 
-func (e *Engine) planUp(versions []string, target string, applied map[string]MigrationRecord) []string {
-	var plan []string
-	for _, v := range versions {
-		if _, isApplied := applied[v]; !isApplied {
-			plan = append(plan, v)
-		}
-		if target != "" && v == target {
-			break
-		}
-	}
-	return plan
-}
-
-func (e *Engine) planDown(versions []string, target string, applied map[string]MigrationRecord) []string {
-	var plan []string
-	for i := len(versions) - 1; i >= 0; i-- {
-		v := versions[i]
-		if _, isApplied := applied[v]; isApplied {
-			if target != "" && v == target {
-				break
-			}
-			plan = append(plan, v)
-		}
-	}
-	return plan
-}
-
 func (e *Engine) getSortedVersions() []string {
 	versions := make([]string, 0, len(e.migrations))
 	for v := range e.migrations {
@@ -269,7 +242,10 @@ func (e *Engine) getAppliedMap(ctx context.Context) (map[string]MigrationRecord,
 
 func (e *Engine) validateChecksum(m Migration, record MigrationRecord) error {
 	if record.Checksum != e.calculateChecksum(m) {
-		return fmt.Errorf("checksum mismatch for %s: expected %s, got %s", m.Version(), record.Checksum, e.calculateChecksum(m))
+		return fmt.Errorf(
+			"checksum mismatch for %s: expected %s, got %s",
+			m.Version(), record.Checksum, e.calculateChecksum(m),
+		)
 	}
 	return nil
 }

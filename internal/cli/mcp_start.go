@@ -19,10 +19,6 @@ var mcpStartCmd = &cobra.Command{
 	RunE: runMCPStart,
 }
 
-func init() {
-	mcpCmd.AddCommand(mcpStartCmd)
-}
-
 func runMCPStart(cmd *cobra.Command, _ []string) error {
 	const (
 		serverDir    = "/app/mcp-server"
@@ -42,7 +38,7 @@ func runMCPStart(cmd *cobra.Command, _ []string) error {
 	nodeCmd.Stderr = cmd.ErrOrStderr()
 	nodeCmd.Stdin = cmd.InOrStdin()
 
-	slog.Info("🚀 Launching MCP server", "dir", serverDir, "script", serverScript)
+	slog.Info("Launching MCP server", "dir", serverDir, "script", serverScript)
 
 	if err := nodeCmd.Run(); err != nil {
 		return fmt.Errorf("node process exited: %w", err)

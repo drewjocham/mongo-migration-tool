@@ -17,11 +17,6 @@ var forceCmd = &cobra.Command{
 	RunE:  runForce,
 }
 
-func init() {
-	forceCmd.Flags().BoolVarP(&forceYes, "yes", "y", false,
-		"Confirm without prompting")
-}
-
 func runForce(cmd *cobra.Command, args []string) error {
 	version := args[0]
 
@@ -35,6 +30,7 @@ func runForce(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
+	// Assuming migration.Engine has a Force method
 	if err := engine.Force(cmd.Context(), version); err != nil {
 		return fmt.Errorf("failed to force mark %s: %w", version, err)
 	}
@@ -48,8 +44,11 @@ func confirmForce(cmd *cobra.Command, version string) bool {
 	fmt.Fprint(cmd.OutOrStdout(), "Confirm action? (y/N): ")
 
 	var response string
-
-	fmt.Fscanln(cmd.InOrStdin(), &response)
+	_, err := fmt.Fscanln(cmd.InOrStdin(), &response)
+	if err != nil {
+		slog.Error("Error reading confirmation", "error", err)
+		return false
+	}
 
 	response = strings.ToLower(strings.TrimSpace(response))
 	return response == "y" || response == "yes"

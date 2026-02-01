@@ -46,3 +46,20 @@ mcp-integration-test: ## Run MCP integration test (requires reachable MongoDB vi
 	@echo "$(GREEN)Running MCP integration test...$(NC)"
 	@echo "Requires MONGO_URL (optional; defaults to mongodb://localhost:27017)"
 	@go test -tags=integration ./mcp -run TestMCPIntegration_IndexingAndMigrations -count=1
+
+.PHONY: mcp-config
+mcp-config: build
+	@echo "--- Copy the JSON below into your MCP config file ---"
+	@echo "{"
+	@echo "  \"mcpServers\": {"
+	@echo "    \"mongo-migration\": {"
+	@echo "      \"command\": \"$(shell pwd)/build/mongo-essential\","
+	@echo "      \"args\": [\"mcp\"],"
+	@echo "      \"env\": {"
+	@echo "        \"MONGO_URI\": \"$(or $(MONGO_URI),mongodb://localhost:27017)\","
+	@echo "        \"MONGO_DATABASE\": \"$(or $(MONGO_DATABASE),your_db_name)\""
+	@echo "      }"
+	@echo "    }"
+	@echo "  }"
+	@echo "}"
+	@echo "------------------------------------------------------"

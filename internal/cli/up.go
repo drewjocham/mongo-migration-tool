@@ -15,11 +15,6 @@ var upCmd = &cobra.Command{
 	RunE:  runUp,
 }
 
-func init() {
-	upCmd.Flags().StringVar(&upTarget, "target", "",
-		"Target version to migrate up to")
-}
-
 func runUp(cmd *cobra.Command, _ []string) error {
 	engine, err := getEngine(cmd.Context())
 	if err != nil {

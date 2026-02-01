@@ -42,7 +42,7 @@ var rootCmd = &cobra.Command{
 	PersistentPostRun: teardown,
 }
 
-func SetupRootCommand() {
+func init() {
 	rootCmd.PersistentFlags().StringVarP(&configFile, "config", "c", "", "Path to config file (optional)")
 	rootCmd.PersistentFlags().BoolVar(&debugMode, "debug", false, "Enable debug logging")
 
@@ -51,10 +51,19 @@ func SetupRootCommand() {
 		downCmd,
 		forceCmd,
 		mcpCmd,
+		mcpConfigCmd,
 		createCmd,
 		statusCmd,
 		versionCmd,
 	)
+
+	mcpStartCmd.Flags().StringVar(&configFile, "config", "", "Path to config file (optional)")
+	mcpCmd.Flags().StringVar(&configFile, "config", "", "The recommended config to apply to your AI client.")
+	upCmd.Flags().StringVar(&upTarget, "target", "", "Target version to migrate up to")
+	downCmd.Flags().StringVarP(&downTargetVersion, "target", "t", "", "Version to roll back to (exclusive)")
+	downCmd.Flags().BoolVarP(&downConfirm, "yes", "y", false, "Confirm the action without prompting")
+	forceCmd.Flags().BoolVarP(&forceYes, "yes", "y", false, "Confirm without prompting")
+	statusCmd.Flags().StringVarP(&outputFormat, "output", "o", "table", "Output format (table, json)")
 }
 
 func setupDependencies(cmd *cobra.Command, _ []string) error {
@@ -94,7 +103,7 @@ func isOffline(cmd *cobra.Command) bool {
 	if cmd.Annotations[annotationOffline] == "true" {
 		return true
 	}
-	return cmd.Name() == "help" || cmd.Name() == "version"
+	return cmd.Name() == "help" || cmd.Name() == "version" || cmd.Name() == "create"
 }
 
 func initLogging() {

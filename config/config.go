@@ -78,7 +78,7 @@ func (c *Config) Validate() error {
 	}
 
 	if c.GoogleDocsEnabled && c.GoogleCredentialsPath == "" && c.GoogleCredentialsJSON == "" {
-		return fmt.Errorf("Google Docs enabled but credentials missing")
+		return fmt.Errorf("google Docs enabled but credentials missing")
 	}
 
 	return nil

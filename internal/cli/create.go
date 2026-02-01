@@ -8,10 +8,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func init() {
-	createCmd.Flags().StringVar(&downTarget, "target", "", "Create a new migration file")
-}
-
 var createCmd = &cobra.Command{
 	Use:   "create [migration_name]",
 	Short: "Create a new migration file",
