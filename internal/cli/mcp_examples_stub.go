@@ -1,6 +1,6 @@
 //go:build !include_examples
 
-package cmd
+package cli
 
 func registerExampleMigrations() error {
 	return nil

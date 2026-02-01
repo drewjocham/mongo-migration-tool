@@ -10,17 +10,15 @@ A comprehensive MongoDB migration tool with AI-powered insights via MCP. Think L
 
 ### 🔄 **Database Migration Management**
 - **Version Control**: Track and manage database schema changes
-- **Up/Down Migrations**: Full rollback capability
+- **Up/Down Migrations**: Rollback capability
 - **Migration Status**: Track applied and pending migrations
 - **Force Migration**: Mark migrations as applied without execution
 - **Integration Ready**: Works with existing Go projects and CI/CD pipelines
 
 ### 🔧 **Developer Tools**
 - **Certificate Management**: Debug and fix SSL/TLS certificate issues
-- **Cloud Provider Support**: Optimized for STACKIT, AWS, Azure, GCP
-- **CLI Interface**: Intuitive command-line interface built with Cobra
-- **Configuration Flexible**: Environment variables, config files, or CLI flags
-- **🤖 MCP Integration**: Model Context Protocol server for AI assistants (Ollama, Claude, Goose)
+- **CLI Interface**:  command-line interface built with Cobra
+- **🤖 MCP Integration**: Model Context Protocol server for AI agents
 
 ## 📦 Installation
 
@@ -29,18 +27,15 @@ Choose your preferred installation method:
 ### Homebrew (macOS/Linux) - Recommended
 
 ```bash
-# Add the tap and install
 brew tap drewjocham/mongo-migration-tool
 brew install mongo-migration-tool
 
-# Verify installation
 mongo-migration version
 ```
 
 ### Docker
 
 ```bash
-  # Pull and run
     docker pull ghcr.io/drewjocham/mongo-migration-tool:latest
     docker run --rm -v $(pwd):/workspace ghcr.io/drewjocham/mongo-migration-tool:latest --help
 ```

@@ -1,0 +1,49 @@
+package cli
+
+import (
+	"fmt"
+	"path/filepath"
+
+	"github.com/drewjocham/mongo-migration-tool/migration"
+	"github.com/spf13/cobra"
+)
+
+func init() {
+	createCmd.Flags().StringVar(&downTarget, "target", "", "Create a new migration file")
+}
+
+var createCmd = &cobra.Command{
+	Use:   "create [migration_name]",
+	Short: "Create a new migration file",
+	Args:  cobra.ExactArgs(1),
+	RunE: func(cmd *cobra.Command, args []string) error {
+		cfg, err := getConfig(cmd.Context())
+		if err != nil {
+			return err
+		}
+
+		gen := &migration.Generator{
+			OutputPath: cfg.MigrationsPath,
+		}
+
+		path, version, err := gen.Create(args[0])
+		if err != nil {
+			return err
+		}
+
+		renderSuccess(path, version)
+		return nil
+	},
+}
+
+func renderSuccess(path, version string) {
+	displayPath := path
+	if rel, err := filepath.Rel(".", path); err == nil {
+		displayPath = rel
+	}
+
+	fmt.Printf("\n✨ Migration created: %s\n", displayPath)
+	fmt.Printf("\nNext steps:\n")
+	fmt.Printf("  1. Edit logic: code %s\n", displayPath)
+	fmt.Printf("  2. Test run:   mongo-essential up --target %s\n\n", version)
+}

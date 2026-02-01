@@ -1,0 +1,18 @@
+{
+  "mcpServers": {
+    "mongo-migration-tool": {
+      "command": "docker",
+      "args": [
+        "run",
+        "--rm",
+        "-i",
+        "mongo-mongodb-combined-mcp:v1"
+      ],
+      "env": {
+        "MDB_MCP_CONNECTION_STRING": "mongodb://drewjocham-user:lbjKMTf8d3sQ8q2M@s-fc0a667a-6ce3-4893-89a5-77e4661a3e2c-0.mongodb.eu01.onstackit.cloud:27017,s-fc0a667a-6ce3-4893-89a5-77e4661a3e2c-1.mongodb.eu01.onstackit.cloud:27017,s-fc0a667a-6ce3-4893-89a5-77e4661a3e2c-2.mongodb.eu01.onstackit.cloud:27017/stackit?authSource=stackit&tls=true&authMechanism=SCRAM-SHA-256",
+        "MONGO_URL": "mongodb://drewjocham-user:lbjKMTf8d3sQ8q2M@s-fc0a667a-6ce3-4-89a5-77e4661a3e2c-0.mongodb.eu01.onstackit.cloud:27017,s-fc0a667a-6ce3-4893-89a5-77e4661a3e2c-1.mongodb.eu01.onstackit.cloud:27017,s-fc0a667a-6ce3-4893-89a5-77e4661a3e2c-2.mongodb.eu01.onstackit.cloud:27017/stackit?authSource=stackit&tls=true&authMechanism=SCRAM-SHA-256",
+        "MONGO_DATABASE": "stackit"
+      }
+    }
+  }
+}

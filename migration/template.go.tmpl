@@ -1,0 +1,29 @@
+package {{.PackageName}}
+
+import (
+    "context"
+    "log/slog"
+
+    "github.com/drewjocham/mongo-migration-tool/migration"
+    "go.mongodb.org/mongo-driver/mongo"
+)
+
+func init() {
+    migration.Register(&{{.StructName}}{})
+}
+
+type {{.StructName}} struct{}
+
+func (m *{{.StructName}}) Version() string { return "{{.Version}}" }
+
+func (m *{{.StructName}}) Description() string { return "{{.Description}}" }
+
+func (m *{{.StructName}}) Up(ctx context.Context, db *mongo.Database) error {
+    slog.Info("Running migration UP", "version", m.Version())
+    return nil
+}
+
+func (m *{{.StructName}}) Down(ctx context.Context, db *mongo.Database) error {
+    slog.Info("Running migration DOWN", "version", m.Version())
+    return nil
+}

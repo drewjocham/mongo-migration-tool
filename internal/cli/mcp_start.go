@@ -1,4 +1,4 @@
-package cmd
+package cli
 
 import (
 	"fmt"
@@ -24,30 +24,28 @@ func init() {
 }
 
 func runMCPStart(cmd *cobra.Command, _ []string) error {
-	logger := slog.New(slog.NewTextHandler(os.Stderr, nil))
-	slog.SetDefault(logger)
+	const (
+		serverDir    = "/app/mcp-server"
+		serverScript = "index.js"
+	)
 
-	serverDir := "/app/mcp-server"
-	serverScript := "index.js"
 	serverPath := filepath.Join(serverDir, serverScript)
 
-	if _, err := os.Stat(serverPath); os.IsNotExist(err) {
-		slog.Error("MCP server script not found", "path", serverPath)
-		return fmt.Errorf("node script not found at %s: ensure you are in the correct Docker container", serverPath)
+	if _, err := os.Stat(serverPath); err != nil {
+		return fmt.Errorf("MCP server script missing: %w", err)
 	}
 
 	nodeCmd := exec.CommandContext(cmd.Context(), "node", serverScript)
 	nodeCmd.Dir = serverDir
 
-	nodeCmd.Stdout = os.Stdout
-	nodeCmd.Stderr = os.Stderr
-	nodeCmd.Stdin = os.Stdin
+	nodeCmd.Stdout = cmd.OutOrStdout()
+	nodeCmd.Stderr = cmd.ErrOrStderr()
+	nodeCmd.Stdin = cmd.InOrStdin()
 
-	slog.Info("Starting Node.js MCP child process", "script", serverPath)
+	slog.Info("🚀 Launching MCP server", "dir", serverDir, "script", serverScript)
 
 	if err := nodeCmd.Run(); err != nil {
-		slog.Error("Node.js MCP server exited with error", "error", err)
-		return err
+		return fmt.Errorf("node process exited: %w", err)
 	}
 
 	return nil

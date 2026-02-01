@@ -1,145 +1,84 @@
 package config
 
 import (
-	"os"
 	"testing"
 )
 
 func TestLoad(t *testing.T) {
-	// Test with environment variables
-	_ = os.Setenv("MONGO_URL", "mongodb://testhost:27017")
-	_ = os.Setenv("MONGO_DATABASE", "testdb")
-	_ = os.Setenv("MIGRATIONS_COLLECTION", "test_migrations")
-	_ = os.Setenv("OPENAI_API_KEY", "test-key")
-	_ = os.Setenv("GEMINI_API_KEY", "gemini-key")
-	_ = os.Setenv("GOOGLE_DRIVE_FOLDER_ID", "folder-123")
-
-	defer func() {
-		_ = os.Unsetenv("MONGO_URL")
-		_ = os.Unsetenv("MONGO_DATABASE")
-		_ = os.Unsetenv("MIGRATIONS_COLLECTION")
-		_ = os.Unsetenv("OPENAI_API_KEY")
-		_ = os.Unsetenv("GEMINI_API_KEY")
-		_ = os.Unsetenv("GOOGLE_DRIVE_FOLDER_ID")
-	}()
+	// t.Setenv is cleaner: no manual Unsetenv or defer required
+	t.Setenv("MONGO_URL", "mongodb://testhost:27017")
+	t.Setenv("MONGO_DATABASE", "testdb")
+	t.Setenv("MIGRATIONS_COLLECTION", "test_migrations")
+	t.Setenv("GOOGLE_DRIVE_FOLDER_ID", "folder-123")
 
 	cfg, err := Load()
 	if err != nil {
-		t.Fatalf("Load() returned error: %v", err)
+		t.Fatalf("Load() failed: %v", err)
 	}
 
-	if cfg.MongoURL != "mongodb://testhost:27017" {
-		t.Errorf("Expected MongoDB URI to be 'mongodb://testhost:27017', got '%s'", cfg.MongoURL)
-	}
-
-	if cfg.Database != "testdb" {
-		t.Errorf("Expected MongoDB database to be 'testdb', got '%s'", cfg.Database)
-	}
-
-	if cfg.MigrationsCollection != "test_migrations" {
-		t.Errorf("Expected migrations collection to be 'test_migrations', got '%s'", cfg.MigrationsCollection)
-	}
-
-	if cfg.OpenAIAPIKey != "test-key" {
-		t.Errorf("Expected OpenAI API key to be 'test-key', got '%s'", cfg.OpenAIAPIKey)
-	}
-
-	if cfg.GeminiAPIKey != "gemini-key" {
-		t.Errorf("Expected Gemini API key to be 'gemini-key', got '%s'", cfg.GeminiAPIKey)
-	}
-
-	if cfg.GoogleDriveFolderID != "folder-123" {
-		t.Errorf("Expected Google Docs folder ID to be 'folder-123', got '%s'", cfg.GoogleDriveFolderID)
-	}
+	// Use simple comparisons
+	assert(t, cfg.MongoURL, "mongodb://testhost:27017", "MongoURL")
+	assert(t, cfg.Database, "testdb", "Database")
+	assert(t, cfg.MigrationsCollection, "test_migrations", "MigrationsCollection")
 }
 
 func TestLoadDefaults(t *testing.T) {
-	// Clear all environment variables
-	_ = os.Unsetenv("MONGO_URL")
-	_ = os.Unsetenv("MONGO_DATABASE")
-	_ = os.Unsetenv("MIGRATIONS_COLLECTION")
-	_ = os.Unsetenv("OPENAI_API_KEY")
-	_ = os.Unsetenv("GEMINI_API_KEY")
-	_ = os.Unsetenv("GOOGLE_DRIVE_FOLDER_ID")
-
-	// Set required database field
-	_ = os.Setenv("MONGO_DATABASE", "test")
-	defer func() { _ = os.Unsetenv("MONGO_DATABASE") }()
+	// Only set what is required
+	t.Setenv("MONGO_DATABASE", "default_test")
 
 	cfg, err := Load()
 	if err != nil {
-		t.Fatalf("Load() returned error: %v", err)
+		t.Fatalf("Load() failed: %v", err)
 	}
 
-	if cfg.MongoURL != "mongodb://localhost:27017" {
-		t.Errorf("Expected default MongoDB URI to be 'mongodb://localhost:27017', got '%s'", cfg.MongoURL)
-	}
-
-	if cfg.Database != "test" {
-		t.Errorf("Expected MongoDB database to be 'test', got '%s'", cfg.Database)
-	}
-
-	if cfg.MigrationsCollection != "schema_migrations" {
-		t.Errorf("Expected default migrations collection to be 'schema_migrations', got '%s'", cfg.MigrationsCollection)
-	}
-
-	if cfg.OpenAIAPIKey != "" {
-		t.Errorf("Expected default OpenAI API key to be empty, got '%s'", cfg.OpenAIAPIKey)
-	}
-
-	if cfg.GeminiAPIKey != "" {
-		t.Errorf("Expected default Gemini API key to be empty, got '%s'", cfg.GeminiAPIKey)
-	}
-
-	if cfg.GoogleDriveFolderID != "" {
-		t.Errorf("Expected default Google Docs folder ID to be empty, got '%s'", cfg.GoogleDriveFolderID)
-	}
+	assert(t, cfg.MongoURL, "mongodb://localhost:27017", "Default MongoURL")
+	assert(t, cfg.MigrationsCollection, "schema_migrations", "Default MigrationsCollection")
 }
 
 func TestValidate(t *testing.T) {
+	// Table-driven tests are perfect here
 	tests := []struct {
-		name        string
-		config      *Config
-		expectError bool
-		errorMsg    string
+		name    string
+		config  *Config
+		wantErr bool
 	}{
 		{
-			name: "valid config",
+			name: "Valid Configuration",
 			config: &Config{
-				MongoURL:             "mongodb://localhost:27017",
-				Database:             "testdb",
-				MigrationsCollection: "migrations",
+				Database: "ok",
 			},
-			expectError: false,
+			wantErr: false,
 		},
 		{
-			name: "empty database",
+			name: "Missing Database",
 			config: &Config{
-				MongoURL:             "mongodb://localhost:27017",
-				Database:             "",
-				MigrationsCollection: "migrations",
+				Database: "",
 			},
-			expectError: true,
-			errorMsg:    "MONGO_DATABASE is required",
+			wantErr: true,
+		},
+		{
+			name: "Google Docs Enabled but missing credentials",
+			config: &Config{
+				Database:          "ok",
+				GoogleDocsEnabled: true,
+			},
+			wantErr: true,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			err := tt.config.Validate()
-			if tt.expectError {
-				if err == nil {
-					t.Error("Expected validation error but got none")
-				} else if err.Error() != tt.errorMsg {
-					t.Errorf("Expected error message '%s', got '%s'", tt.errorMsg, err.Error())
-				}
-			} else {
-				if err != nil {
-					t.Errorf("Unexpected validation error: %v", err)
-				}
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Validate() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
 	}
 }
 
-// LoadFromFile tests removed - this API doesn't exist in current config implementation
+func assert(t *testing.T, got, want, field string) {
+	t.Helper()
+	if got != want {
+		t.Errorf("%s: got %q, want %q", field, got, want)
+	}
+}

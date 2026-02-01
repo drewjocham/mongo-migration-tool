@@ -10,7 +10,6 @@ var (
 	registry = make(map[string]Migration)
 )
 
-// Register adds one or more migrations to the global registry.
 func Register(migrations ...Migration) {
 	mu.Lock()
 	defer mu.Unlock()
@@ -39,7 +38,6 @@ func All() map[string]Migration {
 	return copied
 }
 
-// RegisteredMigrations returns a copy of every registered migration.
 func RegisteredMigrations() map[string]Migration {
 	return All()
 }

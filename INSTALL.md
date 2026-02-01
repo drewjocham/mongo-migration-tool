@@ -1,6 +1,6 @@
 # Installation Guide
 
-This guide covers all the ways you can install and use mongo-migration: as a CLI tool via Homebrew, as a standalone binary, as a Docker container, or as a Go library.
+This guide covers all the ways you can install and use mongo-essential: as a CLI tool via Homebrew, as a standalone binary, as a Docker container, or as a Go library.
 
 ## Table of Contents
 
@@ -14,7 +14,7 @@ This guide covers all the ways you can install and use mongo-migration: as a CLI
 
 ## Homebrew Installation (macOS/Linux)
 
-The easiest way to install mongo-migration on macOS and Linux is via Homebrew.
+The easiest way to install mongo-essential on macOS and Linux is via Homebrew.
 
 ### Prerequisites
 
@@ -24,35 +24,35 @@ The easiest way to install mongo-migration on macOS and Linux is via Homebrew.
 
 ```bash
 # Add our custom Homebrew tap
-brew tap drewjocham/mongo-migration
+brew tap drewjocham/mongo-essential
 
-# Install mongo-migration
-brew install mongo-migration
+# Install mongo-essential
+brew install mongo-essential
 
 # Verify installation
-mongo-migration version
+mongo-essential version
 ```
 
 ### Upgrade
 
 ```bash
 # Upgrade to the latest version
-brew upgrade mongo-migration
+brew upgrade mongo-essential
 ```
 
 ### Uninstall
 
 ```bash
-# Uninstall mongo-migration
-brew uninstall mongo-migration
+# Uninstall mongo-essential
+brew uninstall mongo-essential
 
 # Remove the tap (optional)
-brew untap drewjocham/mongo-migration
+brew untap drewjocham/mongo-essential
 ```
 
 ## Binary Installation
 
-Download pre-built binaries for your platform from our [GitHub Releases](https://github.com/drewjocham/mongo-migration-tool/releases).
+Download pre-built binaries for your platform from our [GitHub Releases](https://github.com/drewjocham/mongo-essential-tool/releases).
 
 ### Available Platforms
 
@@ -65,36 +65,36 @@ Download pre-built binaries for your platform from our [GitHub Releases](https:/
 
 ```bash
 # Download the latest release (adjust URL for your platform)
-curl -LO https://github.com/drewjocham/mongo-migration-tool/releases/latest/download/mongo-migration_linux_amd64.tar.gz
+curl -LO https://github.com/drewjocham/mongo-essential-tool/releases/latest/download/mongo-essential_linux_amd64.tar.gz
 
 # Extract the binary
-tar -xzf mongo-migration_linux_amd64.tar.gz
+tar -xzf mongo-essential_linux_amd64.tar.gz
 
 # Make executable and move to PATH
-chmod +x mongo-migration
-sudo mv mongo-migration /usr/local/bin/
+chmod +x mongo-essential
+sudo mv mongo-essential /usr/local/bin/
 
 # Verify installation
-mongo-migration version
+mongo-essential version
 ```
 
 ### Windows
 
-1. Download the Windows binary from the [releases page](https://github.com/drewjocham/mongo-migration-tool/releases)
+1. Download the Windows binary from the [releases page](https://github.com/drewjocham/mongo-essential-tool/releases)
 2. Extract the `.zip` file
 3. Add the binary location to your system PATH
-4. Open a new command prompt and verify: `mongo-migration version`
+4. Open a new command prompt and verify: `mongo-essential version`
 
 ### Installing Specific Versions
 
 ```bash
 # Install specific version (replace v1.2.3 with desired version)
-curl -LO https://github.com/drewjocham/mongo-migration-tool/releases/download/v1.2.3/mongo-migration_linux_am
+curl -LO https://github.com/drewjocham/mongo-essential-tool/releases/download/v1.2.3/mongo-essential_linux_am
 ```
 
 ## Docker Installation
 
-mongo-migration is available as a Docker image for containerized environments.
+mongo-essential is available as a Docker image for containerized environments.
 
 ### Available Images
 
@@ -105,21 +105,21 @@ mongo-migration is available as a Docker image for containerized environments.
 
 ```bash
 # Pull the latest image
-docker pull ghcr.io/drewjocham/mongo-migration-tool:latest
+docker pull ghcr.io/drewjocham/mongo-essential-tool:latest
 
 # Run migrations (mount your migrations directory)
 docker run --rm \
   -v $(pwd)/migrations:/migrations \
   -e MONGO_URL="mongodb://your-mongo-host:27017" \
   -e MONGO_DATABASE="your-database" \
-  ghcr.io/drewjocham/mongo-migration-tool:latest \
+  ghcr.io/drewjocham/mongo-essential-tool:latest \
   up
 
 # Run with custom configuration file
 docker run --rm \
   -v $(pwd)/.env:/app/.env \
   -v $(pwd)/migrations:/migrations \
-  ghcr.io/drewjocham/mongo-migration-tool:latest \
+  ghcr.io/drewjocham/mongo-essential-tool:latest \
   status
 ```
 
@@ -131,8 +131,8 @@ Create a `docker-compose.yml` file:
 version: '3.8'
 
 services:
-  mongo-migration:
-    image: ghcr.io/drewjocham/mongo-migration-tool:latest
+  mongo-essential:
+    image: ghcr.io/drewjocham/mongo-essential-tool:latest
     environment:
       - MONGO_URL=mongodb://mongodb:27017
       - MONGO_DATABASE=myapp
@@ -158,12 +158,12 @@ volumes:
 Run with:
 
 ```bash
-docker-compose up mongo-migration
+docker-compose up mongo-essential
 ```
 
 ## Go Library Installation
 
-Use mongo-migration as a library in your Go projects.
+Use mongo-essential as a library in your Go projects.
 
 ### Prerequisites
 
@@ -173,10 +173,10 @@ Use mongo-migration as a library in your Go projects.
 
 ```bash
 # Add to your Go project
-go get github.com/drewjocham/mongo-migration-tool@latest
+go get github.com/drewjocham/mongo-essential-tool@latest
 
 # Or install specific version
-go get github.com/drewjocham/mongo-migration-tool@v1.2.3
+go get github.com/drewjocham/mongo-essential-tool@v1.2.3
 ```
 
 ### Basic Usage
@@ -188,8 +188,8 @@ import (
     "context"
     "log"
     
-    "github.com/drewjocham/mongo-migration-tool/config"
-    "github.com/drewjocham/mongo-migration-tool/migration"
+    "github.com/drewjocham/mongo-essential-tool/config"
+    "github.com/drewjocham/mongo-essential-tool/migration"
     "go.mongodb.org/mongo-driver/mongo"
     "go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -227,7 +227,7 @@ For detailed library usage, see [LIBRARY.md](LIBRARY.md).
 
 ## Building from Source
 
-Build mongo-migration from source code.
+Build mongo-essential from source code.
 
 ### Prerequisites
 
@@ -238,17 +238,17 @@ Build mongo-migration from source code.
 
 ```bash
 # Clone the repository
-git clone https://github.com/drewjocham/mongo-migration-tool.git
-cd mongo-migration-tool
+git clone https://github.com/drewjocham/mongo-essential-tool.git
+cd mongo-essential-tool
 
 # Build for your current platform
-go build -o mongo-migration ./cmd/mongo-migration
+go build -o mongo-essential ./cmd/mongo-essential
 
 # Or use make
 make build
 
 # Install to GOPATH/bin
-go install ./cmd/mongo-migration
+go install ./cmd/mongo-essential
 
 # Build for all platforms (requires goreleaser)
 make build-all
@@ -281,7 +281,7 @@ make build-all
 
 ```bash
 # Build with debug information
-go build -ldflags "-X main.version=dev" -o mongo-migration ./cmd/mongo-migration
+go build -ldflags "-X main.version=dev" -o mongo-essential ./cmd/mongo-essential
 
 # Run tests
 make test
@@ -292,7 +292,7 @@ make lint
 
 ## Configuration
 
-mongo-migration can be configured through environment variables or configuration files.
+mongo-essential can be configured through environment variables or configuration files.
 
 ### Environment Variables
 
@@ -358,26 +358,26 @@ Configuration is loaded in the following order (later sources override earlier o
 
 ```bash
 # Check version
-mongo-migration version
+mongo-essential version
 
 # Check available commands
-mongo-migration help
+mongo-essential help
 
 # Test connection (requires configuration)
-mongo-migration status
+mongo-essential status
 ```
 
 ### Verify Docker Installation
 
 ```bash
 # Check Docker image
-docker run --rm ghcr.io/drewjocham/mongo-migration-tool:latest version
+docker run --rm ghcr.io/drewjocham/mongo-essential-tool:latest version
 
 # Test with sample configuration
 docker run --rm \
   -e MONGO_URL="mongodb://host.docker.internal:27017" \
   -e MONGO_DATABASE="test" \
-  ghcr.io/drewjocham/mongo-migration-tool:latest \
+  ghcr.io/drewjocham/mongo-essential-tool:latest \
   status
 ```
 
@@ -390,7 +390,7 @@ package main
 
 import (
     "fmt"
-    "github.com/drewjocham/mongo-migration-tool/config"
+    "github.com/drewjocham/mongo-essential-tool/config"
 )
 
 func main() {
@@ -406,7 +406,7 @@ Run it:
 
 ```bash
 go mod init test
-go get github.com/drewjocham/mongo-migration-tool@latest
+go get github.com/drewjocham/mongo-essential-tool@latest
 go run test.go
 ```
 
@@ -418,8 +418,8 @@ go run test.go
 
 ```bash
 # If tap already exists
-brew untap drewjocham/mongo-migration-tool
-brew tap drewjocham/mongo-migration-tool
+brew untap drewjocham/mongo-essential-tool
+brew tap drewjocham/mongo-essential-tool
 
 # Clear Homebrew cache
 brew cleanup
@@ -430,7 +430,7 @@ rm -rf $(brew --cache)
 
 ```bash
 # Make binary executable
-chmod +x mongo-migration
+chmod +x mongo-essential
 
 # If "command not found"
 echo $PATH
@@ -445,7 +445,7 @@ docker logout ghcr.io
 docker login ghcr.io
 
 # Check if image exists
-docker images | grep mongo-migration
+docker images | grep mongo-essential
 ```
 
 #### Go Module Issues
@@ -461,15 +461,15 @@ go mod download
 
 ### Getting Help
 
-- **Documentation**: [GitHub Repository](https://github.com/drewjocham/mongo-migration-tool)
-- **Issues**: [GitHub Issues](https://github.com/drewjocham/mongo-migration-tool/issues)
-- **Library Docs**: [pkg.go.dev](https://pkg.go.dev/github.com/drewjocham/mongo-migration-tool)
+- **Documentation**: [GitHub Repository](https://github.com/drewjocham/mongo-essential-tool)
+- **Issues**: [GitHub Issues](https://github.com/drewjocham/mongo-essential-tool/issues)
+- **Library Docs**: [pkg.go.dev](https://pkg.go.dev/github.com/drewjocham/mongo-essential-tool)
 
 ## Next Steps
 
 After installation, you might want to:
 
-1. **Create your first migration**: `mongo-migration create add_user_index`
+1. **Create your first migration**: `mongo-essential create add_user_index`
 2. **Set up your project**: Create migrations directory and configure environment
 3. **Explore examples**: Check the [examples directory](examples/) in the repository
 4. **Read the library documentation**: See [LIBRARY.md](LIBRARY.md) for Go library usage

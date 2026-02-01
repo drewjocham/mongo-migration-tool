@@ -1,3 +1,5 @@
+//go:build ignore
+
 package main
 
 // This package provides an example of how to use the mongo-migration tool.

@@ -1,6 +1,6 @@
 //go:build include_examples
 
-package cmd
+package cli
 
 import "github.com/drewjocham/mongo-migration-tool/examples/examplemigrations"
 import "github.com/drewjocham/mongo-migration-tool/migration"

@@ -9,7 +9,6 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/integration/mtest"
 )
 
-// TestMigration is a simple test migration
 type TestMigration struct {
 	version      string
 	description  string
@@ -46,7 +45,7 @@ func TestNewEngine(t *testing.T) {
 			t.Error("Engine database not set correctly")
 		}
 
-		if engine.migrationsCollection != "test_migrations" {
+		if engine.coll != "test_migrations" {
 			t.Error("Engine migrations collection not set correctly")
 		}
 

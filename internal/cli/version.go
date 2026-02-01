@@ -1,4 +1,4 @@
-package cmd
+package cli
 
 import (
 	"fmt"
@@ -27,7 +27,6 @@ var versionCmd = &cobra.Command{
 		slog.Debug("Version command executed",
 			"version", appVersion, "commit", appCommit)
 
-		// Human-readable output
 		fmt.Printf("mongo-essential version: %s\n", appVersion)
 		fmt.Printf("  Commit ID:  %s\n", appCommit)
 		fmt.Printf("  Build Date: %s\n", appDate)

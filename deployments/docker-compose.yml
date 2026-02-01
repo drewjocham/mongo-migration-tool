@@ -30,7 +30,7 @@ services:
       - MIGRATIONS_COLLECTION=schema_migrations
       - MONGO_TIMEOUT=30
     ports:
-      - "8080:8080" # Expose a port if your MCP server needs it
+      - "8080:8080"
     volumes:
       - ./migrations:/app/migrations
     depends_on:

@@ -31,13 +31,11 @@ import (
 )
 
 func main() {
-    // Load configuration
     cfg, err := config.Load()
     if err != nil {
         log.Fatal(err)
     }
 
-    // Connect to MongoDB
     ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
     defer cancel()
 
@@ -46,8 +44,7 @@ func main() {
         log.Fatal(err)
     }
     defer client.Disconnect(ctx)
-
-    // Create migration engine
+	
     engine := migration.NewEngine(client.Database(cfg.Database), cfg.MigrationsCollection)
 
     // Register your migrations
@@ -56,8 +53,7 @@ func main() {
         &CreateProductCollection{},
         // ... migrations
     )
-
-    // Run migrations
+	
     if err := engine.Up(ctx, ""); err != nil {
         log.Fatal("Migration failed:", err)
     }
@@ -235,7 +231,7 @@ type Config struct {
 
 ### 3. MCP Integration (`mcp`)
 
-Model Context Protocol server for AI assistant integration.
+Model Context Protocol server integration.
 
 ```go
 package main
@@ -259,7 +255,7 @@ func main() {
         &MyMigration2{},
     )
 
-    // Start MCP server (blocks until shutdown)
+    // Start MCP server
     if err := server.Start(); err != nil {
         log.Fatal(err)
     }
@@ -274,11 +270,9 @@ func main() {
 // Create engine with custom settings
 engine := migration.NewEngine(database, "my_custom_migrations")
 
-// Custom migration with complex logic
 type ComplexMigration struct{}
 
 func (m *ComplexMigration) Up(ctx context.Context, db *mongo.Database) error {
-    // Start a transaction for complex operations
     session, err := db.Client().StartSession()
     if err != nil {
         return err
@@ -286,7 +280,6 @@ func (m *ComplexMigration) Up(ctx context.Context, db *mongo.Database) error {
     defer session.EndSession(ctx)
 
     callback := func(sessCtx mongo.SessionContext) (interface{}, error) {
-        // Create collection with validation
         validation := bson.M{
             "$jsonSchema": bson.M{
                 "bsonType": "object",
@@ -331,11 +324,10 @@ func (m *ComplexMigration) Up(ctx context.Context, db *mongo.Database) error {
 ### Error Handling
 
 ```go
-// Handle migration errors gracefully
 func runMigrations(engine *migration.Engine) error {
     ctx := context.Background()
     
-    // Get status first
+    // Get migration status
     status, err := engine.GetStatus(ctx)
     if err != nil {
         return fmt.Errorf("failed to get migration status: %w", err)
@@ -361,7 +353,6 @@ func runMigrations(engine *migration.Engine) error {
         log.Printf("Running migration: %s - %s", p.Version, p.Description)
         
         if err := engine.Up(ctx, p.Version); err != nil {
-            // Check if it's a known error type
             if mongo.IsDuplicateKeyError(err) {
                 log.Printf("Warning: Duplicate key in migration %s (may be safe to ignore)", p.Version)
                 continue
@@ -398,15 +389,12 @@ func TestAddUserIndexesMigration(t *testing.T) {
     mt.Run("should create email index", func(mt *mtest.T) {
         // Create migration
         m := &AddUserIndexesMigration{}
-        
-        // Test Up migration
+		
         err := m.Up(context.Background(), mt.DB)
         if err != nil {
             t.Fatalf("Up migration failed: %v", err)
         }
-        // Verify index was created 
 		
-        // Test Down migration
         err = m.Down(context.Background(), mt.DB)
         if err != nil {
             t.Fatalf("Down migration failed: %v", err)
@@ -453,12 +441,12 @@ MONGO_DATABASE=myapp
 MIGRATIONS_COLLECTION=schema_migrations
 MIGRATIONS_PATH=./migrations
 
-# MongoDB Authentication (if required)
+# MongoDB Authentication 
 MONGO_USERNAME=username
 MONGO_PASSWORD=password
 MONGO_AUTH_SOURCE=admin
 
-# SSL/TLS (for cloud providers )
+# SSL/TLS 
 MONGO_SSL_ENABLED=true
 MONGO_SSL_INSECURE=false
 MONGO_SSL_CERT_PATH=./certs/client.pem
@@ -471,7 +459,7 @@ MONGO_MIN_POOL_SIZE=1
 MONGO_MAX_IDLE_TIME=300
 MONGO_TIMEOUT=60
 
-# AI Analysis (optional)
+# AI Models (optional)
 AI_ENABLED=false
 AI_PROVIDER=openai
 OPENAI_API_KEY=your_openai_key

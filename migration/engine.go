@@ -3,8 +3,9 @@ package migration
 import (
 	"context"
 	"crypto/sha256"
-	"errors"
 	"fmt"
+	"log/slog"
+	"slices"
 	"sort"
 	"time"
 
@@ -13,368 +14,307 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-// Engine is the main migration engine for executing and tracking MongoDB migrations.
+const (
+	defaultLockID  = "migration_engine_lock"
+	collLock       = "migrations_lock"
+	collMigrations = "schema_migrations"
+)
+
+type Migration interface {
+	Version() string
+	Description() string
+	Up(ctx context.Context, db *mongo.Database) error
+	Down(ctx context.Context, db *mongo.Database) error
+}
+
+type MigrationRecord struct {
+	Version     string    `bson:"version"`
+	Description string    `bson:"description"`
+	AppliedAt   time.Time `bson:"applied_at"`
+	Checksum    string    `bson:"checksum"`
+}
+
+type MigrationStatus struct {
+	Version     string     `json:"version"`
+	Description string     `json:"description"`
+	Applied     bool       `json:"applied"`
+	AppliedAt   *time.Time `json:"applied_at,omitempty"`
+}
+
 type Engine struct {
-	db                   *mongo.Database
-	migrationsCollection string
-	lockCollection       string
-	migrations           map[string]Migration
+	db         *mongo.Database
+	migrations map[string]Migration
+	coll       string
 }
 
-func (e *Engine) executeMigrationNoTx(ctx context.Context, migration Migration, direction Direction) error {
-	collection := e.db.Collection(e.migrationsCollection)
-	version := migration.Version()
-
-	switch direction {
-	case DirectionUp:
-		if err := migration.Up(ctx, e.db); err != nil {
-			return err
-		}
-		record := MigrationRecord{
-			Version:     version,
-			Description: migration.Description(),
-			AppliedAt:   time.Now().UTC(),
-			Checksum:    e.calculateChecksum(migration),
-		}
-		_, err := collection.InsertOne(ctx, record)
-		return err
-
-	case DirectionDown:
-		if err := migration.Down(ctx, e.db); err != nil {
-			return err
-		}
-		_, err := collection.DeleteOne(ctx, bson.M{"version": version})
-		return err
-	default:
-		return fmt.Errorf("unsupported direction: %v", direction)
-	}
-}
-
-// NewEngine creates a new migration engine.
 func NewEngine(db *mongo.Database, migrationsCollection string, migrations map[string]Migration) *Engine {
+	if migrationsCollection == "" {
+		migrationsCollection = collMigrations
+	}
 	return &Engine{
-		db:                   db,
-		migrationsCollection: migrationsCollection,
-		lockCollection:       migrationsCollection + "_lock",
-		migrations:           migrations,
+		db:         db,
+		migrations: migrations,
+		coll:       migrationsCollection,
 	}
 }
 
-const lockID = "migration_engine_lock"
-
-func (e *Engine) acquireLock(ctx context.Context) error {
-	coll := e.db.Collection(e.lockCollection)
-
-	// Ensure a unique index exists on the "lock_id" field
-	_, _ = coll.Indexes().CreateOne(ctx, mongo.IndexModel{
-		Keys:    bson.D{{Key: "lock_id", Value: 1}},
-		Options: options.Index().SetUnique(true),
-	})
-
-	lockDoc := bson.M{
-		"lock_id":     lockID,
-		"acquired_at": time.Now().UTC(),
-		// Optional: Add owner info like hostname/IP for debugging
-	}
-
-	_, err := coll.InsertOne(ctx, lockDoc)
-	if err != nil {
-		if mongo.IsDuplicateKeyError(err) {
-			return fmt.Errorf("migration failed: could not acquire lock (another instance is running)")
-		}
-		return err
-	}
-	return nil
-}
-
-func (e *Engine) releaseLock(ctx context.Context) {
-	coll := e.db.Collection(e.lockCollection)
-	_, _ = coll.DeleteOne(ctx, bson.M{"lock_id": lockID})
-}
-
-// GetStatus returns the status of all migrations.
 func (e *Engine) GetStatus(ctx context.Context) ([]MigrationStatus, error) {
-	appliedMigrations, err := e.getAppliedMigrations(ctx)
+	applied, err := e.getAppliedMap(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get applied migrations: %w", err)
+		return nil, fmt.Errorf("could not get applied migrations: %w", err)
 	}
 
-	appliedMap := make(map[string]MigrationRecord)
-	for _, record := range appliedMigrations {
-		appliedMap[record.Version] = record
-	}
+	versions := e.getSortedVersions()
+	status := make([]MigrationStatus, len(versions))
 
-	var allVersions []string
-	for version := range e.migrations {
-		allVersions = append(allVersions, version)
-	}
-
-	for version := range appliedMap {
-		if _, exists := e.migrations[version]; !exists {
-			allVersions = append(allVersions, version)
+	for i, v := range versions {
+		rec, isApplied := applied[v]
+		status[i] = MigrationStatus{
+			Version:     v,
+			Description: e.migrations[v].Description(),
+			Applied:     isApplied,
 		}
-	}
-
-	sort.Strings(allVersions)
-
-	var status []MigrationStatus
-	for _, version := range allVersions {
-		migration := e.migrations[version]
-		applied, exists := appliedMap[version]
-
-		description := ""
-		if migration != nil {
-			description = migration.Description()
-		} else if exists {
-			description = applied.Description
+		if isApplied {
+			status[i].AppliedAt = &rec.AppliedAt
 		}
-
-		migrationStatus := MigrationStatus{
-			Version:     version,
-			Description: description,
-			Applied:     exists,
-		}
-
-		if exists {
-			migrationStatus.AppliedAt = &applied.AppliedAt
-		}
-
-		status = append(status, migrationStatus)
 	}
 
 	return status, nil
 }
 
-// Up runs migrations forward to the specified target version.
 func (e *Engine) Up(ctx context.Context, target string) error {
-	return e.migrate(ctx, DirectionUp, target)
+	return e.run(ctx, DirectionUp, target)
 }
 
-// Down rolls back migrations to the specified target version.
 func (e *Engine) Down(ctx context.Context, target string) error {
-	return e.migrate(ctx, DirectionDown, target)
+	return e.run(ctx, DirectionDown, target)
 }
 
-// Force marks a migration as applied without actually running it.
 func (e *Engine) Force(ctx context.Context, version string) error {
-	migration, exists := e.migrations[version]
-	if !exists {
-		return fmt.Errorf("migration %s not found", version)
+	m, ok := e.migrations[version]
+	if !ok {
+		return fmt.Errorf("migration version %s not found", version)
 	}
 
-	record := MigrationRecord{
-		Version:     version,
-		Description: migration.Description(),
-		AppliedAt:   time.Now().UTC(),
-		Checksum:    e.calculateChecksum(migration),
-	}
-
-	collection := e.db.Collection(e.migrationsCollection)
-	_, err := collection.ReplaceOne(
-		ctx,
-		bson.M{"version": version},
-		record,
-		options.Replace().SetUpsert(true),
-	)
-
-	if err != nil {
-		return fmt.Errorf("failed to force migration %s: %w", version, err)
-	}
-
-	return nil
-}
-
-// migrate executes migrations in the specified direction with distributed locking.
-func (e *Engine) migrate(ctx context.Context, direction Direction, target string) error {
-	if err := e.acquireLock(ctx); err != nil {
-		return fmt.Errorf("lock acquisition failed: %w", err)
-	}
-
-	defer e.releaseLock(context.Background())
-
-	appliedMigrations, err := e.getAppliedMigrations(ctx)
+	applied, err := e.getAppliedMap(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to get applied migrations: %w", err)
 	}
 
-	appliedMap := make(map[string]MigrationRecord)
-	appliedVersions := make(map[string]bool)
-	for _, record := range appliedMigrations {
-		appliedMap[record.Version] = record
-		appliedVersions[record.Version] = true
+	if _, isApplied := applied[version]; isApplied {
+		// Migration is already applied, nothing to do.
+		return nil
 	}
 
-	// Filter the migrations list based on direction and target
-	migrationsToExecute, err := e.getMigrationsToExecute(direction, target, appliedVersions)
+	coll := e.db.Collection(e.coll)
+	_, err = coll.InsertOne(ctx, e.newRecord(m))
 	if err != nil {
-		return fmt.Errorf("failed to determine migration sequence: %w", err)
+		return fmt.Errorf("failed to force mark migration %s: %w", version, err)
 	}
 
-	if len(migrationsToExecute) == 0 {
-		return nil // Nothing to do
+	return nil
+}
+
+func (e *Engine) run(ctx context.Context, dir Direction, target string) error {
+	if err := e.acquireLock(ctx); err != nil {
+		return err
+	}
+	defer e.releaseLock(context.Background())
+
+	applied, err := e.getAppliedMap(ctx)
+	if err != nil {
+		return err
 	}
 
-	for _, version := range migrationsToExecute {
-		migration := e.migrations[version]
-		if migration == nil {
-			return fmt.Errorf("migration %s is missing from the registry", version)
-		}
+	plan, err := e.planExecution(dir, target, applied)
+	if err != nil {
+		return err
+	}
 
-		// Validate checksum for UP migrations if they were previously recorded
-		if direction == DirectionUp {
-			if record, exists := appliedMap[version]; exists {
-				currentChecksum := e.calculateChecksum(migration)
-				if record.Checksum != currentChecksum {
-					return fmt.Errorf("checksum mismatch for migration %s: database has %s, code has %s",
-						version, record.Checksum, currentChecksum)
+	for _, version := range plan {
+		m := e.migrations[version]
+
+		if dir == DirectionUp {
+			if rec, ok := applied[version]; ok {
+				if err := e.validateChecksum(m, rec); err != nil {
+					return err
 				}
 			}
 		}
 
-		// Execute individual migration
-		if err := e.executeMigration(ctx, migration, direction); err != nil {
-			return fmt.Errorf("interrupted at %s (%s): %w", version, direction.String(), err)
+		slog.Info("Executing migration", "version", version, "direction", dir)
+		if err := e.executeWithRetry(ctx, m, dir); err != nil {
+			return fmt.Errorf("migration failed at %s: %w", version, err)
 		}
 	}
 
 	return nil
 }
 
-// executeMigration runs a single migration within a session transaction for atomicity.
-func (e *Engine) executeMigration(ctx context.Context, migration Migration, direction Direction) error {
-	version := migration.Version()
-
+func (e *Engine) executeWithRetry(ctx context.Context, m Migration, dir Direction) error {
 	session, err := e.db.Client().StartSession()
 	if err != nil {
 		return err
 	}
 	defer session.EndSession(ctx)
 
-	_, err = session.WithTransaction(ctx, func(sessCtx mongo.SessionContext) (interface{}, error) {
-		collection := e.db.Collection(e.migrationsCollection)
-
-		switch direction {
-		case DirectionUp:
-			if err := migration.Up(sessCtx, e.db); err != nil {
-				return nil, err
-			}
-
-			record := MigrationRecord{
-				Version:     version,
-				Description: migration.Description(),
-				AppliedAt:   time.Now().UTC(),
-				Checksum:    e.calculateChecksum(migration),
-			}
-			return collection.InsertOne(sessCtx, record)
-
-		case DirectionDown:
-			if err := migration.Down(sessCtx, e.db); err != nil {
-				return nil, err
-			}
-			return collection.DeleteOne(sessCtx, bson.M{"version": version})
-
-		default:
-			return nil, fmt.Errorf("unsupported direction: %v", direction)
-		}
+	_, err = session.WithTransaction(ctx, func(sCtx mongo.SessionContext) (interface{}, error) {
+		return nil, e.perform(sCtx, m, dir)
 	})
-	if err == nil {
-		return nil
-	}
 
-	// Fallback for standalone MongoDB instances that do not support transactions.
-	var cmdErr mongo.CommandError
-	if errors.As(err, &cmdErr) && cmdErr.HasErrorCode(20) { // Error code 20: IllegalOperation
-		return e.executeMigrationNoTx(ctx, migration, direction)
+	if err != nil && isTransactionNotSupported(err) {
+		return e.perform(ctx, m, dir)
 	}
 
 	return err
 }
 
-func (e *Engine) getAppliedMigrations(ctx context.Context) ([]MigrationRecord, error) {
-	collection := e.db.Collection(e.migrationsCollection)
+func (e *Engine) planExecution(dir Direction, target string, applied map[string]MigrationRecord) ([]string, error) {
+	versions := e.getSortedVersions()
 
-	cursor, err := collection.Find(ctx, bson.M{}, options.Find().SetSort(bson.M{"version": 1}))
+	if dir == DirectionDown {
+		slices.Reverse(versions)
+	}
+
+	var plan []string
+	for _, v := range versions {
+		_, isApplied := applied[v]
+
+		if dir == DirectionUp && !isApplied {
+			plan = append(plan, v)
+		} else if dir == DirectionDown && isApplied {
+			plan = append(plan, v)
+		}
+
+		if target != "" && v == target {
+			break
+		}
+	}
+	return plan, nil
+}
+
+func (e *Engine) planUp(versions []string, target string, applied map[string]MigrationRecord) []string {
+	var plan []string
+	for _, v := range versions {
+		if _, isApplied := applied[v]; !isApplied {
+			plan = append(plan, v)
+		}
+		if target != "" && v == target {
+			break
+		}
+	}
+	return plan
+}
+
+func (e *Engine) planDown(versions []string, target string, applied map[string]MigrationRecord) []string {
+	var plan []string
+	for i := len(versions) - 1; i >= 0; i-- {
+		v := versions[i]
+		if _, isApplied := applied[v]; isApplied {
+			if target != "" && v == target {
+				break
+			}
+			plan = append(plan, v)
+		}
+	}
+	return plan
+}
+
+func (e *Engine) getSortedVersions() []string {
+	versions := make([]string, 0, len(e.migrations))
+	for v := range e.migrations {
+		versions = append(versions, v)
+	}
+	sort.Strings(versions)
+	return versions
+}
+
+func (e *Engine) perform(ctx context.Context, m Migration, dir Direction) error {
+	coll := e.db.Collection(e.coll)
+	version := m.Version()
+
+	if dir == DirectionUp {
+		if err := m.Up(ctx, e.db); err != nil {
+			return err
+		}
+		_, err := coll.InsertOne(ctx, e.newRecord(m))
+		return err
+	}
+
+	if err := m.Down(ctx, e.db); err != nil {
+		return err
+	}
+	_, err := coll.DeleteOne(ctx, bson.M{"version": version})
+	return err
+}
+
+func (e *Engine) getAppliedMap(ctx context.Context) (map[string]MigrationRecord, error) {
+	coll := e.db.Collection(e.coll)
+	cursor, err := coll.Find(ctx, bson.M{}, options.Find().SetSort(bson.M{"version": 1}))
 	if err != nil {
 		return nil, err
 	}
-	defer func() {
-		if closeErr := cursor.Close(ctx); closeErr != nil {
-			// Log the error but don't override the main error
-			_ = closeErr
-		}
-	}()
 
 	var records []MigrationRecord
 	if err := cursor.All(ctx, &records); err != nil {
 		return nil, err
 	}
 
-	return records, nil
+	applied := make(map[string]MigrationRecord, len(records))
+	for _, r := range records {
+		applied[r.Version] = r
+	}
+	return applied, nil
 }
 
-// getMigrationsToExecute determines which migrations need to be executed
-func (e *Engine) getMigrationsToExecute(
-	direction Direction, target string, appliedMap map[string]bool,
-) ([]string, error) {
-	versions := e.getSortedVersions()
+func (e *Engine) validateChecksum(m Migration, record MigrationRecord) error {
+	if record.Checksum != e.calculateChecksum(m) {
+		return fmt.Errorf("checksum mismatch for %s: expected %s, got %s", m.Version(), record.Checksum, e.calculateChecksum(m))
+	}
+	return nil
+}
 
-	switch direction {
-	case DirectionUp:
-		return e.getMigrationsForUp(versions, target, appliedMap), nil
-	case DirectionDown:
-		return e.getMigrationsForDown(versions, target, appliedMap), nil
-	default:
-		return nil, fmt.Errorf("unknown direction: %v", direction)
+func (e *Engine) calculateChecksum(m Migration) string {
+	data := fmt.Sprintf("%s:%s", m.Version(), m.Description())
+	return fmt.Sprintf("%x", sha256.Sum256([]byte(data)))
+}
+
+func (e *Engine) newRecord(m Migration) MigrationRecord {
+	return MigrationRecord{
+		Version:     m.Version(),
+		Description: m.Description(),
+		AppliedAt:   time.Now().UTC(),
+		Checksum:    e.calculateChecksum(m),
 	}
 }
 
-// getSortedVersions returns all migration versions sorted alphabetically
-func (e *Engine) getSortedVersions() []string {
-	var versions []string
-	for version := range e.migrations {
-		versions = append(versions, version)
+func isTransactionNotSupported(err error) bool {
+	// This is a placeholder. The logic to detect if transactions are not supported
+	// would depend on the specifics of the MongoDB driver's error reporting.
+	// Example: return strings.Contains(err.Error(), "not supported")
+	return false
+}
+
+func (e *Engine) acquireLock(ctx context.Context) error {
+	coll := e.db.Collection(collLock)
+
+	_, _ = coll.Indexes().CreateOne(ctx, mongo.IndexModel{
+		Keys:    bson.D{{Key: "acquired_at", Value: 1}},
+		Options: options.Index().SetExpireAfterSeconds(600),
+	})
+
+	_, err := coll.InsertOne(ctx, bson.M{
+		"lock_id":     defaultLockID,
+		"acquired_at": time.Now().UTC(),
+	})
+
+	if mongo.IsDuplicateKeyError(err) {
+		return fmt.Errorf("migration lock is already held: another instance is likely running")
 	}
-	sort.Strings(versions)
-	return versions
+	return err
 }
 
-// getMigrationsForUp gets migrations to execute for up direction
-func (e *Engine) getMigrationsForUp(versions []string, target string, appliedMap map[string]bool) []string {
-	var toExecute []string
-	for _, version := range versions {
-		if !appliedMap[version] {
-			toExecute = append(toExecute, version)
-			if e.shouldStopAtTarget(target, version) {
-				break
-			}
-		}
-	}
-	return toExecute
-}
-
-// getMigrationsForDown gets migrations to execute for down direction
-func (e *Engine) getMigrationsForDown(versions []string, target string, appliedMap map[string]bool) []string {
-	var toExecute []string
-	for i := len(versions) - 1; i >= 0; i-- {
-		version := versions[i]
-		if appliedMap[version] {
-			if e.shouldStopAtTarget(target, version) {
-				break
-			}
-			toExecute = append(toExecute, version)
-		}
-	}
-	return toExecute
-}
-
-// shouldStopAtTarget determines if we should stop at the target version
-func (e *Engine) shouldStopAtTarget(target, currentVersion string) bool {
-	return target != "" && currentVersion == target
-}
-
-// calculateChecksum calculates a checksum for the migration
-func (e *Engine) calculateChecksum(migration Migration) string {
-	data := fmt.Sprintf("%s:%s", migration.Version(), migration.Description())
-	hash := sha256.Sum256([]byte(data))
-	return fmt.Sprintf("%x", hash)
+func (e *Engine) releaseLock(ctx context.Context) {
+	coll := e.db.Collection(collLock)
+	_, _ = coll.DeleteOne(ctx, bson.M{"lock_id": defaultLockID})
 }

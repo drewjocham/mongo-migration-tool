@@ -17,7 +17,6 @@ FROM mongodb/mongodb-mcp-server:1.3.1
 USER root
 WORKDIR /app
 
-# Copy the binary to the EXACT path the error is looking for
 COPY --from=builder /app/mongo-migration /app/mongo-migration
 
 RUN chmod +x /app/mongo-migration

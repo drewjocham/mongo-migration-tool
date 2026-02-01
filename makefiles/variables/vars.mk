@@ -14,6 +14,7 @@ endif
 BINARY_NAME=mongo-migration
 BUILD_DIR?=$(REPO_ROOT)/build
 LDFLAGS=-ldflags "-X main.version=$(shell git describe --tags --always)"
+MAIN_PACKAGE?=./cmd
 
 # Docker options
 DOCKER_IMAGE=mongo-migration
