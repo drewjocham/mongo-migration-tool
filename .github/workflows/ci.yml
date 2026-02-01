@@ -95,7 +95,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: .
-          file: Dockerfile
+          file: dockerfiles/Dockerfile
           push: false
           tags: drewjocham-mongo-migration:test
           cache-from: type=gha
@@ -105,7 +105,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: .
-          file: Dockerfile.mcp
+          file: dockerfiles/Dockerfile.mcp
           push: false
           tags: drewjocham-mongo-mcp:test
           cache-from: type=gha
