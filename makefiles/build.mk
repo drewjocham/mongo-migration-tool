@@ -41,16 +41,13 @@ build-all: deps ## Build for all supported platforms
 	)
 	@echo "$(GREEN)Done! Binaries are in $(BIN_DIR)$(NC)"
 
-.PHONY: clean
-clean: ## Remove build artifacts
-	@echo "$(RED)Cleaning $(BIN_DIR)...$(NC)"
-	@rm -rf $(BIN_DIR)
 
 install: build ## Install the binary to GOBIN
 	@echo "$(GREEN)Installing $(BINARY_NAME) to $(GOBIN)...$(NC)"
 	@mkdir -p $(GOBIN)
 	cp $(BUILD_DIR)/$(BINARY_NAME) $(GOBIN)/$(BINARY_NAME)
 
+.PHONY: clean
 clean: ## Clean build artifacts
 	@echo "$(YELLOW)Cleaning build artifacts...$(NC)"
 	rm -rf $(BUILD_DIR)
