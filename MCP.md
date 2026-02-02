@@ -4,7 +4,7 @@ This document explains how to use mongo-essential as a Model Context Protocol (M
 
 ## What is MCP?
 
-The Model Context Protocol (MCP) is an open standard that enables AI assistants to connect to external data sources and tools. By implementing MCP, mongo-essential can be controlled by AI assistants, allowing you to manage MongoDB migrations using natural language.
+The Model Context Protocol (MCP) is an open standard that allows AI agents to connect to external data sources and tools. With the use of these agents mongo-essential can be controlled with your permission, to manage MongoDB migrations, answer questions or offer advice using natural language.
 
 ## Quick Start
 
@@ -43,23 +43,29 @@ export MIGRATIONS_COLLECTION="schema_migrations"
 ### Ollama Integration
 
 1. **Create MCP configuration**:
-   ```bash
-   mkdir -p ~/.config/ollama
-   cat > ~/.config/ollama/mcp-config.json << EOF
-   {
-     "mcpServers": {
-       "mongo-essential": {
-         "command": "$(pwd)/build/mongo-essential",
-         "args": ["mcp"],
-         "env": {
-           "MONGO_URI": "mongodb://localhost:27017",
-           "MONGO_DATABASE": "your_database"
-         }
-       }
-     }
-   }
-   EOF
-   ```
+
+To get the configuration run the following make command.
+```bash
+   make mcp-config
+```
+Here are some other helpful hints.
+```bash
+mkdir -p ~/.config/ollama
+cat > ~/.config/ollama/mcp-config.json << EOF
+{
+  "mcpServers": {
+    "mongo-essential": {
+      "command": "$(pwd)/build/mongo-essential",
+      "args": ["mcp"],
+      "env": {
+        "MONGO_URI": "mongodb://localhost:27017",
+        "MONGO_DATABASE": "your_database"
+      }
+    }
+  }
+}
+EOF
+```
 
 2. **Start Ollama with MCP support**:
    ```bash
@@ -114,9 +120,10 @@ export MIGRATIONS_COLLECTION="schema_migrations"
    ```
 
 2. **Start Goose**:
-   ```bash
-   goose --config goose-mcp.json
-   ```
+
+```bash
+  goose --config goose-mcp.json
+```
 
 ### Custom Integration
 
@@ -132,7 +139,7 @@ Use the Python client example:
 
 ## Available MCP Tools
 
-The MCP server exposes these tools that AI assistants can use:
+The MCP server exposes these tools that AI agents can use:
 
 ### 🔍 `migration_status`
 **Purpose**: Get the current status of all migrations  
@@ -141,7 +148,7 @@ The MCP server exposes these tools that AI assistants can use:
 
 **Example AI prompt**: *"What's the status of my database migrations?"*
 
-### ⬆️ `migration_up`
+### `migration_up`
 **Purpose**: Apply migrations forward  
 **Parameters**:
 - `version` (optional): Target version to migrate to
@@ -150,7 +157,7 @@ The MCP server exposes these tools that AI assistants can use:
 - *"Apply all pending migrations"*
 - *"Migrate up to version 20240101_001"*
 
-### ⬇️ `migration_down`
+### `migration_down`
 **Purpose**: Roll back migrations  
 **Parameters**:
 - `version` (optional): Target version to roll back to
@@ -159,7 +166,7 @@ The MCP server exposes these tools that AI assistants can use:
 - *"Roll back the last migration"*
 - *"Roll back to version 20240101_001"*
 
-### 📝 `migration_create`
+### `migration_create`
 **Purpose**: Create a new migration file  
 **Parameters**:
 - `name` (required): Migration name
@@ -167,7 +174,7 @@ The MCP server exposes these tools that AI assistants can use:
 
 **Example**: *"Create a migration called 'add_user_email_index' that adds an index on user emails"*
 
-### 📋 `migration_list`
+### `migration_list`
 **Purpose**: List all registered migrations  
 **Parameters**: None  
 **Returns**: List of all migrations with their status
@@ -288,36 +295,13 @@ To add custom tools to the MCP server:
    ```
 
 2. **Implement the function**:
-   ```go
+3. 
+```go
    func (s *MCPServer) myCustomFunction(ctx context.Context, args map[string]interface{}) (string, error) {
-       // Your custom logic here
+       // Your logic ....
        return "Result", nil
    }
-   ```
-
-## Troubleshooting
-
-### Common Issues
-
-**MCP Server Won't Start**
-- Check MongoDB connection: `mongo "mongodb://localhost:27017"`
-- Verify binary exists: `ls -la ./build/mongo-essential`
-- Check environment variables: `env | grep MONGO`
-
-**AI Assistant Can't Connect**
-- Ensure absolute paths in configuration files
-- Check file permissions: `chmod +x ./build/mongo-essential`
-- Verify JSON syntax in configuration files
-
-**Migration Commands Fail**
-- Check database permissions
-- Verify migration files are properly registered
-- Review server logs for detailed error messages
-
-**JSON-RPC Errors**
-- Ensure proper JSON formatting in requests
-- Check that method names match exactly
-- Verify parameter structures match tool schemas
+```
 
 ### Debug Mode
 
@@ -326,34 +310,6 @@ Enable debug logging:
 export LOG_LEVEL=debug
 ./build/mongo-essential mcp --with-examples
 ```
-
-### Logs
-
-- MCP communication happens on stdout/stdin
-- Server logs and errors go to stderr
-- Use `2>/dev/null` to suppress logs if needed
-
-## Next Steps
-
-1. **Production Setup**:
-   - Use environment-specific configurations
-   - Set up proper database access controls
-   - Configure logging and monitoring
-
-2. **Custom Migrations**:
-   - Replace example migrations with your own
-   - Create migration templates for common operations
-   - Set up automated migration generation
-
-3. **CI/CD Integration**:
-   - Add MCP server to deployment pipelines
-   - Create automated migration testing
-   - Set up migration rollback procedures
-
-4. **Advanced Features**:
-   - Add custom MCP tools for your specific needs
-   - Integrate with monitoring and alerting systems
-   - Create migration analytics and reporting
 
 ## Contributing
 

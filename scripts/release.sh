@@ -1,8 +1,5 @@
 #!/bin/bash
 
-# This script automates the release process by creating and pushing a git tag.
-# Usage: ./scripts/release.sh v0.1.0
-
 set -e
 
 VERSION=$1
