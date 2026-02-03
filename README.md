@@ -6,21 +6,21 @@
 
 A comprehensive MongoDB migration tool with AI-powered insights via MCP. Think Liquibase/Flyway for MongoDB, with a protocol for intelligent database optimization recommendations from your favorite AI assistant.
 
-## 🚀 Features
+## Features
 
-### 🔄 **Database Migration Management**
+### **Database Migration Management**
 - **Version Control**: Track and manage database schema changes
 - **Up/Down Migrations**: Rollback capability
 - **Migration Status**: Track applied and pending migrations
 - **Force Migration**: Mark migrations as applied without execution
 - **Integration Ready**: Works with existing Go projects and CI/CD pipelines
 
-### 🔧 **Developer Tools**
+### **Developer Tools**
 - **Certificate Management**: Debug and fix SSL/TLS certificate issues
 - **CLI Interface**:  command-line interface built with Cobra
-- **🤖 MCP Integration**: Model Context Protocol server for AI agents
+- **MCP Integration**: Model Context Protocol server for AI agents
 
-## 📦 Installation
+## Installation
 
 Choose your preferred installation method:
 
@@ -101,9 +101,9 @@ Download pre-built binaries from [GitHub Releases](https://github.com/drewjocham
     go install github.com/drewjocham/mongo-migration-tool@latest
 ```
 
-**📚 For detailed installation instructions, platform-specific guides, and troubleshooting, see [INSTALL.md](INSTALL.md)**
+** For detailed installation instructions, platform-specific guides, and troubleshooting, see [INSTALL.md](INSTALL.md)**
 
-## 🎯 Quick Start
+## Quick Start
 
 ### 1. Database Migrations
 
@@ -149,7 +149,7 @@ Then configure your AI assistant to use the MCP server:
 
 See [MCP Integration Guide](MCP.md) for detailed setup instructions.
 
-## ⚙️ Configuration
+## Configuration
 
 ### Environment Variables
 
@@ -167,7 +167,7 @@ MONGO_SSL_INSECURE=false
 
 See [.env.example](./.env.example) for complete configuration options.
 
-## 🚀 Library Usage
+## Library Usage
 
 Use mongo-migration as a Go library in your applications:
 
@@ -219,9 +219,9 @@ func main() {
 }
 ```
 
-**📚 For complete library documentation and examples, see [LIBRARY.md](LIBRARY.md)**
+**For complete library documentation and examples, see [LIBRARY.md](LIBRARY.md)**
 
-## 📖 Documentation
+## Documentation
 
 ### Comprehensive Guides
 
@@ -244,7 +244,7 @@ func main() {
 | `mongo-migration mcp` | Start MCP server for AI assistants |
 | `mongo-migration mcp --with-examples` | Start MCP server with example migrations |
 
-## 💡 Use Cases
+## Use Cases
 
 ### Development Teams
 - **Schema Evolution**: Version-controlled database migrations
@@ -252,12 +252,7 @@ func main() {
 - **Development Setup**: Quick database setup and seeding
 - **Certificate Issues**: Debug connectivity problems in corporate environments
 
-### Enterprise Teams
-- **Knowledge Sharing**: Automated documentation and recommendations via MCP
-- **Multi-Environment**: Support for dev, staging, production databases
-- **Security**: SSL/TLS certificate management and troubleshooting
-
-## 🏗️ Architecture
+## Architecture
 
 ```
 mongo-migration/
@@ -289,10 +284,10 @@ go mod tidy
 go build -o mongo-migration .
 
 # Run tests (disable go.work.bak so vendored deps resolve)
-GOWORK=off go test ./...
+go test ./...
 
 # Run Docker-backed CLI integration tests (requires Docker)
-GOWORK=off go test -tags=integration ./integration
+go test -tags=integration ./integration
 # or use the Makefile shortcut
 make integration-test
 
@@ -308,7 +303,7 @@ golangci-lint run
 4. Add tests and documentation
 5. Submit a pull request
 
-## 📝 License
+## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
@@ -332,12 +327,12 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - **[MCP Integration](MCP.md)** - AI assistant integration guide
 - **[Contributing Guide](CONTRIBUTING.md)** - Development setup and guidelines
 
-## 🐛 Support & Community
+## Support & Community
 
-- 🐛 **Issues**: [GitHub Issues](https://github.com/drewjocham/mongo-migration-tool/issues)
-- 💬 **Discussions**: [GitHub Discussions](https://github.com/drewjocham/mongo-migration-tool/discussions)
-- 📧 **Contact**: [Project Maintainer](https://github.com/drewjocham)
-- 📖 **Examples**: See the `examples/` directory in the repository
+- **Issues**: [GitHub Issues](https://github.com/drewjocham/mongo-migration-tool/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/drewjocham/mongo-migration-tool/discussions)
+- **Contact**: [Project Maintainer](https://github.com/drewjocham)
+- **Examples**: See the `examples/` directory in the repository
 
 ---
 

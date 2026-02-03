@@ -1,9 +1,0 @@
-go 1.25
-
-use (
-	./internal
-	./migrations
-	./migration
-	./integration-tests
-	./cmd
-)
