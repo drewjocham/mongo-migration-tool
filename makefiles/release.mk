@@ -4,14 +4,9 @@ REPO_ROOT := $(abspath $(MAKEFILES_DIR)/..)
 
 include $(MAKEFILES_DIR)/variables/vars.mk
 
+ROOT_DIR := $(REPO_ROOT)
+
 .PHONY: release release-check deploy-dev deploy-prod release-beta
-
-
-
-release-check: clean ci-test build-all releaser-check ## Create a release build
-	@echo "$(GREEN)Release build completed!$(NC)"
-	@echo "Binaries available in $(BUILD_DIR)/"
-	@ls -la $(BUILD_DIR)/
 
 deploy-dev: ## Deploy to development environment
 	@echo "$(GREEN)Deploying to development...$(NC)"
@@ -22,7 +17,7 @@ deploy-prod: ## Deploy to production environment
 	REQUIRE_SIGNED_IMAGES=true $(ROOT_DIR)/scripts/deploy-migrations.sh auto
 
 releaser-check:
-	cd $(ROOT_DIR) && goreleaser release --skip=publish --snapshot --clean
+\tcd $(ROOT_DIR) && goreleaser release --skip=publish --skip=docker --snapshot --clean
 
 release:
 	cd $(ROOT_DIR) && goreleaser release --clean

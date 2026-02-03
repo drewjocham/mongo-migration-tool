@@ -1,1 +1,1 @@
-make build && make up
+make build && make docker-build && make docker-run
