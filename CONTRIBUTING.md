@@ -83,11 +83,10 @@ go install github.com/goreleaser/goreleaser@latest
 ### Build the Project
 
 ```bash
+# Download Dependence 
+make deps
 # Build the binary
 make build
-
-# Or with go directly
-go build -o mongo-migration ./cmd/mongo-migration
 
 # Run the binary
 ./mongo-migration version
@@ -105,9 +104,6 @@ make test-coverage
 # Run integration tests (requires MongoDB)
 make test-integration
 
-# Run specific package tests
-go test ./internal/migration/...
-
 # Run tests with verbose output
 go test -v ./...
 ```
@@ -120,7 +116,6 @@ go test -v ./...
 # Install MongoDB locally
 brew tap mongo-migration
 brew install mongo-migration
-
 
 # Start MongoDB
 brew services start mongodb-community
@@ -144,10 +139,10 @@ docker rm mongo-dev
 
 ```bash
 # Use the development compose file
-docker-compose -f docker-compose.dev.yml up -d
+docker-compose -f docker/docker-compose.dev.yml up -d
 
 # Stop when done
-docker-compose -f docker-compose.dev.yml down
+docker-compose -f docker/docker-compose.dev.yml down
 ```
 
 ### Environment Configuration
@@ -164,12 +159,12 @@ MONGO_DATABASE=mongo_migration_tool_dev
 MIGRATIONS_PATH=./test-migrations
 MIGRATIONS_COLLECTION=schema_migrations
 
-# AI providers (optional for development)
+# AI Agents (optional for development)
 AI_ENABLED=false
 # AI_PROVIDER=openai
 # OPENAI_API_KEY=your_key_here
 
-# Google Docs (optional for development)
+# Google Docs (optional)
 GOOGLE_DOCS_ENABLED=false
 # GOOGLE_CREDENTIALS_PATH=./credentials.json
 ```
@@ -309,34 +304,6 @@ docker stop mongo-test && docker rm mongo-test
 
 ### Test Structure
 
-```go
-func TestMigrationEngine_Up(t *testing.T) {
-    tests := []struct {
-        name        string
-        migrations  []Migration
-        target      string
-        want        error
-        wantApplied []string
-    }{
-        {
-            name: "applies pending migrations",
-            migrations: []Migration{
-                &testMigration{version: "001", description: "test"},
-            },
-            target: "",
-            want:   nil,
-            wantApplied: []string{"001"},
-        },
-    }
-
-    for _, tt := range tests {
-        t.Run(tt.name, func(t *testing.T) {
-            // Test implementation
-        })
-    }
-}
-```
-
 ### Writing Good Tests
 
 - Use table-driven tests for multiple scenarios
@@ -346,38 +313,6 @@ func TestMigrationEngine_Up(t *testing.T) {
 - Use test helpers for common setup
 
 ## Code Style
-
-### Go Code Style
-
-We follow standard Go conventions:
-
-```go
-// Good
-func (e *Engine) Up(ctx context.Context, target string) error {
-    if err := e.validate(); err != nil {
-        return fmt.Errorf("validation failed: %w", err)
-    }
-    
-    migrations, err := e.getPendingMigrations(ctx, target)
-    if err != nil {
-        return err
-    }
-    
-    return e.applyMigrations(ctx, migrations)
-}
-
-// Bad
-func (e *Engine) Up(ctx context.Context,target string) error{
-    if err:=e.validate();err!=nil{
-        return fmt.Errorf("validation failed: %w",err)
-    }
-    migrations,err:=e.getPendingMigrations(ctx,target)
-    if err!=nil{
-        return err
-    }
-    return e.applyMigrations(ctx,migrations)
-}
-```
 
 ### Guidelines
 
@@ -392,14 +327,14 @@ func (e *Engine) Up(ctx context.Context,target string) error{
 ### Linting
 
 ```bash
-# Run the linter
-make lint
-
-# Or directly with golangci-lint
-golangci-lint run
-
-# Auto-fix some issues
-golangci-lint run --fix
+   # Run the linter
+   make lint
+   
+   # Or directly with golangci-lint
+   golangci-lint run
+   
+   # Auto-fix some issues
+   golangci-lint run --fix
 ```
 
 ## Submitting Changes
@@ -462,9 +397,10 @@ We use [Semantic Versioning](https://semver.org/):
 ### Release Workflow
 
 1. **Create Release Branch**:
-   ```bash
-   git checkout -b release/v1.2.0
-   ```
+
+```bash
+  git checkout -b release/v0.1.0
+```
 
 2. **Update Version Files**:
    - Update version in `cmd/mongo-migration/version.go`
@@ -481,10 +417,11 @@ We use [Semantic Versioning](https://semver.org/):
 4. **Create Pull Request**: Target the main branch
 
 5. **Tag Release** (maintainers only):
-   ```bash
+
+```bash
    git tag -a v1.2.0 -m "Release v1.2.0"
    git push origin v1.2.0
-   ```
+```
 
 6. **GitHub Actions** will automatically:
    - Build binaries for all platforms
@@ -528,4 +465,4 @@ Contributors are recognized in:
 - GitHub contributors page
 - Special thanks in release notes for significant contributions
 
-Thank you for contributing to mongo-migration! 🎉
+Thank you for contributing to mongo-migration!

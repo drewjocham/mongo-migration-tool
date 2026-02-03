@@ -1,9 +1,7 @@
 #!/bin/bash
 
-# Exit immediately if a command exits with a non-zero status.
 set -e
 
-# --- Helper Functions ---
 info() {
   echo -e "\033[34m[INFO]\033[0m $1"
 }
@@ -16,8 +14,6 @@ error() {
   echo -e "\033[31m[ERROR]\033[0m $1" >&2
   exit 1
 }
-
-# --- Main Script ---
 
 # Get the directory of this script
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"

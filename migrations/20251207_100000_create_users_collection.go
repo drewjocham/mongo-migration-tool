@@ -1,7 +1,5 @@
 package migrations
 
-// This package contains migration definitions.
-
 import (
 	"context"
 

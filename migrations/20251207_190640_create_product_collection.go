@@ -1,7 +1,5 @@
 package migrations //nolint:dupl
 
-// This package contains migration definitions.
-
 import (
 	"context"
 	"fmt"
