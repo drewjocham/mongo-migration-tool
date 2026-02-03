@@ -2,6 +2,9 @@
 
 FROM golang:1.25-alpine AS builder
 
+ARG TARGETOS
+ARG TARGETARCH
+
 RUN apk --no-cache add git
 WORKDIR /src
 
@@ -17,7 +20,7 @@ ARG DATE=unknown
 
 RUN --mount=type=cache,target=/root/.cache/go-build \
     --mount=type=cache,target=/go/pkg/mod \
-    CGO_ENABLED=0 GOOS=linux GOARCH=amd64 \
+    CGO_ENABLED=0 GOOS=${TARGETOS:-linux} GOARCH=${TARGETARCH:-amd64} \
     go build -ldflags="-s -w \
         -X github.com/drewjocham/mongo-migration-tool/internal/cli.appVersion=${VERSION} \
         -X github.com/drewjocham/mongo-migration-tool/internal/cli.commit=${COMMIT} \
