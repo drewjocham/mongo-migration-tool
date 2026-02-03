@@ -4,7 +4,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Go Reference](https://pkg.go.dev/badge/github.com/drewjocham/mongo-migration-tool.svg)](https://pkg.go.dev/github.com/drewjocham/mongo-migration-tool)
 
-A comprehensive MongoDB migration tool with AI-powered insights via MCP. Think Liquibase/Flyway for MongoDB, with a protocol for intelligent database optimization recommendations from your favorite AI assistant.
+A MongoDB migration tool and MCP. Think Liquibase/Flyway for MongoDB, with the option to ask a AI Agent for database optimization recommendations etc.
 
 ## Features
 
@@ -75,7 +75,7 @@ If you want to run mongo-migration on your local machine:
 ```
 * Check the staus and whether the library is installed
 ```shell
-# or if installed:
+# if installed via brew:
     mongo-migration status
 ```
 * Access the shell (using authentication):
@@ -87,7 +87,6 @@ If you want to run mongo-migration on your local machine:
   docker run --rm -it --network mongo-migration-_cli-network alpine sh
 ```
 ```bash
-    # Add to your Go project
     go get github.com/drewjocham/mongo-migration-tool@latest
 ```
 
@@ -129,10 +128,10 @@ Download pre-built binaries from [GitHub Releases](https://github.com/drewjocham
     mongo-essential down --target 20231201_001
 ```
 
-### 2. AI Assistant Integration (MCP)
+### 2. MCP Integration (MCP)
 
 ```bash
-# Start MCP server for AI assistants like Ollama, Claude, Goose
+# Start MCP server
 mongo-migration mcp
 
 # Start with example migrations for testing
@@ -214,8 +213,7 @@ func main() {
     if err := engine.Up(context.Background(), ""); err != nil {
         log.Fatal(err)
     }
-    
-    log.Println("Migrations completed successfully!")
+
 }
 ```
 
@@ -256,14 +254,42 @@ func main() {
 
 ```
 mongo-migration/
-├── cmd/                    # CLI commands
-│   ├── root.go            # Root command and global flags
-│   └── migration.go       # Migration commands
+├── cmd/
+│   ├── main.go
+├── configs/
+│   ├── .env.example
+│   ├── mcp-example.json
+│   └── mcp-server-config.json
+├── docker/
+│   ├── Dockerfile
+│   ├── ...
+├── integration-tests/
+│   ├── cli_integration_stub_test.go
+│   ├── ...
 ├── internal/
-│   ├── config/            # Configuration management
-│   └── migration/         # Migration engine
-├── migrations/            # Sample migrations
-└── docs/                  # Additional documentation
+│   ├── cli/
+│   ├── config/
+│   ├── log/
+│   ├── logging/
+│   └── mcp/
+├── Makefile
+├── makefiles/
+│   ├──...
+├── migration/
+│   ├── cmd/
+│   ├── engine.go
+│   ├── engine_test.go
+│   ├── generator.go
+│   ├── registry.go
+│   ├── template.go.tmpl
+│   ├── template.tmpl
+│   └── types.go
+├── migrations/
+│   ├── ....
+│   ├── main.go
+│   └── register.go
+├── README.md
+
 ```
 
 ## 🤝 Contributing
@@ -283,7 +309,7 @@ go mod tidy
 # Build the binary
 go build -o mongo-migration .
 
-# Run tests (disable go.work.bak so vendored deps resolve)
+# Run tests
 go test ./...
 
 # Run Docker-backed CLI integration tests (requires Docker)
