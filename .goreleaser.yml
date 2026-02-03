@@ -120,7 +120,7 @@ dockers:
   - image_templates:
       - "ghcr.io/drewjocham/mongo-migration-tool:{{ .Version }}-amd64"
       - "ghcr.io/drewjocham/mongo-migration-tool:latest-amd64"
-    dockerfile: Dockerfile
+    dockerfile: docker/Dockerfile
     use: buildx
     build_flag_templates:
       - "--platform=linux/amd64"
@@ -136,7 +136,7 @@ dockers:
   - image_templates:
       - "ghcr.io/drewjocham/mongo-migration-tool:{{ .Version }}-arm64"
       - "ghcr.io/drewjocham/mongo-migration-tool:latest-arm64"
-    dockerfile: Dockerfile
+    dockerfile: docker/Dockerfile
     use: buildx
     build_flag_templates:
       - "--platform=linux/arm64"
