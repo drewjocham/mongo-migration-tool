@@ -17,7 +17,7 @@ deploy-prod: ## Deploy to production environment
 	REQUIRE_SIGNED_IMAGES=true $(ROOT_DIR)/scripts/deploy-migrations.sh auto
 
 releaser-check:
-\tcd $(ROOT_DIR) && goreleaser release --skip=publish --skip=docker --snapshot --clean
+	cd $(ROOT_DIR) && goreleaser release --skip=publish --skip=docker --snapshot --clean
 
 release:
 	cd $(ROOT_DIR) && goreleaser release --clean
