@@ -12,7 +12,7 @@ before:
 builds:
   - id: mongo-migration
     binary: mongo-migration
-    main: .
+    main: ./cmd
     env:
       - CGO_ENABLED=0
     goos:
