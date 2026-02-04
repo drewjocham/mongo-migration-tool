@@ -6,6 +6,7 @@ ALL_PACKAGES := $(shell cd $(REPO_ROOT) && go list ./...)
 EXAMPLE_PACKAGES := $(shell cd $(REPO_ROOT) && go list ./examples/...)
 TEST_PACKAGES := $(filter-out $(EXAMPLE_PACKAGES), $(ALL_PACKAGES))
 include $(MAKEFILES_DIR)/variables/vars.mk
+include $(MAKEFILES_DIR)/build.mk
 
 GO_ENV ?=
 INTEGRATION_MONGO_PORT ?= 37017
@@ -19,7 +20,7 @@ test: ## Run tests for all non-example packages
 
 test-library: ## Run library-specific tests
 	@echo "$(GREEN)Running library tests...$(NC)"
-	cd $(REPO_ROOT) && $(GO_ENV) go test -v ./migration ./config
+	cd $(REPO_ROOT) && $(GO_ENV) go test -v ./migration ./internal/config
 
 test-coverage: ## Run tests with coverage
 	@echo "$(GREEN)Running tests with coverage...$(NC)"
@@ -35,7 +36,7 @@ test-examples: ## Test the examples
 	@echo "  - CLI example: examples/example"
 	@echo "  - Library example: examples/library-example/library-example"
 
-integration-test: ## Run Docker-based CLI integration tests via docker compose
+integration-test: build-all ## Run Docker-based CLI integration tests via docker compose
 	@echo "$(GREEN)Running CLI integration tests with docker compose...$(NC)"
 	cd $(REPO_ROOT) && INTEGRATION_MONGO_PORT=$(INTEGRATION_MONGO_PORT) COMPOSE_PROJECT_NAME=$(COMPOSE_PROJECT_NAME) \
 		docker-compose -f $(COMPOSE_FILE_INTEGRATION) build cli
