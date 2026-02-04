@@ -164,6 +164,7 @@ release:
   github:
     owner: drewjocham
     name: mongo-migration-tool
+  replace_existing_artifacts: true
   
   draft: false
   prerelease: auto
