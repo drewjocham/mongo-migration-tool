@@ -100,7 +100,7 @@ Download pre-built binaries from [GitHub Releases](https://github.com/drewjocham
     go install github.com/drewjocham/mongo-migration-tool@latest
 ```
 
-** For detailed installation instructions, platform-specific guides, and troubleshooting, see [INSTALL.md](INSTALL.md)**
+** For detailed installation instructions, platform-specific guides, and troubleshooting, see [install.md](install.md)**
 
 ## Quick Start
 
@@ -146,7 +146,7 @@ Then configure your AI assistant to use the MCP server:
 - **Claude Desktop**: Add to Claude Desktop configuration
 - **Goose**: Use with `--mcp-config` flag
 
-See [MCP Integration Guide](MCP.md) for detailed setup instructions.
+See [MCP Integration Guide](mcp.md) for detailed setup instructions.
 
 ## Configuration
 
@@ -217,18 +217,18 @@ func main() {
 }
 ```
 
-**For complete library documentation and examples, see [LIBRARY.md](LIBRARY.md)**
+**For complete library documentation and examples, see [library.md](library.md)**
 
 ## Documentation
 
 ### Comprehensive Guides
 
-| Guide | Description |
-|-------|-------------|
-| **[INSTALL.md](INSTALL.md)** | Complete installation guide for all platforms |
-| **[LIBRARY.md](LIBRARY.md)** | Go library usage, API reference, and examples |
-| **[MCP.md](MCP.md)** | Model Context Protocol integration guide |
-| **[CONTRIBUTING.md](CONTRIBUTING.md)** | Development and contribution guidelines |
+| Guide                                  | Description |
+|----------------------------------------|-------------|
+| **[install.md](install.md)**           | Complete installation guide for all platforms |
+| **[library.md](library.md)**           | Go library usage, API reference, and examples |
+| **[mcp.md](mcp.md)**                   | Model Context Protocol integration guide |
+| **[contributing.md](contributing.md)** | Development and contribution guidelines |
 
 ### Commands
 
@@ -288,13 +288,13 @@ mongo-migration/
 │   ├── ....
 │   ├── main.go
 │   └── register.go
-├── README.md
+├── readme.md
 
 ```
 
 ## 🤝 Contributing
 
-We welcome contributions! Please see [CONTRIBUTING.md](./CONTRIBUTING.md) for details.
+We welcome contributions! Please see (./contributing.md](./contributing.md) for details.
 
 ### Development Setup
 
@@ -348,10 +348,10 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - **[Docker Images](https://ghcr.io/drewjocham/mongo-migration-tool)** - Container registry
 
 ### Documentation
-- **[Installation Guide](INSTALL.md)** - All installation methods and troubleshooting
-- **[Library Documentation](LIBRARY.md)** - Go library usage and examples
-- **[MCP Integration](MCP.md)** - AI assistant integration guide
-- **[Contributing Guide](CONTRIBUTING.md)** - Development setup and guidelines
+- **[Installation Guide](install.md)** - All installation methods and troubleshooting
+- **[Library Documentation](library.md)** - Go library usage and examples
+- **[MCP Integration](mcp.md)** - AI assistant integration guide
+- **[Contributing Guide](contributing.md)** - Development setup and guidelines
 
 ## Support & Community
 

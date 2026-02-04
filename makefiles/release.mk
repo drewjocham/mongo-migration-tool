@@ -25,3 +25,11 @@ release:
 release-beta: ## Create and release a new beta version
 	@echo "$(GREEN)Starting beta release process...$(NC)"
 	$(ROOT_DIR)/scripts/release-beta.sh
+
+sync-library:
+	MODULE=github.com/drewjocham/mongo-migration-tool
+	VERSION=v1.1.0-beta.3
+	curl -sS "https://proxy.golang.org/${MODULE}/@v/${VERSION}.info"
+
+
+https://proxy.golang.org/github.com/drewjocham/mongo-migration-tool/@v/v1.1.0-beta.3.info
