@@ -2,13 +2,14 @@ package mcp
 
 import (
 	"fmt"
+
 	"github.com/modelcontextprotocol/go-sdk/mcp"
 )
 
 type emptyArgs struct{}
 
 type versionArgs struct {
-	Version string `json:"version,omitempty" jsonschema:"description=Version identifier"`
+	Version string `json:"version,omitempty" jsonschema:"title=Version identifier"`
 }
 
 type createMigrationArgs struct {

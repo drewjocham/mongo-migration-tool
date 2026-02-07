@@ -23,10 +23,13 @@ import (
 	_ "github.com/drewjocham/mongo-migration-tool/migrations"
 )
 
-var (
-	projectRoot         = determineProjectRoot()
-	dockerConfigDirPath = setupDockerConfigDir()
-)
+type testEnv struct {
+	projectRoot     string
+	dockerConfigDir string
+	projectName     string
+	mongoPort       int
+	env             []string
+}
 
 func TestCLIDockerCommands(t *testing.T) {
 	if testing.Short() {
@@ -34,189 +37,164 @@ func TestCLIDockerCommands(t *testing.T) {
 	}
 
 	requireDocker(t)
+	env := setupTestEnv(t)
 
-	ctx, cancel := context.WithTimeout(context.Background(), 12*time.Minute)
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Minute)
 	defer cancel()
 
-	hostPort := getFreePort(t)
-	projectName := fmt.Sprintf("mm-cli-it-%d", time.Now().UnixNano())
-	composeEnv := append(os.Environ(),
-		fmt.Sprintf("COMPOSE_PROJECT_NAME=%s", projectName),
-		fmt.Sprintf("INTEGRATION_MONGO_PORT=%d", hostPort),
-	)
+	t.Log("Building and starting Docker environment...")
+	env.compose(ctx, t, "build", "cli")
+	env.compose(ctx, t, "up", "-d", "mongo")
+	t.Cleanup(func() { env.compose(context.Background(), t, "down", "-v") })
 
-	composeBuild(ctx, t, composeEnv, "cli")
-	composeUp(ctx, t, composeEnv, "mongo")
-	t.Cleanup(func() {
-		composeDown(t, composeEnv)
-	})
-
-	waitForMongo(ctx, t, hostPort)
+	env.waitForMongo(ctx, t)
 
 	versions := sortedMigrationVersions()
 	if len(versions) == 0 {
 		t.Fatal("no registered migrations found")
 	}
-	earliestVersion := versions[0]
-	latestVersion := versions[len(versions)-1]
+	earliest, latest := versions[0], versions[len(versions)-1]
 
-	statusBefore := runCLICommand(ctx, t, composeEnv, "status")
-	requireVersionState(t, statusBefore, latestVersion, "[ ]")
+	t.Run("migration lifecycle", func(t *testing.T) {
+		status := env.runCLI(ctx, t, "status")
+		requireVersionState(t, status, latest, "[ ]")
 
-	upOutput := runCLICommand(ctx, t, composeEnv, "up")
-	if !strings.Contains(upOutput, "Database is up to date") {
-		t.Fatalf("expected successful up output, got:\n%s", upOutput)
-	}
+		// Migrate Up
+		upOut := env.runCLI(ctx, t, "up")
+		if !strings.Contains(upOut, "Database is up to date") {
+			t.Errorf("unexpected 'up' output: %s", upOut)
+		}
 
-	statusAfterUp := runCLICommand(ctx, t, composeEnv, "status")
-	requireVersionState(t, statusAfterUp, latestVersion, "[✓]")
+		status = env.runCLI(ctx, t, "status")
+		requireVersionState(t, status, latest, "[✓]")
 
-	runCLICommand(ctx, t, composeEnv, "down", "--target", earliestVersion)
+		// Rollback
+		env.runCLI(ctx, t, "down", "--target", earliest)
+		status = env.runCLI(ctx, t, "status")
+		requireVersionState(t, status, latest, "[ ]")
 
-	statusAfterDown := runCLICommand(ctx, t, composeEnv, "status")
-	requireVersionState(t, statusAfterDown, latestVersion, "[ ]")
+		// Check Version Command
+		versionOut := env.runCLI(ctx, t, "version")
+		if !strings.Contains(strings.ToLower(versionOut), "version") {
+			t.Errorf("invalid version output: %s", versionOut)
+		}
+	})
+}
 
-	versionOutput := runCLICommand(ctx, t, composeEnv, "version")
-	if !strings.Contains(strings.ToLower(versionOutput), "version") {
-		t.Fatalf("expected version output, got:\n%s", versionOutput)
+func setupTestEnv(t *testing.T) *testEnv {
+	_, file, _, _ := runtime.Caller(0)
+	root := filepath.Clean(filepath.Join(filepath.Dir(file), ".."))
+
+	tmpDir := t.TempDir()
+	configPath := filepath.Join(tmpDir, "config.json")
+	_ = os.WriteFile(configPath, []byte(`{"auths":{}}`), 0600)
+
+	port := getFreePort(t)
+	projName := fmt.Sprintf("mm-it-%d", time.Now().UnixNano())
+
+	return &testEnv{
+		projectRoot:     root,
+		dockerConfigDir: tmpDir,
+		projectName:     projName,
+		mongoPort:       port,
+		env: append(os.Environ(),
+			fmt.Sprintf("COMPOSE_PROJECT_NAME=%s", projName),
+			fmt.Sprintf("INTEGRATION_MONGO_PORT=%d", port),
+			fmt.Sprintf("DOCKER_CONFIG=%s", tmpDir),
+		),
 	}
 }
 
-func requireDocker(t *testing.T) {
+func (e *testEnv) compose(ctx context.Context, t *testing.T, args ...string) string {
 	t.Helper()
-	if _, err := exec.LookPath("docker"); err != nil {
-		t.Skipf("docker not found: %v", err)
-	}
-	cmd := exec.Command("docker", "version", "--format", "{{.Server.Version}}")
-	if err := cmd.Run(); err != nil {
-		t.Skipf("docker daemon not available: %v", err)
-	}
+	composeFile := filepath.Join(e.projectRoot, "docker/integration-compose.yml")
+	fullArgs := append([]string{"-f", composeFile}, args...)
+	return e.execCmd(ctx, t, "docker-compose", fullArgs...)
 }
 
-func runDockerCmd(ctx context.Context, t *testing.T, args ...string) string {
+func (e *testEnv) runCLI(ctx context.Context, t *testing.T, cliArgs ...string) string {
 	t.Helper()
-	commandCtx, cancel := context.WithTimeout(ctx, 4*time.Minute)
-	defer cancel()
-
-	cmd := exec.CommandContext(commandCtx, "docker", args...)
-	cmd.Env = append(os.Environ(), fmt.Sprintf("DOCKER_CONFIG=%s", dockerConfigDirPath))
-	var buf bytes.Buffer
-	cmd.Stdout = &buf
-	cmd.Stderr = &buf
-	if err := cmd.Run(); err != nil {
-		t.Fatalf("docker %s failed: %v\nOutput:\n%s", strings.Join(args, " "), err, buf.String())
-	}
-	return buf.String()
+	args := append([]string{"run", "--rm", "cli"}, cliArgs...)
+	return e.compose(ctx, t, args...)
 }
 
-func dockerComposeCmd(ctx context.Context, t *testing.T, env []string, args ...string) string {
+func (e *testEnv) execCmd(ctx context.Context, t *testing.T, name string, args ...string) string {
 	t.Helper()
-	commandCtx, cancel := context.WithTimeout(ctx, 6*time.Minute)
-	defer cancel()
-	composeArgs := append([]string{"-f", filepath.Join(projectRoot, "integration-compose.yml")}, args...)
-	cmd := exec.CommandContext(commandCtx, "docker-compose", composeArgs...)
-	cmd.Env = append(env, fmt.Sprintf("DOCKER_CONFIG=%s", dockerConfigDirPath))
+	cmd := exec.CommandContext(ctx, name, args...)
+	cmd.Env = e.env
 
-	var buf bytes.Buffer
-	cmd.Stdout = &buf
-	cmd.Stderr = &buf
-	if err := cmd.Run(); err != nil {
-		t.Fatalf("docker %s failed: %v\nOutput:\n%s", strings.Join(composeArgs, " "), err, buf.String())
+	var stdout, stderr bytes.Buffer
+	cmd.Stdout = &stdout
+	cmd.Stderr = &stderr
+
+	err := cmd.Run()
+	combined := stdout.String() + stderr.String()
+
+	if err != nil {
+		t.Logf("CLI STDERR: %s", stderr.String())
+		t.Fatalf("command [%s %s] failed: %v\nOutput: %s", name, strings.Join(args, " "), err, combined)
 	}
-	return buf.String()
+	return stdout.String()
 }
 
-func composeBuild(ctx context.Context, t *testing.T, env []string, services ...string) {
-	args := append([]string{"build"}, services...)
-	dockerComposeCmd(ctx, t, env, args...)
-}
-
-func composeUp(ctx context.Context, t *testing.T, env []string, services ...string) {
-	args := append([]string{"up", "-d"}, services...)
-	dockerComposeCmd(ctx, t, env, args...)
-}
-
-func composeDown(t *testing.T, env []string) {
-	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
-	defer cancel()
-	dockerComposeCmd(ctx, t, env, "down", "-v")
-}
-
-func waitForMongo(ctx context.Context, t *testing.T, port int) {
+func (e *testEnv) waitForMongo(ctx context.Context, t *testing.T) {
 	t.Helper()
-	uri := fmt.Sprintf("mongodb://admin:password@localhost:%d/?authSource=admin", port)
-	deadline := time.Now().Add(2 * time.Minute)
-	for time.Now().Before(deadline) {
-		client, err := mongo.Connect(ctx, options.Client().ApplyURI(uri))
-		if err == nil {
-			pingCtx, cancel := context.WithTimeout(ctx, 5*time.Second)
-			err = client.Ping(pingCtx, nil)
-			cancel()
-			_ = client.Disconnect(context.Background())
+	uri := fmt.Sprintf("mongodb://admin:password@localhost:%d/?authSource=admin", e.mongoPort)
+	ticker := time.NewTicker(2 * time.Second)
+	defer ticker.Stop()
+
+	for {
+		select {
+		case <-ctx.Done():
+			t.Fatalf("timed out waiting for mongo at %s: %v", uri, ctx.Err())
+		case <-ticker.C:
+			client, err := mongo.Connect(ctx, options.Client().ApplyURI(uri))
+			if err != nil {
+				continue
+			}
+			err = client.Ping(ctx, nil)
+			_ = client.Disconnect(ctx)
 			if err == nil {
 				return
 			}
 		}
-		time.Sleep(3 * time.Second)
 	}
-	t.Fatalf("mongo not ready at %s", uri)
 }
 
-func runCLICommand(ctx context.Context, t *testing.T, env []string, cliArgs ...string) string {
+func requireVersionState(t *testing.T, output, version, marker string) {
 	t.Helper()
-	dockerArgs := append([]string{"run", "--rm", "cli"}, cliArgs...)
-	return dockerComposeCmd(ctx, t, env, dockerArgs...)
+	for _, line := range strings.Split(output, "\n") {
+		if strings.Contains(line, version) {
+			if !strings.Contains(line, marker) {
+				t.Fatalf("version %s state mismatch: expected %s, got line: %q", version, marker, line)
+			}
+			return
+		}
+	}
+	t.Fatalf("version %s not found in output", version)
 }
 
 func getFreePort(t *testing.T) int {
-	t.Helper()
-	l, err := net.Listen("tcp", "127.0.0.1:0")
+	l, err := net.Listen("tcp", "localhost:0")
 	if err != nil {
-		t.Fatalf("failed to get free port: %v", err)
+		t.Fatal(err)
 	}
-	defer func() { _ = l.Close() }()
+	defer l.Close()
 	return l.Addr().(*net.TCPAddr).Port
+}
+
+func requireDocker(t *testing.T) {
+	if _, err := exec.LookPath("docker"); err != nil {
+		t.Skip("Docker not found")
+	}
 }
 
 func sortedMigrationVersions() []string {
 	regs := migration.RegisteredMigrations()
 	versions := make([]string, 0, len(regs))
-	for version := range regs {
-		versions = append(versions, version)
+	for v := range regs {
+		versions = append(versions, v)
 	}
 	sort.Strings(versions)
 	return versions
-}
-
-func requireVersionState(t *testing.T, statusOutput, version, marker string) {
-	t.Helper()
-	for _, line := range strings.Split(statusOutput, "\n") {
-		if strings.Contains(line, version) {
-			if strings.Contains(line, marker) {
-				return
-			}
-			t.Fatalf("expected %s to contain %s; line=%q", version, marker, line)
-		}
-	}
-	t.Fatalf("version %s not found in status output:\n%s", version, statusOutput)
-}
-
-func determineProjectRoot() string {
-	_, file, _, ok := runtime.Caller(0)
-	if !ok {
-		panic("unable to determine caller info for integration tests")
-	}
-	return filepath.Clean(filepath.Join(filepath.Dir(file), ".."))
-}
-
-func setupDockerConfigDir() string {
-	dir, err := os.MkdirTemp("", "mongo-migration-docker-config-")
-	if err != nil {
-		panic(fmt.Sprintf("unable to create temp docker config dir: %v", err))
-	}
-	configPath := filepath.Join(dir, "config.json")
-	if err := os.WriteFile(configPath, []byte(`{"auths":{}}`), 0o600); err != nil {
-		panic(fmt.Sprintf("unable to write docker config: %v", err))
-	}
-	return dir
 }

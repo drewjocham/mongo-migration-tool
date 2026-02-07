@@ -28,10 +28,9 @@ type MCPServer struct {
 	cancel    context.CancelFunc
 }
 
-func NewMCPServer() (*MCPServer, error) {
-	cfg, err := config.Load()
-	if err != nil {
-		return nil, fmt.Errorf("config load failed: %w", err)
+func NewMCPServer(cfg *config.Config) (*MCPServer, error) {
+	if cfg == nil {
+		return nil, fmt.Errorf("config must not be nil")
 	}
 
 	s := mcp.NewServer(&mcp.Implementation{

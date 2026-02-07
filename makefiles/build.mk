@@ -1,3 +1,6 @@
+ifndef MAKEFILES_BUILD_MK
+MAKEFILES_BUILD_MK := 1
+
 THIS_MK := $(abspath $(lastword $(MAKEFILE_LIST)))
 MAKEFILES_DIR := $(dir $(THIS_MK))
 REPO_ROOT := $(abspath $(MAKEFILES_DIR)/..)
@@ -57,3 +60,5 @@ deps: ## Download Go modules
 
 ci-build: clean build-all test ## Build and test for CI
 	@echo "$(GREEN)CI build completed!$(NC)"
+
+endif # MAKEFILES_BUILD_MK

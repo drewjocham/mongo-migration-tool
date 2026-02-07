@@ -15,9 +15,8 @@ A MongoDB migration tool and MCP. Think Liquibase/Flyway for MongoDB, with the o
 - **Force Migration**: Mark migrations as applied without execution
 - **Integration Ready**: Works with existing Go projects and CI/CD pipelines
 
-### **Developer Tools**
-- **Certificate Management**: Debug and fix SSL/TLS certificate issues
-- **CLI Interface**:  command-line interface built with Cobra
+### **Tools**
+- **CLI Interface**:  command-line interface
 - **MCP Integration**: Model Context Protocol server for AI agents
 
 ## Installation
@@ -30,7 +29,7 @@ Choose your preferred installation method:
 brew tap drewjocham/mongo-migration-tool
 brew install mongo-migration-tool
 
-mongo-migration version
+mmt version
 ```
 
 ### Docker
@@ -50,7 +49,6 @@ mongo-migration version
 ```
 
 * Stop and starting the compose project
-* 
 ```bash
     docker-compose down &&  \
     docker compose up -d mongo-migrate
@@ -61,12 +59,11 @@ mongo-migration version
     docker volume rm mongo-migration-_mongo_data
 ```
 * Quick path to get it working
-* 
 ```bash
      docker compose up -d mongo-cli
      docker compose run --rm mongo-migrate status
 ```
-If you want to run mongo-migration on your local machine:
+If you want to run mmt on your local machine:
 *  Ensure Mongo is running via Docker (docker compose up -d mongo-cli).
 *  Set .env like above with localhost and credentials.
 
@@ -76,7 +73,7 @@ If you want to run mongo-migration on your local machine:
 * Check the staus and whether the library is installed
 ```shell
 # if installed via brew:
-    mongo-migration status
+    mmt status
 ```
 * Access the shell (using authentication):
 ```shell
@@ -113,29 +110,29 @@ Download pre-built binaries from [GitHub Releases](https://github.com/drewjocham
 ```
 ```bash
     # Check migration status
-    ./mongo-essential status
+    ./mmt status
 ```
 ```bash
     # Create a new migration
-    mongo-essential create add_user_indexes
+    mmt create add_user_indexes
 ```
 ```bash
     # Run pending migrations
-    mongo-essential up
+    mmt up
 ```
 ```bash
     # Rollback last migration
-    mongo-essential down --target 20231201_001
+    mmt down --target 20231201_001
 ```
 
 ### 2. MCP Integration (MCP)
 
 ```bash
 # Start MCP server
-mongo-migration mcp
+mmt mcp
 
 # Start with example migrations for testing
-mongo-migration mcp --with-examples
+mmt mcp --with-examples
 
 # Test MCP integration
 make mcp-test
@@ -153,22 +150,25 @@ See [MCP Integration Guide](mcp.md) for detailed setup instructions.
 ### Environment Variables
 
 ```bash
-# MongoDB Configuration
-MONGO_URL=mongodb://localhost:27017
-MONGO_DATABASE=your_database
-MONGO_USERNAME=username
-MONGO_PASSWORD=password
-
-# SSL/TLS Settings
-MONGO_SSL_ENABLED=true
-MONGO_SSL_INSECURE=false
+    MONGO_URL=mongodb://localhost:27017
+    MONGO_DATABASE=your_database
+    MONGO_USERNAME=username
+    MONGO_PASSWORD=password
+    
+    MONGO_SSL_ENABLED=true
+    MONGO_SSL_INSECURE=false
 ```
 
 See [.env.example](./.env.example) for complete configuration options.
 
+```bash
+# Inspect the effective configuration (secrets are masked)
+mmt --config .env --show-config
+```
+
 ## Library Usage
 
-Use mongo-migration as a Go library in your applications:
+Use mmt as a Go library in your applications:
 
 ```go
 package main
@@ -234,63 +234,18 @@ func main() {
 
 | Command | Description |
 |---------|-------------|
-| `mongo-migration up` | Run pending migrations |
-| `mongo-migration down` | Rollback migrations |
-| `mongo-migration status` | Show migration status |
-| `mongo-migration create <name>` | Create new migration |
-| `mongo-migration force <version>` | Force mark migration as applied |
-| `mongo-migration mcp` | Start MCP server for AI assistants |
-| `mongo-migration mcp --with-examples` | Start MCP server with example migrations |
+| `mmt up` | Run pending migrations |
+| `mmt up --dry-run` | Preview pending migrations without running them |
+| `mmt down` | Rollback migrations |
+| `mmt down --dry-run` | Preview the rollback plan |
+| `mmt status` | Show migration status |
+| `mmt create <name>` | Create new migration |
+| `mmt force <version>` | Force mark migration as applied |
+| `mmt unlock` | Release a stuck migration lock |
+| `mmt schema indexes` | Display expected index definitions registered in code |
+| `mmt mcp` | Start MCP server for AI assistants |
+| `mmt mcp --with-examples` | Start MCP server with example migrations |
 
-## Use Cases
-
-### Development Teams
-- **Schema Evolution**: Version-controlled database migrations
-- **CI/CD Integration**: Automated migration deployment
-- **Development Setup**: Quick database setup and seeding
-- **Certificate Issues**: Debug connectivity problems in corporate environments
-
-## Architecture
-
-```
-mongo-migration/
-├── cmd/
-│   ├── main.go
-├── configs/
-│   ├── .env.example
-│   ├── mcp-example.json
-│   └── mcp-server-config.json
-├── docker/
-│   ├── Dockerfile
-│   ├── ...
-├── integration-tests/
-│   ├── cli_integration_stub_test.go
-│   ├── ...
-├── internal/
-│   ├── cli/
-│   ├── config/
-│   ├── log/
-│   ├── logging/
-│   └── mcp/
-├── Makefile
-├── makefiles/
-│   ├──...
-├── migration/
-│   ├── cmd/
-│   ├── engine.go
-│   ├── engine_test.go
-│   ├── generator.go
-│   ├── registry.go
-│   ├── template.go.tmpl
-│   ├── template.tmpl
-│   └── types.go
-├── migrations/
-│   ├── ....
-│   ├── main.go
-│   └── register.go
-├── readme.md
-
-```
 
 ## 🤝 Contributing
 
@@ -304,21 +259,15 @@ git clone https://github.com/drewjocham/mongo-migration-tool.git
 cd mongo-migration-tool
 
 # Install dependencies
-go mod tidy
-
-# Build the binary
-go build -o mongo-migration .
+make build
 
 # Run tests
-go test ./...
+make docker-run
+```
 
-# Run Docker-backed CLI integration tests (requires Docker)
-go test -tags=integration ./integration
-# or use the Makefile shortcut
-make integration-test
-
-# Run linter
-golangci-lint run
+Before making a PR
+```sh
+make pr-check
 ```
 
 ### Adding New Features
@@ -333,12 +282,12 @@ golangci-lint run
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## 🙏 Acknowledgments
+## Acknowledgments
 
 - [Cobra](https://github.com/spf13/cobra) for CLI framework
 - [MongoDB Go Driver](https://github.com/mongodb/mongo-go-driver) for database connectivity
 
-## 🔗 Links & Resources
+## Links & Resources
 
 ### Project Resources
 - **[Go Package Documentation](https://pkg.go.dev/github.com/drewjocham/mongo-migration-tool)** - Complete API reference

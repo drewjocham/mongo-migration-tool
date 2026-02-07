@@ -1,10 +1,10 @@
 # MCP Integration Guide
 
-This document explains how to use mongo-essential as a Model Context Protocol (MCP) server for AI assistants like Ollama, Goose, Claude Desktop, and others.
+This document explains how to use mmt as a Model Context Protocol (MCP) server for AI assistants like Ollama, Goose, Claude Desktop, and others.
 
 ## What is MCP?
 
-The Model Context Protocol (MCP) is an open standard that allows AI agents to connect to external data sources and tools. With the use of these agents mongo-essential can be controlled with your permission, to manage MongoDB migrations, answer questions or offer advice using natural language.
+The Model Context Protocol (MCP) allows AI agents to connect to external data sources and tools. With the use of these agents mmt can be aided with your permission, to manage MongoDB migrations, answer questions or offer advice using natural language.
 
 ## Quick Start
 
@@ -32,10 +32,10 @@ export MIGRATIONS_COLLECTION="schema_migrations"
 ### 4. Start MCP Server
 ```bash
 # Start with your own migrations
-./build/mongo-essential mcp
+./build/mmt mcp
 
 # Start with example migrations for testing
-./build/mongo-essential mcp --with-examples
+./build/mmt mcp --with-examples
 ```
 
 ## AI Assistant Integration
@@ -54,8 +54,8 @@ mkdir -p ~/.config/ollama
 cat > ~/.config/ollama/mcp-config.json << EOF
 {
   "mcpServers": {
-    "mongo-essential": {
-      "command": "$(pwd)/build/mongo-essential",
+    "mmt": {
+      "command": "$(pwd)/build/mmt",
       "args": ["mcp"],
       "env": {
         "MONGO_URI": "mongodb://localhost:27017",
@@ -84,8 +84,8 @@ EOF
    ```json
    {
      "mcpServers": {
-       "mongo-essential": {
-         "command": "/absolute/path/to/mongo-essential",
+       "mmt": {
+         "command": "/absolute/path/to/mmt",
          "args": ["mcp"],
          "env": {
            "MONGO_URI": "mongodb://localhost:27017",
@@ -104,10 +104,10 @@ EOF
    ```json
    {
      "tools": {
-       "mongo-essential": {
+       "mmt": {
          "type": "mcp",
          "server": {
-           "command": "/path/to/mongo-essential",
+           "command": "/path/to/mmt",
            "args": ["mcp"],
            "env": {
              "MONGO_URI": "mongodb://localhost:27017",
@@ -259,7 +259,7 @@ Your database is now back to the previous state. You can review and fix the migr
 2. **Test MCP server directly**:
    ```bash
    # Basic test
-   echo '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{}}' | ./build/mongo-essential mcp --with-examples
+   echo '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{}}' | ./build/mmt mcp --with-examples
 
    # Interactive test
    make mcp-client-test
@@ -274,7 +274,7 @@ Your database is now back to the previous state. You can review and fix the migr
 
 To add custom tools to the MCP server:
 
-1. **Extend the MCP server** (`mcp/server.go`):
+1. **Extend the MCP server** (`mcp/handers.go`):
    ```go
    {
        Name:        "my_custom_tool",
@@ -308,7 +308,7 @@ To add custom tools to the MCP server:
 Enable debug logging:
 ```bash
 export LOG_LEVEL=debug
-./build/mongo-essential mcp --with-examples
+./build/mmt mcp --with-examples
 ```
 
 ## Contributing

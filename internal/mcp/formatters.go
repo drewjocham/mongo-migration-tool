@@ -2,8 +2,9 @@ package mcp
 
 import (
 	"fmt"
-	"github.com/drewjocham/mongo-migration-tool/migration"
 	"strings"
+
+	"github.com/drewjocham/mongo-migration-tool/migration"
 
 	"go.mongodb.org/mongo-driver/bson"
 )

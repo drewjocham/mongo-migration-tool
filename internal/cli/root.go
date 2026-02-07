@@ -3,6 +3,7 @@ package cli
 import (
 	"context"
 	"crypto/tls"
+	"errors"
 	"fmt"
 	"time"
 
@@ -18,9 +19,10 @@ import (
 type contextKey string
 
 const (
-	ctxEngineKey contextKey = "engine"
-	ctxConfigKey contextKey = "config"
-	ctxCancelKey contextKey = "rootCancel"
+	ctxEngineKey      contextKey = "engine"
+	ctxConfigKey      contextKey = "config"
+	ctxCancelKey      contextKey = "rootCancel"
+	ctxMongoClientKey contextKey = "mongoClient"
 
 	annotationOffline = "offline"
 
@@ -33,28 +35,32 @@ var (
 	configFile string
 	debugMode  bool
 	logFile    string
+	showConfig bool
 
 	appVersion, commit, date = "dev", "none", "unknown"
 )
 
+var ErrShowConfigDisplayed = errors.New("configuration displayed")
+
 func newRootCmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:               "mongo-essential",
-		Short:             "Essential MongoDB toolkit",
+		Use:               "mmt",
+		Short:             "MongoDB migration toolkit",
 		Version:           fmt.Sprintf("%s (commit: %s, build date: %s)", appVersion, commit, date),
 		PersistentPreRunE: setupDependencies,
 		PersistentPostRun: teardown,
-		SilenceUsage:      true, // Prevents printing help on actual execution errors
+		SilenceUsage:      true, // Prevents printing help on execution errors
 	}
 
 	pFlags := cmd.PersistentFlags()
 	pFlags.StringVarP(&configFile, "config", "c", "", "Path to config file")
 	pFlags.BoolVar(&debugMode, "debug", false, "Enable debug logging")
 	pFlags.StringVar(&logFile, "log-file", "", "Path to write logs to a file")
+	pFlags.BoolVar(&showConfig, "show-config", false, "Print the effective configuration (with secrets masked) and exit")
 
 	cmd.AddCommand(
-		newUpCmd(), newDownCmd(), newForceCmd(),
-		newStatusCmd(), newCreateCmd(), NewMCPCmd(),
+		newUpCmd(), newDownCmd(), newForceCmd(), newUnlockCmd(),
+		newStatusCmd(), newCreateCmd(), newSchemaCmd(), NewMCPCmd(),
 		versionCmd,
 	)
 
@@ -73,13 +79,22 @@ func setupDependencies(cmd *cobra.Command, _ []string) error {
 	if err != nil {
 		return err
 	}
+	if showConfig {
+		if err := renderConfig(cmd.OutOrStdout(), cfg); err != nil {
+			return err
+		}
+		return ErrShowConfigDisplayed
+	}
 
 	if isOffline(cmd) {
 		cmd.SetContext(context.WithValue(cmd.Context(), ctxConfigKey, cfg))
 		return nil
 	}
+	if err := ensureMigrationsRegistered(); err != nil {
+		return err
+	}
 
-	engine, cancel, err := initEngine(cmd.Context(), cfg)
+	engine, client, cancel, err := initEngine(cmd.Context(), cfg)
 	if err != nil {
 		return err
 	}
@@ -87,6 +102,7 @@ func setupDependencies(cmd *cobra.Command, _ []string) error {
 	ctx := context.WithValue(cmd.Context(), ctxConfigKey, cfg)
 	ctx = context.WithValue(ctx, ctxEngineKey, engine)
 	ctx = context.WithValue(ctx, ctxCancelKey, cancel)
+	ctx = context.WithValue(ctx, ctxMongoClientKey, client)
 
 	cmd.SetContext(ctx)
 	return nil
@@ -100,7 +116,7 @@ func isOffline(cmd *cobra.Command) bool {
 	return offlineNames[cmd.Name()]
 }
 
-func initEngine(ctx context.Context, cfg *config.Config) (*migration.Engine, context.CancelFunc, error) {
+func initEngine(ctx context.Context, cfg *config.Config) (*migration.Engine, *mongo.Client, context.CancelFunc, error) {
 	connCtx, cancel := context.WithTimeout(ctx, time.Duration(cfg.Timeout)*time.Second)
 
 	opts := options.Client().
@@ -115,19 +131,18 @@ func initEngine(ctx context.Context, cfg *config.Config) (*migration.Engine, con
 	client, err := mongo.Connect(connCtx, opts)
 	if err != nil {
 		cancel()
-		return nil, nil, fmt.Errorf("mongo connect: %w", err)
+		return nil, nil, nil, fmt.Errorf("mongo connect: %w", err)
 	}
 
 	if err := retryPing(connCtx, client, 5); err != nil {
 		_ = client.Disconnect(context.Background())
 		cancel()
-		return nil, nil, err
+		return nil, nil, nil, err
 	}
 
 	db := client.Database(cfg.Database)
 	engine := migration.NewEngine(db, cfg.MigrationsCollection, migration.RegisteredMigrations())
-
-	return engine, cancel, nil
+	return engine, client, cancel, nil
 }
 
 func retryPing(ctx context.Context, client *mongo.Client, attempt int) error {
@@ -158,6 +173,11 @@ func teardown(cmd *cobra.Command, _ []string) {
 	if cancel, ok := cmd.Context().Value(ctxCancelKey).(context.CancelFunc); ok {
 		cancel()
 	}
+	if client, ok := cmd.Context().Value(ctxMongoClientKey).(*mongo.Client); ok {
+		if err := client.Disconnect(context.Background()); err != nil {
+			zap.S().Warnf("failed to disconnect mongo client: %v", err)
+		}
+	}
 	if err := zap.L().Sync(); err != nil {
 		zap.S().Warnf("failed to sync logger: %v", err)
 	}
@@ -165,6 +185,13 @@ func teardown(cmd *cobra.Command, _ []string) {
 
 func Execute() error {
 	return newRootCmd().Execute()
+}
+
+func ensureMigrationsRegistered() error {
+	if len(migration.RegisteredMigrations()) == 0 {
+		return fmt.Errorf("no migrations registered: import your migrations package")
+	}
+	return nil
 }
 
 func loadConfigFromFlags(path string) (*config.Config, error) {

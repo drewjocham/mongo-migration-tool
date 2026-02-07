@@ -2,11 +2,13 @@
 
 package cli
 
-import "github.com/drewjocham/mongo-migration-tool/examples/examplemigrations"
-import "github.com/drewjocham/mongo-migration-tool/migration"
+import (
+	"github.com/drewjocham/mongo-migration-tool/examples/examplemigrations"
+	"github.com/drewjocham/mongo-migration-tool/migration"
+)
 
 func registerExampleMigrations() error {
-	migration.Register(
+	migration.MustRegister(
 		&examplemigrations.AddUserIndexesMigration{},
 		&examplemigrations.TransformUserDataMigration{},
 		&examplemigrations.CreateAuditCollectionMigration{},

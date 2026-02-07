@@ -29,7 +29,7 @@ func newForceCmd() *cobra.Command {
 			}
 
 			if err := engine.Force(cmd.Context(), version); err != nil {
-				return fmt.Errorf("failed to force mark %s: %w", version, err)
+				return fmt.Errorf("%s: %w", ErrFailedToForce, err)
 			}
 
 			zap.S().Infow("Migration force marked successfully", "version", version)
@@ -42,7 +42,7 @@ func newForceCmd() *cobra.Command {
 }
 
 func confirmForce(cmd *cobra.Command, version string) bool {
-	fmt.Fprintf(cmd.OutOrStdout(), "⚠️  WARNING: Force marking %s will NOT execute migration logic.\n", version)
+	fmt.Fprintf(cmd.OutOrStdout(), "WARNING: Force marking %s will NOT execute migration logic.\n", version)
 	fmt.Fprint(cmd.OutOrStdout(), "Confirm action? (y/N): ")
 
 	var response string

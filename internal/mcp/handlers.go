@@ -31,7 +31,7 @@ func (s *MCPServer) handleStatus(
 	return s.withConnection(ctx, func() (*mcp.CallToolResult, any, error) {
 		status, err := s.engine.GetStatus(ctx)
 		if err != nil {
-			return toolErrorResult("Failed to retrieve migration status", err), nil, nil
+			return toolErrorResult(string(ErrFailedToGetMigrations), err), nil, nil
 		}
 		return toolTextResult(formatStatusTable(status)), nil, nil
 	})
@@ -134,7 +134,7 @@ func (s *MCPServer) handleCreate(
 	fname := filepath.Join(dir, fmt.Sprintf("%s_%s.go", version, cleanName))
 
 	if err := os.MkdirAll(dir, 0750); err != nil {
-		return toolErrorResult("Could not create migrations directory", err), nil, nil
+		return toolErrorResult(string(ErrFailedToCreateMigration), err), nil, nil
 	}
 
 	var buf bytes.Buffer
@@ -145,7 +145,7 @@ func (s *MCPServer) handleCreate(
 	}
 
 	if err := migrationTemplate.Execute(&buf, data); err != nil {
-		return toolErrorResult("Failed to generate migration template", err), nil, nil
+		return toolErrorResult(string(ErrFailedToRenderTemplate), err), nil, nil
 	}
 
 	if err := os.WriteFile(fname, buf.Bytes(), 0600); err != nil {

@@ -3,10 +3,12 @@ package migration
 import (
 	"context"
 	"crypto/sha256"
+	"errors"
 	"fmt"
 	"log/slog"
 	"slices"
 	"sort"
+	"strings"
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
@@ -18,6 +20,9 @@ const (
 	defaultLockID  = "migration_engine_lock"
 	collLock       = "migrations_lock"
 	collMigrations = "schema_migrations"
+
+	// Log messages
+	logExecutingMigration = "Executing migration"
 )
 
 type Migration interface {
@@ -61,7 +66,7 @@ func NewEngine(db *mongo.Database, migrationsCollection string, migrations map[s
 func (e *Engine) GetStatus(ctx context.Context) ([]MigrationStatus, error) {
 	applied, err := e.getAppliedMap(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("could not get applied migrations: %w", err)
+		return nil, fmt.Errorf("%s: %w", ErrFailedToReadMigrations, err)
 	}
 
 	versions := e.getSortedVersions()
@@ -93,12 +98,12 @@ func (e *Engine) Down(ctx context.Context, target string) error {
 func (e *Engine) Force(ctx context.Context, version string) error {
 	m, ok := e.migrations[version]
 	if !ok {
-		return fmt.Errorf("migration version %s not found", version)
+		return fmt.Errorf("%s: %s", ErrMigrationNotFound, version)
 	}
 
 	applied, err := e.getAppliedMap(ctx)
 	if err != nil {
-		return fmt.Errorf("failed to get applied migrations: %w", err)
+		return fmt.Errorf("%s: %w", ErrFailedToReadMigrations, err)
 	}
 
 	if _, isApplied := applied[version]; isApplied {
@@ -109,7 +114,7 @@ func (e *Engine) Force(ctx context.Context, version string) error {
 	coll := e.db.Collection(e.coll)
 	_, err = coll.InsertOne(ctx, e.newRecord(m))
 	if err != nil {
-		return fmt.Errorf("failed to force mark migration %s: %w", version, err)
+		return fmt.Errorf("%s: %w", ErrFailedToSetVersion, err)
 	}
 
 	return nil
@@ -142,15 +147,22 @@ func (e *Engine) run(ctx context.Context, dir Direction, target string) error {
 			}
 		}
 
-		slog.Info("Executing migration", "version", version, "direction", dir)
+		slog.Info(logExecutingMigration, "version", version, "direction", dir)
 		if err := e.executeWithRetry(ctx, m, dir); err != nil {
-			return fmt.Errorf("migration failed at %s: %w", version, err)
+			return fmt.Errorf("%s: %w", ErrFailedToRunMigration, err)
 		}
 	}
 
 	return nil
 }
 
+func (e *Engine) Plan(ctx context.Context, dir Direction, target string) ([]string, error) {
+	applied, err := e.getAppliedMap(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("plan migrations: %w", err)
+	}
+	return e.planExecution(dir, target, applied)
+}
 func (e *Engine) executeWithRetry(ctx context.Context, m Migration, dir Direction) error {
 	session, err := e.db.Client().StartSession()
 	if err != nil {
@@ -265,10 +277,31 @@ func (e *Engine) newRecord(m Migration) MigrationRecord {
 }
 
 func isTransactionNotSupported(err error) bool {
-	// This is a placeholder. The logic to detect if transactions are not supported
-	// would depend on the specifics of the MongoDB driver's error reporting.
-	// Example: return strings.Contains(err.Error(), "not supported")
-	return false
+	var cmdErr mongo.CommandError
+	if errors.As(err, &cmdErr) {
+		switch cmdErr.Code {
+		case 20, 251, 303: // IllegalOperation, NoSuchTransaction, TransactionNotSupportedInShardedCluster
+			return true
+		}
+		if strings.Contains(strings.ToLower(cmdErr.Message), "transactions are not supported") {
+			return true
+		}
+	}
+
+	var writeErr mongo.WriteException
+	if errors.As(err, &writeErr) {
+		if writeErr.WriteConcernError != nil {
+			switch writeErr.WriteConcernError.Code {
+			case 20, 251, 303:
+				return true
+			}
+			if strings.Contains(strings.ToLower(writeErr.WriteConcernError.Message), "transactions are not supported") {
+				return true
+			}
+		}
+	}
+
+	return strings.Contains(strings.ToLower(err.Error()), "transactions are not supported")
 }
 
 func (e *Engine) acquireLock(ctx context.Context) error {
@@ -278,6 +311,10 @@ func (e *Engine) acquireLock(ctx context.Context) error {
 		Keys:    bson.D{{Key: "acquired_at", Value: 1}},
 		Options: options.Index().SetExpireAfterSeconds(600),
 	})
+	_, _ = coll.Indexes().CreateOne(ctx, mongo.IndexModel{
+		Keys:    bson.D{{Key: "lock_id", Value: 1}},
+		Options: options.Index().SetUnique(true),
+	})
 
 	_, err := coll.InsertOne(ctx, bson.M{
 		"lock_id":     defaultLockID,
@@ -285,7 +322,7 @@ func (e *Engine) acquireLock(ctx context.Context) error {
 	})
 
 	if mongo.IsDuplicateKeyError(err) {
-		return fmt.Errorf("migration lock is already held: another instance is likely running")
+		return ErrFailedToLock
 	}
 	return err
 }
@@ -293,4 +330,10 @@ func (e *Engine) acquireLock(ctx context.Context) error {
 func (e *Engine) releaseLock(ctx context.Context) {
 	coll := e.db.Collection(collLock)
 	_, _ = coll.DeleteOne(ctx, bson.M{"lock_id": defaultLockID})
+}
+
+func (e *Engine) ForceUnlock(ctx context.Context) error {
+	coll := e.db.Collection(collLock)
+	_, err := coll.DeleteMany(ctx, bson.M{"lock_id": defaultLockID})
+	return err
 }

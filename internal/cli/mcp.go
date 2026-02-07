@@ -31,7 +31,7 @@ func NewMCPCmd() *cobra.Command {
 
 	mcpCmd.AddCommand(&cobra.Command{
 		Use:   "config",
-		Short: "Generate MCP configuration JSON for Claude/IDE",
+		Short: "Generate MCP configuration JSON",
 		Annotations: map[string]string{
 			annotationOffline: "true",
 		},
@@ -41,7 +41,7 @@ func NewMCPCmd() *cobra.Command {
 	return mcpCmd
 }
 
-func runMCP(_ *cobra.Command, withExamples bool) error {
+func runMCP(cmd *cobra.Command, withExamples bool) error {
 	_, err := logging.New(debugMode, logFile)
 	if err != nil {
 		return fmt.Errorf("failed to re-initialize logger for mcp: %w", err)
@@ -58,8 +58,12 @@ func runMCP(_ *cobra.Command, withExamples bool) error {
 			return fmt.Errorf("failed to register examples: %w", err)
 		}
 	}
+	cfg, err := getConfig(cmd.Context())
+	if err != nil {
+		return err
+	}
 
-	server, err := mcp.NewMCPServer()
+	server, err := mcp.NewMCPServer(cfg)
 	if err != nil {
 		return fmt.Errorf("mcp init failed: %w", err)
 	}
