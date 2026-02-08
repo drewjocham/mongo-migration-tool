@@ -131,6 +131,7 @@ dockers:
       - "--label=org.opencontainers.image.revision={{.FullCommit}}"
       - "--label=org.opencontainers.image.version={{.Version}}"
       - "--label=org.opencontainers.image.source=https://github.com/drewjocham/mongo-migration-tool"
+  - image_templates:
       - "ghcr.io/drewjocham/mongo-migration-tool:{{ .Version }}-arm64"
       - "ghcr.io/drewjocham/mongo-migration-tool:latest-arm64"
     dockerfile: docker/Dockerfile.release
@@ -144,9 +145,6 @@ dockers:
       - "--label=org.opencontainers.image.revision={{.FullCommit}}"
       - "--label=org.opencontainers.image.version={{.Version}}"
       - "--label=org.opencontainers.image.source=https://github.com/drewjocham/mongo-migration-tool"
-    extra_files:
-      - go.mod
-      - go.sum
 
 docker_manifests:
   - name_template: "ghcr.io/drewjocham/mongo-migration-tool:{{ .Version }}"
