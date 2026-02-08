@@ -96,6 +96,7 @@ brews:
       name: homebrew-mongo-migration
       branch: main
       token: "{{ .Env.HOMEBREW_TAP_TOKEN }}"
+    skip_upload: auto
     
 
     directory: Formula
