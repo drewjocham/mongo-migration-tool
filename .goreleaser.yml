@@ -120,8 +120,10 @@ dockers:
   - image_templates:
       - "ghcr.io/drewjocham/mongo-migration-tool:{{ .Version }}-amd64"
       - "ghcr.io/drewjocham/mongo-migration-tool:latest-amd64"
-    dockerfile: docker/Dockerfile
+    dockerfile: docker/Dockerfile.release
     use: buildx
+    ids:
+      - mongo-migration
     build_flag_templates:
       - "--platform=linux/amd64"
       - "--label=org.opencontainers.image.created={{.Date}}"
@@ -129,15 +131,12 @@ dockers:
       - "--label=org.opencontainers.image.revision={{.FullCommit}}"
       - "--label=org.opencontainers.image.version={{.Version}}"
       - "--label=org.opencontainers.image.source=https://github.com/drewjocham/mongo-migration-tool"
-    extra_files:
-      - go.mod
-      - go.sum
-  
-  - image_templates:
       - "ghcr.io/drewjocham/mongo-migration-tool:{{ .Version }}-arm64"
       - "ghcr.io/drewjocham/mongo-migration-tool:latest-arm64"
-    dockerfile: docker/Dockerfile
+    dockerfile: docker/Dockerfile.release
     use: buildx
+    ids:
+      - mongo-migration
     build_flag_templates:
       - "--platform=linux/arm64"
       - "--label=org.opencontainers.image.created={{.Date}}"
