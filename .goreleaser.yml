@@ -1,5 +1,3 @@
-# GoReleaser configuration for mongo-migration
-# Documentation: https://goreleaser.com
 version: 2
 
 project_name: mongo-migration-tool

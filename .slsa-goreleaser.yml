@@ -18,7 +18,7 @@ goarch: amd64
 
 ldflags:
   - -s -w
-  - -X main.version={{ .Env.VERSION }}
-  - -X main.commit={{ .Env.COMMIT }}
-  - -X main.date={{ .Env.BUILD_DATE }}
+  - -X main.version={{ .Env.GO_LDFLAG_VERSION }}
+  - -X main.commit={{ .Env.GO_LDFLAG_COMMIT }}
+  - -X main.date={{ .Env.GO_LDFLAG_BUILD_DATE }}
   - -X main.builtBy=slsa-github-generator

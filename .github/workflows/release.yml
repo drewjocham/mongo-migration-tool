@@ -86,9 +86,9 @@ jobs:
     with:
       config-file: .slsa-goreleaser.yml
       evaluated-envs: |
-        VERSION=${{ needs.goreleaser.outputs.version }}
-        COMMIT=${{ github.sha }}
-        BUILD_DATE=${{ needs.goreleaser.outputs.build-date }}
+        GO_LDFLAG_VERSION=${{ needs.goreleaser.outputs.version }}
+        GO_LDFLAG_COMMIT=${{ github.sha }}
+        GO_LDFLAG_BUILD_DATE=${{ needs.goreleaser.outputs.build-date }}
       go-version-file: go.mod
     secrets: inherit
 
