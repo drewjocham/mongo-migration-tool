@@ -9,7 +9,8 @@ RUN --mount=type=bind,source=go.mod,target=go.mod \
     --mount=type=cache,target=/go/pkg/mod \
     go mod download
 
-ARG TARGETOS=TARGETARCH
+ARG TARGETOS=linux
+ARG TARGETARCH=amd64
 ARG VERSION=dev
 ARG COMMIT=unknown
 ARG DATE=unknown
