@@ -26,7 +26,7 @@ RUN --mount=type=bind,target=. \
         -X main.appVersion=${VERSION} \
         -X main.commit=${COMMIT} \
         -X main.date=${DATE}" \
-      -o /mongo-migration ./cmd
+      -o /mongo-migration ./cmd/
 
 FROM alpine:3.21 AS final
 
