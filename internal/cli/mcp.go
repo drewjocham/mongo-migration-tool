@@ -4,11 +4,11 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	logging "github.com/drewjocham/mongo-migration-tool/internal/log"
 	"io"
 	"os"
 	"strings"
 
-	"github.com/drewjocham/mongo-migration-tool/internal/logging"
 	"github.com/drewjocham/mongo-migration-tool/internal/mcp"
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
@@ -31,7 +31,7 @@ func NewMCPCmd() *cobra.Command {
 
 	mcpCmd.AddCommand(&cobra.Command{
 		Use:   "config",
-		Short: "Generate MCP configuration JSON for Claude/IDE",
+		Short: "Generate MCP configuration JSON",
 		Annotations: map[string]string{
 			annotationOffline: "true",
 		},
@@ -41,8 +41,8 @@ func NewMCPCmd() *cobra.Command {
 	return mcpCmd
 }
 
-func runMCP(_ *cobra.Command, withExamples bool) error {
-	_, err := logging.New(debugMode, logFile)
+func runMCP(cmd *cobra.Command, withExamples bool) error {
+	logger, err := logging.New(false, "")
 	if err != nil {
 		return fmt.Errorf("failed to re-initialize logger for mcp: %w", err)
 	}
@@ -58,12 +58,16 @@ func runMCP(_ *cobra.Command, withExamples bool) error {
 			return fmt.Errorf("failed to register examples: %w", err)
 		}
 	}
+	cfg, err := getConfig(cmd.Context())
+	if err != nil {
+		return err
+	}
 
-	server, err := mcp.NewMCPServer()
+	server, err := mcp.NewMCPServer(cfg, logger)
 	if err != nil {
 		return fmt.Errorf("mcp init failed: %w", err)
 	}
-	defer server.Close()
+	defer server.Close(cmd.Context())
 
 	zap.S().Infow("Starting MCP server", "pid", os.Getpid())
 

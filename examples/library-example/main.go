@@ -84,7 +84,7 @@ func main() {
 		}
 	}()
 
-	migration.Register(&ExampleMigration{})
+	migration.MustRegister(&ExampleMigration{})
 
 	engine := migration.NewEngine(db, cfg.MigrationsCollection, migration.RegisteredMigrations())
 

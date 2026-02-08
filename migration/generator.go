@@ -26,7 +26,7 @@ func (g *Generator) Create(name string) (string, string, error) {
 	targetPath := filepath.Join(g.OutputPath, version+".go")
 
 	if err := os.MkdirAll(g.OutputPath, 0750); err != nil {
-		return "", "", fmt.Errorf("could not create migrations directory: %w", err)
+		return "", "", fmt.Errorf("%s: %w", ErrFailedToCreateFile, err)
 	}
 
 	data := struct {
@@ -43,12 +43,12 @@ func (g *Generator) Create(name string) (string, string, error) {
 
 	tmpl, err := template.New("migration").Parse(migrationTemplate)
 	if err != nil {
-		return "", "", err
+		return "", "", fmt.Errorf("%s: %w", ErrFailedToParseTemplate, err)
 	}
 
 	var buf bytes.Buffer
 	if err := tmpl.Execute(&buf, data); err != nil {
-		return "", "", err
+		return "", "", fmt.Errorf("%s: %w", ErrFailedToExecuteTemplate, err)
 	}
 
 	return targetPath, version, os.WriteFile(targetPath, buf.Bytes(), 0600)

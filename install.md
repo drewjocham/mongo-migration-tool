@@ -1,6 +1,6 @@
 # Installation Guide
 
-This guide covers all the ways you can install and use mongo-essential: as a CLI tool via Homebrew, as a standalone binary, as a Docker container, or as a Go library.
+This guide covers all the ways you can install and use mmt: as a CLI tool via Homebrew, as a standalone binary, as a Docker container, or as a Go library.
 
 ## Table of Contents
 
@@ -14,7 +14,7 @@ This guide covers all the ways you can install and use mongo-essential: as a CLI
 
 ## Homebrew Installation (macOS/Linux)
 
-The easiest way to install mongo-essential on macOS and Linux is via Homebrew.
+The easiest way to install mmt on macOS and Linux is via Homebrew.
 
 ### Prerequisites
 
@@ -24,35 +24,35 @@ The easiest way to install mongo-essential on macOS and Linux is via Homebrew.
 
 ```bash
 # Add our custom Homebrew tap
-brew tap drewjocham/mongo-essential
+brew tap drewjocham/mmt
 
-# Install mongo-essential
-brew install mongo-essential
+# Install mmt
+brew install mmt
 
 # Verify installation
-mongo-essential version
+mmt version
 ```
 
 ### Upgrade
 
 ```bash
 # Upgrade to the latest version
-brew upgrade mongo-essential
+brew upgrade mmt
 ```
 
 ### Uninstall
 
 ```bash
-# Uninstall mongo-essential
-brew uninstall mongo-essential
+# Uninstall mmt
+brew uninstall mmt
 
 # Remove the tap (optional)
-brew untap drewjocham/mongo-essential
+brew untap drewjocham/mmt
 ```
 
 ## Binary Installation
 
-Download pre-built binaries for your platform from our [GitHub Releases](https://github.com/drewjocham/mongo-essential-tool/releases).
+Download pre-built binaries for your platform from our [GitHub Releases](https://github.com/drewjocham/mongo-migration-tool/releases).
 
 ### Available Platforms
 
@@ -65,36 +65,36 @@ Download pre-built binaries for your platform from our [GitHub Releases](https:/
 
 ```bash
 # Download the latest release (adjust URL for your platform)
-curl -LO https://github.com/drewjocham/mongo-essential-tool/releases/latest/download/mongo-essential_linux_amd64.tar.gz
+curl -LO https://github.com/drewjocham/mongo-migration-tool/releases/latest/download/mmt_linux_amd64.tar.gz
 
 # Extract the binary
-tar -xzf mongo-essential_linux_amd64.tar.gz
+tar -xzf mmt_linux_amd64.tar.gz
 
 # Make executable and move to PATH
-chmod +x mongo-essential
-sudo mv mongo-essential /usr/local/bin/
+chmod +x mmt
+sudo mv mmt /usr/local/bin/
 
 # Verify installation
-mongo-essential version
+mmt version
 ```
 
 ### Windows
 
-1. Download the Windows binary from the [releases page](https://github.com/drewjocham/mongo-essential-tool/releases)
+1. Download the Windows binary from the [releases page](https://github.com/drewjocham/mongo-migration-tool/releases)
 2. Extract the `.zip` file
 3. Add the binary location to your system PATH
-4. Open a new command prompt and verify: `mongo-essential version`
+4. Open a new command prompt and verify: `mmt version`
 
 ### Installing Specific Versions
 
 ```bash
 # Install specific version (replace v1.2.3 with desired version)
-curl -LO https://github.com/drewjocham/mongo-essential-tool/releases/download/v1.2.3/mongo-essential_linux_am
+curl -LO https://github.com/drewjocham/mongo-migration-tool/releases/download/v1.2.3/mmt_linux_am
 ```
 
 ## Docker Installation
 
-mongo-essential is available as a Docker image for containerized environments.
+mmt is available as a Docker image for containerized environments.
 
 ### Available Images
 
@@ -105,21 +105,21 @@ mongo-essential is available as a Docker image for containerized environments.
 
 ```bash
 # Pull the latest image
-docker pull ghcr.io/drewjocham/mongo-essential-tool:latest
+docker pull ghcr.io/drewjocham/mongo-migration-tool:latest
 
 # Run migrations (mount your migrations directory)
 docker run --rm \
   -v $(pwd)/migrations:/migrations \
   -e MONGO_URL="mongodb://your-mongo-host:27017" \
   -e MONGO_DATABASE="your-database" \
-  ghcr.io/drewjocham/mongo-essential-tool:latest \
+  ghcr.io/drewjocham/mongo-migration-tool:latest \
   up
 
 # Run with custom configuration file
 docker run --rm \
   -v $(pwd)/.env:/app/.env \
   -v $(pwd)/migrations:/migrations \
-  ghcr.io/drewjocham/mongo-essential-tool:latest \
+  ghcr.io/drewjocham/mongo-migration-tool:latest \
   status
 ```
 
@@ -131,8 +131,8 @@ Create a `docker-compose.yml` file:
 version: '3.8'
 
 services:
-  mongo-essential:
-    image: ghcr.io/drewjocham/mongo-essential-tool:latest
+  mmt:
+    image: ghcr.io/drewjocham/mongo-migration-tool:latest
     environment:
       - MONGO_URL=mongodb://mongodb:27017
       - MONGO_DATABASE=myapp
@@ -158,12 +158,12 @@ volumes:
 Run with:
 
 ```bash
-docker-compose up mongo-essential
+docker-compose up mmt
 ```
 
 ## Go Library Installation
 
-Use mongo-essential as a library in your Go projects.
+Use mmt as a library in your Go projects.
 
 ### Prerequisites
 
@@ -173,10 +173,10 @@ Use mongo-essential as a library in your Go projects.
 
 ```bash
 # Add to your Go project
-go get github.com/drewjocham/mongo-essential-tool@latest
+go get github.com/drewjocham/mongo-migration-tool@latest
 
 # Or install specific version
-go get github.com/drewjocham/mongo-essential-tool@v1.2.3
+go get github.com/drewjocham/mongo-migration-tool@v1.2.3
 ```
 
 ### Basic Usage
@@ -188,8 +188,8 @@ import (
     "context"
     "log"
     
-    "github.com/drewjocham/mongo-essential-tool/config"
-    "github.com/drewjocham/mongo-essential-tool/migration"
+    "github.com/drewjocham/mongo-migration-tool/config"
+    "github.com/drewjocham/mongo-migration-tool/migration"
     "go.mongodb.org/mongo-driver/mongo"
     "go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -227,7 +227,7 @@ For detailed library usage, see [LIBRARY.md](LIBRARY.md).
 
 ## Building from Source
 
-Build mongo-essential from source code.
+Build mmt from source code.
 
 ### Prerequisites
 
@@ -238,17 +238,17 @@ Build mongo-essential from source code.
 
 ```bash
 # Clone the repository
-git clone https://github.com/drewjocham/mongo-essential-tool.git
-cd mongo-essential-tool
+git clone https://github.com/drewjocham/mongo-migration-tool.git
+cd mongo-migration-tool
 
 # Build for your current platform
-go build -o mongo-essential ./cmd/mongo-essential
+go build -o mmt ./cmd/mmt
 
 # Or use make
 make build
 
 # Install to GOPATH/bin
-go install ./cmd/mongo-essential
+go install ./cmd/mmt
 
 # Build for all platforms (requires goreleaser)
 make build-all
@@ -281,7 +281,7 @@ make build-all
 
 ```bash
 # Build with debug information
-go build -ldflags "-X main.version=dev" -o mongo-essential ./cmd/mongo-essential
+go build -ldflags "-X main.version=dev" -o mmt ./cmd/mmt
 
 # Run tests
 make test
@@ -292,7 +292,7 @@ make lint
 
 ## Configuration
 
-mongo-essential can be configured through environment variables or configuration files.
+mmt can be configured through environment variables or configuration files.
 
 ### Environment Variables
 
@@ -358,26 +358,29 @@ Configuration is loaded in the following order (later sources override earlier o
 
 ```bash
 # Check version
-mongo-essential version
+mmt version
 
 # Check available commands
-mongo-essential help
+mmt help
 
 # Test connection (requires configuration)
-mongo-essential status
+mmt status
+
+# Show the effective configuration (secrets masked)
+mmt --config .env --show-config
 ```
 
 ### Verify Docker Installation
 
 ```bash
 # Check Docker image
-docker run --rm ghcr.io/drewjocham/mongo-essential-tool:latest version
+docker run --rm ghcr.io/drewjocham/mongo-migration-tool:latest version
 
 # Test with sample configuration
 docker run --rm \
   -e MONGO_URL="mongodb://host.docker.internal:27017" \
   -e MONGO_DATABASE="test" \
-  ghcr.io/drewjocham/mongo-essential-tool:latest \
+  ghcr.io/drewjocham/mongo-migration-tool:latest \
   status
 ```
 
@@ -390,7 +393,7 @@ package main
 
 import (
     "fmt"
-    "github.com/drewjocham/mongo-essential-tool/config"
+    "github.com/drewjocham/mongo-migration-tool/config"
 )
 
 func main() {
@@ -406,9 +409,24 @@ Run it:
 
 ```bash
 go mod init test
-go get github.com/drewjocham/mongo-essential-tool@latest
+go get github.com/drewjocham/mongo-migration-tool@latest
 go run test.go
 ```
+## Safety Commands
+
+- **Preview without running**:
+  ```bash
+  mmt up --dry-run
+  mmt down --dry-run --target 20240101_001
+  ```
+- **Release a stuck lock** (only if you are sure no other process is running):
+  ```bash
+  mmt unlock --yes
+  ```
+- **View expected indexes registered in code**:
+  ```bash
+  mmt schema indexes
+  ```
 
 ## Troubleshooting
 
@@ -418,8 +436,8 @@ go run test.go
 
 ```bash
 # If tap already exists
-brew untap drewjocham/mongo-essential-tool
-brew tap drewjocham/mongo-essential-tool
+brew untap drewjocham/mongo-migration-tool
+brew tap drewjocham/mongo-migration-tool
 
 # Clear Homebrew cache
 brew cleanup
@@ -430,7 +448,7 @@ rm -rf $(brew --cache)
 
 ```bash
 # Make binary executable
-chmod +x mongo-essential
+chmod +x mmt
 
 # If "command not found"
 echo $PATH
@@ -445,7 +463,7 @@ docker logout ghcr.io
 docker login ghcr.io
 
 # Check if image exists
-docker images | grep mongo-essential
+docker images | grep mmt
 ```
 
 #### Go Module Issues
@@ -461,15 +479,15 @@ go mod download
 
 ### Getting Help
 
-- **Documentation**: [GitHub Repository](https://github.com/drewjocham/mongo-essential-tool)
-- **Issues**: [GitHub Issues](https://github.com/drewjocham/mongo-essential-tool/issues)
-- **Library Docs**: [pkg.go.dev](https://pkg.go.dev/github.com/drewjocham/mongo-essential-tool)
+- **Documentation**: [GitHub Repository](https://github.com/drewjocham/mongo-migration-tool)
+- **Issues**: [GitHub Issues](https://github.com/drewjocham/mongo-migration-tool/issues)
+- **Library Docs**: [pkg.go.dev](https://pkg.go.dev/github.com/drewjocham/mongo-migration-tool)
 
 ## Next Steps
 
 After installation, you might want to:
 
-1. **Create your first migration**: `mongo-essential create add_user_index`
+1. **Create your first migration**: `mmt create add_user_index`
 2. **Set up your project**: Create migrations directory and configure environment
 3. **Explore examples**: Check the [examples directory](examples/) in the repository
 4. **Read the library documentation**: See [LIBRARY.md](LIBRARY.md) for Go library usage
@@ -478,8 +496,8 @@ After installation, you might want to:
 ## Supported Versions
 
 - **Go**: 1.24+
-- **MongoDB**: 4.4+ (tested with 4.4, 5.0, 6.0, 7.0)
-- **Operating Systems**: Linux, macOS, Windows, FreeBSD
+- **MongoDB**: 4.4+ (tested with 7.0, 8.0)
+- **Operating Systems**: Linux, macOS, Windows
 - **Architectures**: AMD64, ARM64
 
 ## Security Considerations

@@ -3,11 +3,12 @@ package main
 import (
 	"context"
 	"fmt"
-	_ "github.com/drewjocham/mongo-migration-tool/examples/examplemigrations"
 	"log"
 	"os"
 	"os/signal"
 	"text/tabwriter"
+
+	_ "github.com/drewjocham/mongo-migration-tool/examples/examplemigrations"
 
 	"github.com/drewjocham/mongo-migration-tool/internal/config"
 	"github.com/drewjocham/mongo-migration-tool/migration"
