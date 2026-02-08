@@ -1,7 +1,5 @@
 package cli
 
-import "errors"
-
 type ErrorCli string
 
 func (e ErrorCli) Error() string {

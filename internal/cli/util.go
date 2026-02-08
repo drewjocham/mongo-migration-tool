@@ -12,6 +12,11 @@ import (
 	"go.uber.org/zap"
 )
 
+type cliCtxKey string
+
+var ctxEngineKey cliCtxKey
+var ctxConfigKey cliCtxKey
+
 func getEngine(ctx context.Context) (*migration.Engine, error) {
 	e, ok := ctx.Value(ctxEngineKey).(*migration.Engine)
 	if !ok {

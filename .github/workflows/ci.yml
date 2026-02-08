@@ -6,12 +6,20 @@ on:
   pull_request:
     branches: [ main ]
 
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   test:
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
-        go-version: ['1.25.4', '1.25.5']
+        go-version: ['1.24.12', '1.25.6']
 
     steps:
       - name: Checkout code
@@ -33,6 +41,7 @@ jobs:
         run: make test
 
       - name: Upload coverage to Codecov
+        if: github.event_name == 'push'
         uses: codecov/codecov-action@v4
         with:
           file: ./coverage.out
@@ -60,7 +69,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
-          go-version: '1.25.5'
+          go-version-file: go.mod
           cache: true
 
       - name: Build Binary
@@ -68,7 +77,6 @@ jobs:
           VERSION=$(git describe --tags --always)
           COMMIT=$(git rev-parse HEAD)
           DATE=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
-          # Inject build metadata without overriding ldflags quoting
           VERSION=${VERSION} COMMIT=${COMMIT} DATE=${DATE} make build
 
       - name: Build examples
