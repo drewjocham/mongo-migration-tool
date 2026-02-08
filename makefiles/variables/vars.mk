@@ -40,6 +40,7 @@ export DOCKERFILE_MCP?=$(REPO_ROOT)/$(DOCKER_DIR)/Dockerfile.mcp
 export COMPOSE_FILE_INTEGRATION?=$(REPO_ROOT)/$(DOCKER_DIR)/integration-compose.yml
 export COMPOSE_FILE?= $(REPO_ROOT)/$(DOCKER_DIR)/compose.yml
 export COMPOSE_CMD = docker compose -f $(COMPOSE_FILE)
+export DOCKER_COMPOSE ?= docker compose
 export PLATFORMS := linux/amd64 linux/arm64 darwin/amd64 darwin/arm64 windows/amd64
 
 export VERSION := $(shell git describe --tags --always)

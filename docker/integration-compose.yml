@@ -4,7 +4,7 @@ services:
       context: ..
       dockerfile: docker/Dockerfile.local
     environment:
-      - MONGO_URL=mongodb://admin:password@mongo:27017/?authSource=admin&replicaSet=rs0
+      - MONGO_URL=mongodb://admin:password@mongo:27017/?authSource=admin
       - MONGO_USERNAME=admin
       - MONGO_PASSWORD=password
       - MONGO_AUTH_SOURCE=admin
@@ -20,27 +20,20 @@ services:
 
   mongo:
     image: mongo:8.0
-    command: ["--replSet", "rs0", "--bind_ip_all", "--port", "27017"]
+    command: ["--bind_ip_all", "--port", "27017"]
     environment:
       - MONGO_INITDB_ROOT_USERNAME=admin
       - MONGO_INITDB_ROOT_PASSWORD=password
       - MONGO_INITDB_DATABASE=cli_integration
     healthcheck:
-      test: |
-        mongosh --quiet --eval '
-          try {
-            rs.status();
-          } catch (err) {
-            rs.initiate({
-              _id: "rs0",
-              members: [{ _id: 0, host: "mongo:27017" }]
-            });
-          }
-        '
+      test:
+        [
+          "CMD-SHELL",
+          "mongosh --quiet --eval \"db.runCommand({ ping: 1 })\" >/dev/null || mongosh --quiet -u admin -p password --authenticationDatabase admin --eval \"db.runCommand({ ping: 1 })\" >/dev/null",
+        ]
       interval: 5s
       timeout: 30s
       start_period: 10s
-      start_interval: 1s
       retries: 30
     ports:
       - "${INTEGRATION_MONGO_PORT:-37017}:27017"

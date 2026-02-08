@@ -40,52 +40,63 @@ func (s *MCPServer) registerTools() {
 	}, s.handleSchema)
 }
 
+func newMessageResult(text string) (*mcp.CallToolResult, messageOutput) {
+	return &mcp.CallToolResult{
+		Content: []mcp.Content{
+			&mcp.TextContent{Text: text},
+		},
+	}, messageOutput{Message: text}
+}
+
 func (s *MCPServer) handleStatus(
 	ctx context.Context, _ *mcp.CallToolRequest, _ emptyArgs,
-) (*mcp.CallToolResult, string, error) {
+) (*mcp.CallToolResult, messageOutput, error) {
 	if err := s.ensureConnection(ctx); err != nil {
-		return nil, "", err
+		return nil, messageOutput{}, err
 	}
 	status, err := s.engine.GetStatus(ctx)
 	if err != nil {
-		return nil, "", err
+		return nil, messageOutput{}, err
 	}
-	return nil, formatStatusTable(status), nil
+	res, out := newMessageResult(formatStatusTable(status))
+	return res, out, nil
 }
 
 func (s *MCPServer) handleUp(
 	ctx context.Context, _ *mcp.CallToolRequest, args versionArgs,
-) (*mcp.CallToolResult, string, error) {
+) (*mcp.CallToolResult, messageOutput, error) {
 	if err := s.ensureConnection(ctx); err != nil {
-		return nil, "", err
+		return nil, messageOutput{}, err
 	}
 	if err := s.engine.Up(ctx, args.Version); err != nil {
-		return nil, "", fmt.Errorf("migration up failed: %w", err)
+		return nil, messageOutput{}, fmt.Errorf("migration up failed: %w", err)
 	}
-	return nil, "✅ Migrations applied successfully.", nil
+	res, out := newMessageResult("✅ Migrations applied successfully.")
+	return res, out, nil
 }
 
 func (s *MCPServer) handleDown(
 	ctx context.Context, _ *mcp.CallToolRequest, args versionArgs,
-) (*mcp.CallToolResult, string, error) {
+) (*mcp.CallToolResult, messageOutput, error) {
 	if err := s.ensureConnection(ctx); err != nil {
-		return nil, "", err
+		return nil, messageOutput{}, err
 	}
 	if err := s.engine.Down(ctx, args.Version); err != nil {
-		return nil, "", fmt.Errorf("migration down failed: %w", err)
+		return nil, messageOutput{}, fmt.Errorf("migration down failed: %w", err)
 	}
-	return nil, "✅ Rollback completed successfully.", nil
+	res, out := newMessageResult("✅ Rollback completed successfully.")
+	return res, out, nil
 }
 
 func (s *MCPServer) handleSchema(
 	ctx context.Context, _ *mcp.CallToolRequest, _ emptyArgs,
-) (*mcp.CallToolResult, string, error) {
+) (*mcp.CallToolResult, messageOutput, error) {
 	if err := s.ensureConnection(ctx); err != nil {
-		return nil, "", err
+		return nil, messageOutput{}, err
 	}
 	collections, err := s.db.ListCollectionNames(ctx, bson.D{})
 	if err != nil {
-		return nil, "", err
+		return nil, messageOutput{}, err
 	}
 
 	var b strings.Builder
@@ -93,18 +104,19 @@ func (s *MCPServer) handleSchema(
 	for _, name := range collections {
 		s.appendCollectionSchema(&b, ctx, name)
 	}
-	return nil, b.String(), nil
+	res, out := newMessageResult(b.String())
+	return res, out, nil
 }
 
 func (s *MCPServer) handleCreate(
 	ctx context.Context, _ *mcp.CallToolRequest, args createMigrationArgs,
-) (*mcp.CallToolResult, string, error) {
+) (*mcp.CallToolResult, messageOutput, error) {
 	version := time.Now().Format("20060102_150405")
 	slug := strings.ToLower(strings.ReplaceAll(args.Name, " ", "_"))
 	path := filepath.Join("migrations", fmt.Sprintf("%s_%s.go", version, slug))
 
 	if err := os.MkdirAll("migrations", 0750); err != nil {
-		return nil, "", err
+		return nil, messageOutput{}, err
 	}
 
 	var buf bytes.Buffer
@@ -115,14 +127,15 @@ func (s *MCPServer) handleCreate(
 	}
 
 	if err := migrationTemplate.Execute(&buf, data); err != nil {
-		return nil, "", err
+		return nil, messageOutput{}, err
 	}
 
 	if err := os.WriteFile(path, buf.Bytes(), 0600); err != nil {
-		return nil, "", err
+		return nil, messageOutput{}, err
 	}
 
-	return nil, fmt.Sprintf("🚀 Created migration: `%s`", path), nil
+	res, out := newMessageResult(fmt.Sprintf("🚀 Created migration: `%s`", path))
+	return res, out, nil
 }
 
 func (s *MCPServer) appendCollectionSchema(b *strings.Builder, ctx context.Context, name string) {
