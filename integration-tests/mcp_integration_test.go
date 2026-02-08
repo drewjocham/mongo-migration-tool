@@ -1,4 +1,4 @@
-//go:build integration
+
 
 package integration_tests_test
 
@@ -6,6 +6,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	logging "github.com/drewjocham/mongo-migration-tool/internal/log"
 	"io"
 	"strings"
 	"testing"
@@ -113,8 +114,8 @@ func TestMCPIntegration_FullLifecycle(t *testing.T) {
 	if err != nil {
 		t.Fatalf("config error: %v", err)
 	}
-
-	server, err := mcp.NewMCPServer(cfg)
+	logger,_ := logging.New(true, "")
+	server, err := mcp.NewMCPServer(cfg,logger)
 	if err != nil {
 		t.Fatalf("failed to init mcp server: %v", err)
 	}
@@ -126,7 +127,7 @@ func TestMCPIntegration_FullLifecycle(t *testing.T) {
 		cancelServer()
 		_ = clientToSrvW.Close()
 		_ = srvToClientR.Close()
-		server.Close()
+		server.Close(context.TODO())
 	})
 
 	client := &mcpClient{

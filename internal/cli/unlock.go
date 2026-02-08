@@ -14,7 +14,8 @@ func newUnlockCmd() *cobra.Command {
 		Short: "Release a stuck migration lock",
 		Long:  "Forcefully removes the distributed migration lock document so a new migration run can proceed.",
 		RunE: func(cmd *cobra.Command, _ []string) error {
-			if !confirm && !promptConfirmation(cmd, "WARNING: This will release the migration lock and should only be used if no other instances are running. Continue? [y/N]: ") {
+			if !confirm && !promptConfirmation(cmd, "WARNING: This will release the migration lock and should "+
+				"only be used if no other instances are running. Continue? [y/N]: ") {
 				fmt.Fprintln(cmd.OutOrStdout(), "Operation cancelled.")
 				return nil
 			}

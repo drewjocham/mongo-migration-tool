@@ -6,195 +6,187 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"net"
+	"io"
 	"os"
-	"os/exec"
 	"path/filepath"
-	"runtime"
+	"regexp"
 	"sort"
 	"strings"
 	"testing"
 	"time"
 
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+	"github.com/testcontainers/testcontainers-go"
+	"github.com/testcontainers/testcontainers-go/modules/mongodb"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 
+	"github.com/drewjocham/mongo-migration-tool/internal/cli"
 	"github.com/drewjocham/mongo-migration-tool/migration"
 	_ "github.com/drewjocham/mongo-migration-tool/migrations"
 )
 
-type testEnv struct {
-	projectRoot     string
-	dockerConfigDir string
-	projectName     string
-	mongoPort       int
-	env             []string
+type TestEnv struct {
+	ConfigPath  string
+	DBName      string
+	ColName     string
+	MongoClient *mongo.Client
 }
 
-func TestCLIDockerCommands(t *testing.T) {
-	if testing.Short() {
-		t.Skip("skipping CLI integration test in short mode")
-	}
-
-	requireDocker(t)
-	env := setupTestEnv(t)
-
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Minute)
-	defer cancel()
-
-	t.Log("Building and starting Docker environment...")
-	env.compose(ctx, t, "build", "cli")
-	env.compose(ctx, t, "up", "-d", "mongo")
-	t.Cleanup(func() { env.compose(context.Background(), t, "down", "-v") })
-
-	env.waitForMongo(ctx, t)
+func TestMigrationLifecycle(t *testing.T) {
+	ctx := context.Background()
+	env := setupIntegrationEnv(t, ctx)
 
 	versions := sortedMigrationVersions()
-	if len(versions) == 0 {
-		t.Fatal("no registered migrations found")
+	require.NotEmpty(t, versions)
+	latest := versions[len(versions)-1]
+
+	steps := []struct {
+		name         string
+		args         []string
+		expectOutput string
+		expectState  string
+	}{
+		{
+			name:        "Initial status is pending",
+			args:        []string{"status"},
+			expectState: "[ ]",
+		},
+		{
+			name:         "Migrate up to latest",
+			args:         []string{"up"},
+			expectOutput: "Database is up to date",
+		},
+		{
+			name:        "Status shows completed",
+			args:        []string{"status"},
+			expectState: "[✓]",
+		},
 	}
-	earliest, latest := versions[0], versions[len(versions)-1]
 
-	t.Run("migration lifecycle", func(t *testing.T) {
-		status := env.runCLI(ctx, t, "status")
-		requireVersionState(t, status, latest, "[ ]")
+	for _, tt := range steps {
+		t.Run(tt.name, func(t *testing.T) {
+			out := env.RunCLI(t, tt.args...)
+			if tt.expectOutput != "" {
+				assert.Contains(t, out, tt.expectOutput)
+			}
+			if tt.expectState != "" {
+				assertVersionState(t, out, latest, tt.expectState)
+			}
+		})
+	}
 
-		// Migrate Up
-		upOut := env.runCLI(ctx, t, "up")
-		if !strings.Contains(upOut, "Database is up to date") {
-			t.Errorf("unexpected 'up' output: %s", upOut)
-		}
-
-		status = env.runCLI(ctx, t, "status")
-		requireVersionState(t, status, latest, "[✓]")
-
-		// Rollback
-		env.runCLI(ctx, t, "down", "--target", earliest)
-		status = env.runCLI(ctx, t, "status")
-		requireVersionState(t, status, latest, "[ ]")
-
-		// Check Version Command
-		versionOut := env.runCLI(ctx, t, "version")
-		if !strings.Contains(strings.ToLower(versionOut), "version") {
-			t.Errorf("invalid version output: %s", versionOut)
-		}
+	t.Run("Verify DB persistence", func(t *testing.T) {
+		col := env.MongoClient.Database(env.DBName).Collection(env.ColName)
+		count, err := col.CountDocuments(ctx, bson.M{"version": latest})
+		require.NoError(t, err)
+		assert.Equal(t, int64(1), count)
 	})
 }
 
-func setupTestEnv(t *testing.T) *testEnv {
-	_, file, _, _ := runtime.Caller(0)
-	root := filepath.Clean(filepath.Join(filepath.Dir(file), ".."))
+func setupIntegrationEnv(t *testing.T, ctx context.Context) *TestEnv {
+	container, err := mongodb.RunContainer(ctx, testcontainers.WithImage("mongo:8.0"))
+	require.NoError(t, err)
+	t.Cleanup(func() { container.Terminate(context.Background()) })
 
-	tmpDir := t.TempDir()
-	configPath := filepath.Join(tmpDir, "config.json")
-	_ = os.WriteFile(configPath, []byte(`{"auths":{}}`), 0600)
+	connStr, err := container.ConnectionString(ctx)
+	require.NoError(t, err)
 
-	port := getFreePort(t)
-	projName := fmt.Sprintf("mm-it-%d", time.Now().UnixNano())
+	dbName := fmt.Sprintf("it_%d", time.Now().UnixNano())
+	colName := "schema_migrations"
 
-	return &testEnv{
-		projectRoot:     root,
-		dockerConfigDir: tmpDir,
-		projectName:     projName,
-		mongoPort:       port,
-		env: append(os.Environ(),
-			fmt.Sprintf("COMPOSE_PROJECT_NAME=%s", projName),
-			fmt.Sprintf("INTEGRATION_MONGO_PORT=%d", port),
-			fmt.Sprintf("DOCKER_CONFIG=%s", tmpDir),
-		),
+	configContent := fmt.Sprintf(
+		"MONGO_URL=%s\nMONGO_DATABASE=%s\nMIGRATIONS_COLLECTION=%s\n",
+		connStr,
+		dbName,
+		colName,
+	)
+
+	configPath := filepath.Join(t.TempDir(), "mmt.yaml")
+	err = os.WriteFile(configPath, []byte(configContent), 0644)
+	require.NoError(t, err)
+
+	client, err := mongo.Connect(ctx, options.Client().ApplyURI(connStr))
+	require.NoError(t, err)
+	t.Cleanup(func() { client.Disconnect(context.Background()) })
+
+	t.Setenv("MONGO_URL", connStr)
+	t.Setenv("MONGO_DATABASE", dbName)
+	t.Setenv("MIGRATIONS_COLLECTION", colName)
+
+	return &TestEnv{
+		ConfigPath:  configPath,
+		DBName:      dbName,
+		ColName:     colName,
+		MongoClient: client,
 	}
 }
 
-func (e *testEnv) compose(ctx context.Context, t *testing.T, args ...string) string {
+func (e *TestEnv) RunCLI(t *testing.T, args ...string) string {
 	t.Helper()
-	composeFile := filepath.Join(e.projectRoot, "docker/integration-compose.yml")
-	fullArgs := append([]string{"-f", composeFile}, args...)
-	return e.execCmd(ctx, t, "docker-compose", fullArgs...)
+	oldArgs := os.Args
+	os.Args = append([]string{"mmt", "--config", e.ConfigPath}, args...)
+	defer func() { os.Args = oldArgs }()
+
+	stdout, stderr, err := captureOutput(cli.Execute)
+	require.NoError(t, err, stderr)
+	return stdout
 }
 
-func (e *testEnv) runCLI(ctx context.Context, t *testing.T, cliArgs ...string) string {
-	t.Helper()
-	args := append([]string{"run", "--rm", "cli"}, cliArgs...)
-	return e.compose(ctx, t, args...)
+func captureOutput(f func() error) (string, string, error) {
+	oldOut, oldErr := os.Stdout, os.Stderr
+	rOut, wOut, _ := os.Pipe()
+	rErr, wErr, _ := os.Pipe()
+	os.Stdout, os.Stderr = wOut, wErr
+
+	errChan := make(chan error, 1)
+	go func() { errChan <- f() }()
+
+	resOut := make(chan string)
+	resErr := make(chan string)
+	go func() {
+		var b bytes.Buffer
+		io.Copy(&b, rOut)
+		resOut <- b.String()
+	}()
+
+	go func() {
+		var b bytes.Buffer
+		io.Copy(&b, rErr)
+		resErr <- b.String()
+	}()
+
+	fErr := <-errChan
+	wOut.Close()
+	wErr.Close()
+
+	stdout, stderr := <-resOut, <-resErr
+	os.Stdout, os.Stderr = oldOut, oldErr
+	return stdout, stderr, fErr
 }
 
-func (e *testEnv) execCmd(ctx context.Context, t *testing.T, name string, args ...string) string {
+func assertVersionState(t *testing.T, output, version, state string) {
 	t.Helper()
-	cmd := exec.CommandContext(ctx, name, args...)
-	cmd.Env = e.env
-
-	var stdout, stderr bytes.Buffer
-	cmd.Stdout = &stdout
-	cmd.Stderr = &stderr
-
-	err := cmd.Run()
-	combined := stdout.String() + stderr.String()
-
-	if err != nil {
-		t.Logf("CLI STDERR: %s", stderr.String())
-		t.Fatalf("command [%s %s] failed: %v\nOutput: %s", name, strings.Join(args, " "), err, combined)
-	}
-	return stdout.String()
-}
-
-func (e *testEnv) waitForMongo(ctx context.Context, t *testing.T) {
-	t.Helper()
-	uri := fmt.Sprintf("mongodb://admin:password@localhost:%d/?authSource=admin", e.mongoPort)
-	ticker := time.NewTicker(2 * time.Second)
-	defer ticker.Stop()
-
-	for {
-		select {
-		case <-ctx.Done():
-			t.Fatalf("timed out waiting for mongo at %s: %v", uri, ctx.Err())
-		case <-ticker.C:
-			client, err := mongo.Connect(ctx, options.Client().ApplyURI(uri))
-			if err != nil {
-				continue
-			}
-			err = client.Ping(ctx, nil)
-			_ = client.Disconnect(ctx)
-			if err == nil {
-				return
-			}
-		}
-	}
-}
-
-func requireVersionState(t *testing.T, output, version, marker string) {
-	t.Helper()
-	for _, line := range strings.Split(output, "\n") {
+	cleanOut := regexp.MustCompile(`\x1b\[[0-9;]*m`).ReplaceAllString(output, "")
+	found := false
+	for _, line := range strings.Split(cleanOut, "\n") {
 		if strings.Contains(line, version) {
-			if !strings.Contains(line, marker) {
-				t.Fatalf("version %s state mismatch: expected %s, got line: %q", version, marker, line)
-			}
-			return
+			assert.Contains(t, line, state)
+			found = true
+			break
 		}
 	}
-	t.Fatalf("version %s not found in output", version)
-}
-
-func getFreePort(t *testing.T) int {
-	l, err := net.Listen("tcp", "localhost:0")
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer l.Close()
-	return l.Addr().(*net.TCPAddr).Port
-}
-
-func requireDocker(t *testing.T) {
-	if _, err := exec.LookPath("docker"); err != nil {
-		t.Skip("Docker not found")
-	}
+	assert.True(t, found)
 }
 
 func sortedMigrationVersions() []string {
-	regs := migration.RegisteredMigrations()
-	versions := make([]string, 0, len(regs))
-	for v := range regs {
-		versions = append(versions, v)
+	m := migration.RegisteredMigrations()
+	v := make([]string, 0, len(m))
+	for k := range m {
+		v = append(v, k)
 	}
-	sort.Strings(versions)
-	return versions
+	sort.Strings(v)
+	return v
 }

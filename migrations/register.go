@@ -8,5 +8,7 @@ func init() { //nolint:gochecknoinits // auto-registration keeps CLI zero-config
 		&CreateUsersCollectionMigration{},
 		&Migration20251207_190640CreateProductCollection{},
 		&Migration20251207_192545TestDemoAgl{},
+		&Migration_20260208_030133_example1{},
+		&Migration_20260208_032830_drew{},
 	)
 }

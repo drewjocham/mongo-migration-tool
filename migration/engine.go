@@ -17,11 +17,9 @@ import (
 )
 
 const (
-	defaultLockID  = "migration_engine_lock"
-	collLock       = "migrations_lock"
-	collMigrations = "schema_migrations"
-
-	// Log messages
+	defaultLockID         = "migration_engine_lock"
+	collLock              = "migrations_lock"
+	collMigrations        = "schema_migrations"
 	logExecutingMigration = "Executing migration"
 )
 
@@ -52,45 +50,38 @@ type Engine struct {
 	coll       string
 }
 
-func NewEngine(db *mongo.Database, migrationsCollection string, migrations map[string]Migration) *Engine {
-	if migrationsCollection == "" {
-		migrationsCollection = collMigrations
+func NewEngine(db *mongo.Database, coll string, migrations map[string]Migration) *Engine {
+	if coll == "" {
+		coll = collMigrations
 	}
-	return &Engine{
-		db:         db,
-		migrations: migrations,
-		coll:       migrationsCollection,
-	}
+	return &Engine{db: db, migrations: migrations, coll: coll}
 }
 
 func (e *Engine) GetStatus(ctx context.Context) ([]MigrationStatus, error) {
 	applied, err := e.getAppliedMap(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("%s: %w", ErrFailedToReadMigrations, err)
+		return nil, fmt.Errorf("%w: %w", ErrFailedToReadMigrations, err)
 	}
 
-	versions := e.getSortedVersions()
+	versions := e.getSortedVersions(DirectionUp)
 	status := make([]MigrationStatus, len(versions))
 
 	for i, v := range versions {
+		m := e.migrations[v]
 		rec, isApplied := applied[v]
 		status[i] = MigrationStatus{
 			Version:     v,
-			Description: e.migrations[v].Description(),
+			Description: m.Description(),
 			Applied:     isApplied,
 		}
 		if isApplied {
 			status[i].AppliedAt = &rec.AppliedAt
 		}
 	}
-
 	return status, nil
 }
 
-func (e *Engine) Up(ctx context.Context, target string) error {
-	return e.run(ctx, DirectionUp, target)
-}
-
+func (e *Engine) Up(ctx context.Context, target string) error { return e.run(ctx, DirectionUp, target) }
 func (e *Engine) Down(ctx context.Context, target string) error {
 	return e.run(ctx, DirectionDown, target)
 }
@@ -106,17 +97,14 @@ func (e *Engine) Force(ctx context.Context, version string) error {
 		return fmt.Errorf("%s: %w", ErrFailedToReadMigrations, err)
 	}
 
-	if _, isApplied := applied[version]; isApplied {
-		// Migration is already applied, nothing to do.
+	if _, exists := applied[version]; exists {
 		return nil
 	}
 
 	coll := e.db.Collection(e.coll)
-	_, err = coll.InsertOne(ctx, e.newRecord(m))
-	if err != nil {
+	if _, err := coll.InsertOne(ctx, e.newRecord(m)); err != nil {
 		return fmt.Errorf("%s: %w", ErrFailedToSetVersion, err)
 	}
-
 	return nil
 }
 
@@ -124,14 +112,14 @@ func (e *Engine) run(ctx context.Context, dir Direction, target string) error {
 	if err := e.acquireLock(ctx); err != nil {
 		return err
 	}
-	defer e.releaseLock(context.Background())
+	defer e.releaseLock(context.Background()) // to release on cancel
 
 	applied, err := e.getAppliedMap(ctx)
 	if err != nil {
 		return err
 	}
 
-	plan, err := e.planExecution(dir, target, applied)
+	plan, err := e.Plan(ctx, dir, target)
 	if err != nil {
 		return err
 	}
@@ -149,55 +137,28 @@ func (e *Engine) run(ctx context.Context, dir Direction, target string) error {
 
 		slog.Info(logExecutingMigration, "version", version, "direction", dir)
 		if err := e.executeWithRetry(ctx, m, dir); err != nil {
-			return fmt.Errorf("%s: %w", ErrFailedToRunMigration, err)
+			return fmt.Errorf("%w: %s: %w", ErrFailedToRunMigration, version, err)
 		}
 	}
-
 	return nil
 }
 
 func (e *Engine) Plan(ctx context.Context, dir Direction, target string) ([]string, error) {
 	applied, err := e.getAppliedMap(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("plan migrations: %w", err)
-	}
-	return e.planExecution(dir, target, applied)
-}
-func (e *Engine) executeWithRetry(ctx context.Context, m Migration, dir Direction) error {
-	session, err := e.db.Client().StartSession()
-	if err != nil {
-		return err
-	}
-	defer session.EndSession(ctx)
-
-	_, err = session.WithTransaction(ctx, func(sCtx mongo.SessionContext) (interface{}, error) {
-		return nil, e.perform(sCtx, m, dir)
-	})
-
-	if err != nil && isTransactionNotSupported(err) {
-		return e.perform(ctx, m, dir)
+		return nil, err
 	}
 
-	return err
-}
-
-func (e *Engine) planExecution(dir Direction, target string, applied map[string]MigrationRecord) ([]string, error) {
-	versions := e.getSortedVersions()
-
-	if dir == DirectionDown {
-		slices.Reverse(versions)
-	}
-
+	versions := e.getSortedVersions(dir)
 	var plan []string
+
 	for _, v := range versions {
 		_, isApplied := applied[v]
+		shouldInclude := (dir == DirectionUp && !isApplied) || (dir == DirectionDown && isApplied)
 
-		if dir == DirectionUp && !isApplied {
-			plan = append(plan, v)
-		} else if dir == DirectionDown && isApplied {
+		if shouldInclude {
 			plan = append(plan, v)
 		}
-
 		if target != "" && v == target {
 			break
 		}
@@ -205,19 +166,36 @@ func (e *Engine) planExecution(dir Direction, target string, applied map[string]
 	return plan, nil
 }
 
-func (e *Engine) getSortedVersions() []string {
-	versions := make([]string, 0, len(e.migrations))
-	for v := range e.migrations {
-		versions = append(versions, v)
+func (e *Engine) ForceUnlock(ctx context.Context) error {
+	coll := e.db.Collection(collLock)
+	_, err := coll.DeleteMany(ctx, bson.M{"lock_id": defaultLockID})
+	if err != nil {
+		return fmt.Errorf("failed to force unlock: %w", err)
 	}
-	sort.Strings(versions)
-	return versions
+	return nil
+}
+
+func (e *Engine) executeWithRetry(ctx context.Context, m Migration, dir Direction) error {
+	op := func(sc context.Context) error { return e.perform(sc, m, dir) }
+
+	session, err := e.db.Client().StartSession()
+	if err != nil {
+		return op(ctx)
+	}
+	defer session.EndSession(ctx)
+
+	_, err = session.WithTransaction(ctx, func(sCtx mongo.SessionContext) (interface{}, error) {
+		return nil, op(sCtx)
+	})
+
+	if err != nil && isTransactionNotSupported(err) {
+		return op(ctx)
+	}
+	return err
 }
 
 func (e *Engine) perform(ctx context.Context, m Migration, dir Direction) error {
 	coll := e.db.Collection(e.coll)
-	version := m.Version()
-
 	if dir == DirectionUp {
 		if err := m.Up(ctx, e.db); err != nil {
 			return err
@@ -229,17 +207,27 @@ func (e *Engine) perform(ctx context.Context, m Migration, dir Direction) error 
 	if err := m.Down(ctx, e.db); err != nil {
 		return err
 	}
-	_, err := coll.DeleteOne(ctx, bson.M{"version": version})
+	_, err := coll.DeleteOne(ctx, bson.M{"version": m.Version()})
 	return err
 }
 
+func (e *Engine) getSortedVersions(dir Direction) []string {
+	versions := make([]string, 0, len(e.migrations))
+	for v := range e.migrations {
+		versions = append(versions, v)
+	}
+	sort.Strings(versions)
+	if dir == DirectionDown {
+		slices.Reverse(versions)
+	}
+	return versions
+}
+
 func (e *Engine) getAppliedMap(ctx context.Context) (map[string]MigrationRecord, error) {
-	coll := e.db.Collection(e.coll)
-	cursor, err := coll.Find(ctx, bson.M{}, options.Find().SetSort(bson.M{"version": 1}))
+	cursor, err := e.db.Collection(e.coll).Find(ctx, bson.M{})
 	if err != nil {
 		return nil, err
 	}
-
 	var records []MigrationRecord
 	if err := cursor.All(ctx, &records); err != nil {
 		return nil, err
@@ -253,11 +241,8 @@ func (e *Engine) getAppliedMap(ctx context.Context) (map[string]MigrationRecord,
 }
 
 func (e *Engine) validateChecksum(m Migration, record MigrationRecord) error {
-	if record.Checksum != e.calculateChecksum(m) {
-		return fmt.Errorf(
-			"checksum mismatch for %s: expected %s, got %s",
-			m.Version(), record.Checksum, e.calculateChecksum(m),
-		)
+	if current := e.calculateChecksum(m); record.Checksum != current {
+		return fmt.Errorf("checksum mismatch for %s: expected %s, got %s", m.Version(), record.Checksum, current)
 	}
 	return nil
 }
@@ -276,51 +261,15 @@ func (e *Engine) newRecord(m Migration) MigrationRecord {
 	}
 }
 
-func isTransactionNotSupported(err error) bool {
-	var cmdErr mongo.CommandError
-	if errors.As(err, &cmdErr) {
-		switch cmdErr.Code {
-		case 20, 251, 303: // IllegalOperation, NoSuchTransaction, TransactionNotSupportedInShardedCluster
-			return true
-		}
-		if strings.Contains(strings.ToLower(cmdErr.Message), "transactions are not supported") {
-			return true
-		}
-	}
-
-	var writeErr mongo.WriteException
-	if errors.As(err, &writeErr) {
-		if writeErr.WriteConcernError != nil {
-			switch writeErr.WriteConcernError.Code {
-			case 20, 251, 303:
-				return true
-			}
-			if strings.Contains(strings.ToLower(writeErr.WriteConcernError.Message), "transactions are not supported") {
-				return true
-			}
-		}
-	}
-
-	return strings.Contains(strings.ToLower(err.Error()), "transactions are not supported")
-}
-
 func (e *Engine) acquireLock(ctx context.Context) error {
 	coll := e.db.Collection(collLock)
 
-	_, _ = coll.Indexes().CreateOne(ctx, mongo.IndexModel{
-		Keys:    bson.D{{Key: "acquired_at", Value: 1}},
-		Options: options.Index().SetExpireAfterSeconds(600),
-	})
-	_, _ = coll.Indexes().CreateOne(ctx, mongo.IndexModel{
-		Keys:    bson.D{{Key: "lock_id", Value: 1}},
-		Options: options.Index().SetUnique(true),
+	_, _ = coll.Indexes().CreateMany(ctx, []mongo.IndexModel{
+		{Keys: bson.D{{Key: "acquired_at", Value: 1}}, Options: options.Index().SetExpireAfterSeconds(600)},
+		{Keys: bson.D{{Key: "lock_id", Value: 1}}, Options: options.Index().SetUnique(true)},
 	})
 
-	_, err := coll.InsertOne(ctx, bson.M{
-		"lock_id":     defaultLockID,
-		"acquired_at": time.Now().UTC(),
-	})
-
+	_, err := coll.InsertOne(ctx, bson.M{"lock_id": defaultLockID, "acquired_at": time.Now().UTC()})
 	if mongo.IsDuplicateKeyError(err) {
 		return ErrFailedToLock
 	}
@@ -328,12 +277,17 @@ func (e *Engine) acquireLock(ctx context.Context) error {
 }
 
 func (e *Engine) releaseLock(ctx context.Context) {
-	coll := e.db.Collection(collLock)
-	_, _ = coll.DeleteOne(ctx, bson.M{"lock_id": defaultLockID})
+	_, _ = e.db.Collection(collLock).DeleteOne(ctx, bson.M{"lock_id": defaultLockID})
 }
 
-func (e *Engine) ForceUnlock(ctx context.Context) error {
-	coll := e.db.Collection(collLock)
-	_, err := coll.DeleteMany(ctx, bson.M{"lock_id": defaultLockID})
-	return err
+func isTransactionNotSupported(err error) bool {
+	msg := strings.ToLower(err.Error())
+	isCodeMatch := false
+
+	var cmdErr mongo.CommandError
+	if errors.As(err, &cmdErr) {
+		isCodeMatch = slices.Contains([]int32{20, 251, 303}, cmdErr.Code)
+	}
+
+	return isCodeMatch || strings.Contains(msg, "transactions are not supported")
 }

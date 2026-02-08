@@ -5,10 +5,11 @@ import (
 	"crypto/tls"
 	"errors"
 	"fmt"
+	logging "github.com/drewjocham/mongo-migration-tool/internal/log"
+	"io"
 	"time"
 
 	"github.com/drewjocham/mongo-migration-tool/internal/config"
-	"github.com/drewjocham/mongo-migration-tool/internal/logging"
 	"github.com/drewjocham/mongo-migration-tool/migration"
 	"github.com/spf13/cobra"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -33,36 +34,58 @@ var (
 	ErrShowConfigDisplayed   = errors.New("configuration displayed")
 )
 
-type Dependencies struct {
+type Services struct {
 	Config      *config.Config
 	Engine      *migration.Engine
 	MongoClient *mongo.Client
 }
 
+type runner func(ctx context.Context, s *Services) error
+
 func Execute() error {
-	deps := &Dependencies{}
-	return newRootCmd(deps).Execute()
+	return newRootCmd().Execute()
 }
 
-func newRootCmd(deps *Dependencies) *cobra.Command {
+func newRootCmd() *cobra.Command {
+
 	cmd := &cobra.Command{
 		Use:     "mmt",
 		Short:   "MongoDB migration toolkit",
 		Version: fmt.Sprintf("%s (commit: %s, build date: %s)", appVersion, commit, date),
 		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
-			return setupDependencies(cmd, deps)
+			if _, err := logging.New(debugMode, logFile); err != nil {
+				return err
+			}
+
+			s, err := bootstrap(cmd.Context(), configFile, showConfig, cmd.OutOrStdout(), isOffline(cmd))
+			if err != nil {
+				return err
+			}
+			if s != nil {
+				ctx := context.WithValue(cmd.Context(), ctxServicesKey, s)
+				if s.Config != nil {
+					ctx = context.WithValue(ctx, ctxConfigKey, s.Config)
+				}
+				if s.Engine != nil {
+					ctx = context.WithValue(ctx, ctxEngineKey, s.Engine)
+				}
+				cmd.SetContext(ctx)
+			}
+			return nil
 		},
 		PersistentPostRun: func(cmd *cobra.Command, _ []string) {
-			teardown(deps)
+			if s, ok := cmd.Context().Value(ctxServicesKey).(*Services); ok {
+				teardown(s)
+			}
 		},
 		SilenceUsage: true,
 	}
 
-	pFlags := cmd.PersistentFlags()
-	pFlags.StringVarP(&configFile, "config", "c", "", "Path to config file")
-	pFlags.BoolVar(&debugMode, "debug", false, "Enable debug logging")
-	pFlags.StringVar(&logFile, "log-file", "", "Path to write logs to a file")
-	pFlags.BoolVar(&showConfig, "show-config", false, "Print effective configuration and exit")
+	p := cmd.PersistentFlags()
+	p.StringVarP(&configFile, "config", "c", "", "Path to config file")
+	p.BoolVar(&debugMode, "debug", false, "Enable debug logging")
+	p.StringVar(&logFile, "log-file", "", "Path to write logs to a file")
+	p.BoolVar(&showConfig, "show-config", false, "Print effective configuration and exit")
 
 	cmd.AddCommand(
 		newUpCmd(), newDownCmd(), newForceCmd(), newUnlockCmd(),
@@ -73,46 +96,41 @@ func newRootCmd(deps *Dependencies) *cobra.Command {
 	return cmd
 }
 
-func setupDependencies(cmd *cobra.Command, deps *Dependencies) error {
-	if _, err := logging.New(debugMode, logFile); err != nil {
-		return fmt.Errorf("logger init: %w", err)
-	}
-
-	cfg, err := loadConfigFromFlags(configFile)
+func bootstrap(ctx context.Context, path string, show bool, out io.Writer, offline bool) (*Services, error) {
+	cfg, err := loadConfig(path)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	deps.Config = cfg
 
-	if showConfig {
-		if err := renderConfig(cmd.OutOrStdout(), cfg); err != nil {
-			return err
+	if show {
+		if err := renderConfig(out, cfg); err != nil {
+			return nil, err
 		}
-		return ErrShowConfigDisplayed
+		return nil, ErrShowConfigDisplayed
 	}
 
-	if isOffline(cmd) {
-		return nil
+	if offline {
+		return &Services{Config: cfg}, nil
 	}
 
-	if err := ensureMigrationsRegistered(); err != nil {
-		return err
+	if err := validateRegistry(); err != nil {
+		return nil, err
 	}
 
-	engine, client, err := initEngine(cmd.Context(), cfg)
+	client, err := dial(ctx, cfg)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	deps.Engine = engine
-	deps.MongoClient = client
 
-	return nil
+	return &Services{
+		Config:      cfg,
+		MongoClient: client,
+		Engine: migration.NewEngine(client.Database(cfg.Database), cfg.MigrationsCollection,
+			migration.RegisteredMigrations()),
+	}, nil
 }
 
-func initEngine(ctx context.Context, cfg *config.Config) (*migration.Engine, *mongo.Client, error) {
-	connCtx, cancel := context.WithTimeout(ctx, time.Duration(cfg.Timeout)*time.Second)
-	defer cancel()
-
+func dial(ctx context.Context, cfg *config.Config) (*mongo.Client, error) {
 	opts := options.Client().
 		ApplyURI(cfg.GetConnectionString()).
 		SetMaxPoolSize(uint64(cfg.MaxPoolSize)).
@@ -122,23 +140,21 @@ func initEngine(ctx context.Context, cfg *config.Config) (*migration.Engine, *mo
 		opts.SetTLSConfig(&tls.Config{InsecureSkipVerify: cfg.SSLInsecure})
 	}
 
-	client, err := mongo.Connect(connCtx, opts)
+	client, err := mongo.Connect(ctx, opts)
 	if err != nil {
-		return nil, nil, fmt.Errorf("mongo connect: %w", err)
+		return nil, err
 	}
 
-	if err := runPingWithRetry(connCtx, client); err != nil {
-		_ = client.Disconnect(context.Background())
-		return nil, nil, err
+	if err := ping(ctx, client, maxPingRetries); err != nil {
+		_ = client.Disconnect(ctx)
+		return nil, err
 	}
 
-	db := client.Database(cfg.Database)
-	engine := migration.NewEngine(db, cfg.MigrationsCollection, migration.RegisteredMigrations())
-	return engine, client, nil
+	return client, nil
 }
 
-func runPingWithRetry(ctx context.Context, client *mongo.Client) error {
-	for i := 1; i <= maxPingRetries; i++ {
+func ping(ctx context.Context, client *mongo.Client, retries int) error {
+	for i := 1; i <= retries; i++ {
 		pCtx, cancel := context.WithTimeout(ctx, pingTimeout)
 		err := client.Ping(pCtx, nil)
 		cancel()
@@ -147,18 +163,31 @@ func runPingWithRetry(ctx context.Context, client *mongo.Client) error {
 			return nil
 		}
 
-		zap.S().Warnf("MongoDB attempt %d/%d failed: %v", i, maxPingRetries, err)
+		zap.S().Warnf("Attempt %d/%d failed: %v", i, retries, err)
 
-		if i == maxPingRetries {
-			return fmt.Errorf("mongodb unreachable after %d attempts: %w", maxPingRetries, err)
+		if i == retries {
+			return fmt.Errorf("unreachable: %w", err)
 		}
 
 		select {
 		case <-ctx.Done():
 			return ctx.Err()
 		case <-time.After(pingRetryDelay):
-			continue
 		}
+	}
+	return nil
+}
+
+func loadConfig(path string) (*config.Config, error) {
+	if path != "" {
+		return config.Load(path)
+	}
+	return config.Load(".env", ".env.local")
+}
+
+func validateRegistry() error {
+	if len(migration.RegisteredMigrations()) == 0 {
+		return errors.New("no migrations registered")
 	}
 	return nil
 }
@@ -167,31 +196,14 @@ func isOffline(cmd *cobra.Command) bool {
 	if cmd.Annotations[annotationOffline] == "true" {
 		return true
 	}
-	offlineNames := map[string]bool{"help": true, "version": true, "create": true, "config": true}
-	return offlineNames[cmd.Name()]
+	return map[string]bool{"help": true, "version": true, "create": true, "config": true}[cmd.Name()]
 }
 
-func teardown(deps *Dependencies) {
-	if deps.MongoClient != nil {
+func teardown(s *Services) {
+	if s.MongoClient != nil {
 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
-		if err := deps.MongoClient.Disconnect(ctx); err != nil {
-			zap.S().Warnf("failed to disconnect mongo client: %v", err)
-		}
+		_ = s.MongoClient.Disconnect(ctx)
 	}
 	_ = zap.L().Sync()
-}
-
-func loadConfigFromFlags(path string) (*config.Config, error) {
-	if path != "" {
-		return config.Load(path)
-	}
-	return config.Load(".env", ".env.local")
-}
-
-func ensureMigrationsRegistered() error {
-	if len(migration.RegisteredMigrations()) == 0 {
-		return errors.New("no migrations registered: import your migrations package")
-	}
-	return nil
 }

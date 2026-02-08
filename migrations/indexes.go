@@ -30,5 +30,13 @@ func init() { //nolint:gochecknoinits // registration for schema metadata
 				{Key: "created_at", Value: -1},
 			},
 		},
+		schema.IndexSpec{
+			Collection: "drew",
+			Name:       "idx_address_created_at",
+			Keys: bson.D{
+				{Key: "address", Value: 1},
+				{Key: "created_at", Value: -1},
+			},
+		},
 	)
 }

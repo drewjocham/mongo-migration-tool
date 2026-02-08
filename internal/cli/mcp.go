@@ -4,11 +4,11 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	logging "github.com/drewjocham/mongo-migration-tool/internal/log"
 	"io"
 	"os"
 	"strings"
 
-	"github.com/drewjocham/mongo-migration-tool/internal/logging"
 	"github.com/drewjocham/mongo-migration-tool/internal/mcp"
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
@@ -42,7 +42,7 @@ func NewMCPCmd() *cobra.Command {
 }
 
 func runMCP(cmd *cobra.Command, withExamples bool) error {
-	_, err := logging.New(debugMode, logFile)
+	logger, err := logging.New(false, "")
 	if err != nil {
 		return fmt.Errorf("failed to re-initialize logger for mcp: %w", err)
 	}
@@ -63,11 +63,11 @@ func runMCP(cmd *cobra.Command, withExamples bool) error {
 		return err
 	}
 
-	server, err := mcp.NewMCPServer(cfg)
+	server, err := mcp.NewMCPServer(cfg, logger)
 	if err != nil {
 		return fmt.Errorf("mcp init failed: %w", err)
 	}
-	defer server.Close()
+	defer server.Close(cmd.Context())
 
 	zap.S().Infow("Starting MCP server", "pid", os.Getpid())
 

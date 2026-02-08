@@ -14,8 +14,11 @@ import (
 
 type cliCtxKey string
 
-var ctxEngineKey cliCtxKey
-var ctxConfigKey cliCtxKey
+const (
+	ctxEngineKey   cliCtxKey = "engine"
+	ctxConfigKey   cliCtxKey = "config"
+	ctxServicesKey cliCtxKey = "services"
+)
 
 func getEngine(ctx context.Context) (*migration.Engine, error) {
 	e, ok := ctx.Value(ctxEngineKey).(*migration.Engine)
