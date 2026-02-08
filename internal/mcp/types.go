@@ -7,6 +7,7 @@ type versionArgs struct {
 }
 
 type createMigrationArgs struct {
-	Name        string `json:"name" jsonschema:"description=A short, descriptive name for the migration (e.g., 'add user indexes')."`
+	Name string `json:"name" jsonschema:"description=A short, descriptive name for the migration (e.g., 'add user indexes')."`
+	// A brief summary of the changes in this migration.
 	Description string `json:"description" jsonschema:"description=A brief summary of the changes in this migration."`
 }

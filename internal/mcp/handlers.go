@@ -40,7 +40,9 @@ func (s *MCPServer) registerTools() {
 	}, s.handleSchema)
 }
 
-func (s *MCPServer) handleStatus(ctx context.Context, _ *mcp.CallToolRequest, _ emptyArgs) (*mcp.CallToolResult, string, error) {
+func (s *MCPServer) handleStatus(
+	ctx context.Context, _ *mcp.CallToolRequest, _ emptyArgs,
+) (*mcp.CallToolResult, string, error) {
 	if err := s.ensureConnection(ctx); err != nil {
 		return nil, "", err
 	}
@@ -51,7 +53,9 @@ func (s *MCPServer) handleStatus(ctx context.Context, _ *mcp.CallToolRequest, _ 
 	return nil, formatStatusTable(status), nil
 }
 
-func (s *MCPServer) handleUp(ctx context.Context, _ *mcp.CallToolRequest, args versionArgs) (*mcp.CallToolResult, string, error) {
+func (s *MCPServer) handleUp(
+	ctx context.Context, _ *mcp.CallToolRequest, args versionArgs,
+) (*mcp.CallToolResult, string, error) {
 	if err := s.ensureConnection(ctx); err != nil {
 		return nil, "", err
 	}
@@ -61,7 +65,9 @@ func (s *MCPServer) handleUp(ctx context.Context, _ *mcp.CallToolRequest, args v
 	return nil, "✅ Migrations applied successfully.", nil
 }
 
-func (s *MCPServer) handleDown(ctx context.Context, _ *mcp.CallToolRequest, args versionArgs) (*mcp.CallToolResult, string, error) {
+func (s *MCPServer) handleDown(
+	ctx context.Context, _ *mcp.CallToolRequest, args versionArgs,
+) (*mcp.CallToolResult, string, error) {
 	if err := s.ensureConnection(ctx); err != nil {
 		return nil, "", err
 	}
@@ -71,7 +77,9 @@ func (s *MCPServer) handleDown(ctx context.Context, _ *mcp.CallToolRequest, args
 	return nil, "✅ Rollback completed successfully.", nil
 }
 
-func (s *MCPServer) handleSchema(ctx context.Context, _ *mcp.CallToolRequest, _ emptyArgs) (*mcp.CallToolResult, string, error) {
+func (s *MCPServer) handleSchema(
+	ctx context.Context, _ *mcp.CallToolRequest, _ emptyArgs,
+) (*mcp.CallToolResult, string, error) {
 	if err := s.ensureConnection(ctx); err != nil {
 		return nil, "", err
 	}
@@ -88,7 +96,9 @@ func (s *MCPServer) handleSchema(ctx context.Context, _ *mcp.CallToolRequest, _ 
 	return nil, b.String(), nil
 }
 
-func (s *MCPServer) handleCreate(ctx context.Context, _ *mcp.CallToolRequest, args createMigrationArgs) (*mcp.CallToolResult, string, error) {
+func (s *MCPServer) handleCreate(
+	ctx context.Context, _ *mcp.CallToolRequest, args createMigrationArgs,
+) (*mcp.CallToolResult, string, error) {
 	version := time.Now().Format("20060102_150405")
 	slug := strings.ToLower(strings.ReplaceAll(args.Name, " ", "_"))
 	path := filepath.Join("migrations", fmt.Sprintf("%s_%s.go", version, slug))

@@ -5,11 +5,11 @@ import (
 	"crypto/tls"
 	"errors"
 	"fmt"
+	"github.com/drewjocham/mongo-migration-tool/internal/config"
 	logging "github.com/drewjocham/mongo-migration-tool/internal/log"
 	"io"
 	"time"
 
-	"github.com/drewjocham/mongo-migration-tool/internal/config"
 	"github.com/drewjocham/mongo-migration-tool/migration"
 	"github.com/spf13/cobra"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -39,8 +39,6 @@ type Services struct {
 	Engine      *migration.Engine
 	MongoClient *mongo.Client
 }
-
-type runner func(ctx context.Context, s *Services) error
 
 func Execute() error {
 	return newRootCmd().Execute()
