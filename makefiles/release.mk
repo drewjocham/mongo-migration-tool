@@ -28,7 +28,7 @@ release-beta: ## Create and release a new beta version
 
 sync-library:
 	MODULE=github.com/drewjocham/mongo-migration-tool
-	VERSION=v1.1.0-beta.3
+	VERSION=v1.1.0-beta
 	curl -sS "https://proxy.golang.org/${MODULE}/@v/${VERSION}.info"
 
 
