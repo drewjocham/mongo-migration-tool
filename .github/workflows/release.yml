@@ -85,7 +85,10 @@ jobs:
     uses: slsa-framework/slsa-github-generator/.github/workflows/builder_go_slsa3.yml@v2.1.0
     with:
       config-file: .slsa-goreleaser.yml
-      evaluated-envs: VERSION=${{ needs.goreleaser.outputs.version }}, COMMIT=${{ github.sha }}, BUILD_DATE=${{ needs.goreleaser.outputs.build-date }}
+      evaluated-envs: |
+        VERSION=${{ needs.goreleaser.outputs.version }}
+        COMMIT=${{ github.sha }}
+        BUILD_DATE=${{ needs.goreleaser.outputs.build-date }}
       go-version-file: go.mod
     secrets: inherit
 
