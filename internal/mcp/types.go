@@ -15,7 +15,7 @@ type createMigrationArgs struct {
 	Name        string `json:"name" jsonschema:"description=Migration name"`
 	Description string `json:"description" jsonschema:"description=Brief summary"`
 }
-
+// test
 func toolErrorResult(msg string, err error) *mcp.CallToolResult {
 	return &mcp.CallToolResult{
 		IsError: true,
