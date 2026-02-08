@@ -1,8 +1,8 @@
 services:
   cli:
     build:
-      context: .
-      dockerfile: Dockerfile.local
+      context: ..
+      dockerfile: docker/Dockerfile.local
     environment:
       - MONGO_URL=mongodb://admin:password@mongo:27017/?authSource=admin
       - MONGO_USERNAME=admin
@@ -17,7 +17,6 @@ services:
         condition: service_healthy
     networks:
       - cli-network
-    command: ["--help"]
 
   mongo:
     image: mongo:8.0
@@ -27,11 +26,14 @@ services:
       - MONGO_INITDB_ROOT_PASSWORD=password
       - MONGO_INITDB_DATABASE=cli_integration
     healthcheck:
-      test: ["CMD", "mongosh", "--quiet", "--eval", "db.runCommand({ping:1}).ok"]
+      test:
+        [
+          "CMD-SHELL",
+          "mongosh --quiet --eval \"db.runCommand({ ping: 1 })\" >/dev/null || mongosh --quiet -u admin -p password --authenticationDatabase admin --eval \"db.runCommand({ ping: 1 })\" >/dev/null",
+        ]
       interval: 5s
       timeout: 30s
       start_period: 10s
-      start_interval: 1s
       retries: 30
     ports:
       - "${INTEGRATION_MONGO_PORT:-37017}:27017"

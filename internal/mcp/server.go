@@ -4,15 +4,15 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/modelcontextprotocol/go-sdk/mcp"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 	"io"
+	"log/slog"
 	"os"
 	"os/signal"
 	"sync"
 	"syscall"
-
-	"github.com/modelcontextprotocol/go-sdk/mcp"
-	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
 
 	"github.com/drewjocham/mongo-migration-tool/internal/config"
 	"github.com/drewjocham/mongo-migration-tool/migration"
@@ -26,12 +26,12 @@ type MCPServer struct {
 	client    *mongo.Client
 	config    *config.Config
 	cancel    context.CancelFunc
+	logger    *slog.Logger
 }
 
-func NewMCPServer() (*MCPServer, error) {
-	cfg, err := config.Load()
-	if err != nil {
-		return nil, fmt.Errorf("config load failed: %w", err)
+func NewMCPServer(cfg *config.Config, logger *slog.Logger) (*MCPServer, error) {
+	if cfg == nil {
+		return nil, fmt.Errorf("config is required")
 	}
 
 	s := mcp.NewServer(&mcp.Implementation{
@@ -39,37 +39,16 @@ func NewMCPServer() (*MCPServer, error) {
 		Version: "1.0.0",
 	}, nil)
 
-	srv := &MCPServer{mcpServer: s, config: cfg}
+	srv := &MCPServer{
+		mcpServer: s,
+		config:    cfg,
+		logger:    logger,
+	}
+
 	srv.registerTools()
 	return srv, nil
 }
 
-func (s *MCPServer) registerTools() {
-	mcp.AddTool(s.mcpServer, &mcp.Tool{
-		Name:        "migration_status",
-		Description: "Check applied and pending migrations.",
-	}, s.handleStatus)
-
-	mcp.AddTool(s.mcpServer, &mcp.Tool{
-		Name:        "migration_up",
-		Description: "Apply pending migrations.",
-	}, s.handleUp)
-
-	mcp.AddTool(s.mcpServer, &mcp.Tool{
-		Name:        "migration_down",
-		Description: "Roll back migrations.",
-	}, s.handleDown)
-
-	mcp.AddTool(s.mcpServer, &mcp.Tool{
-		Name:        "migration_create",
-		Description: "Generate a new migration file.",
-	}, s.handleCreate)
-
-	mcp.AddTool(s.mcpServer, &mcp.Tool{
-		Name:        "database_schema",
-		Description: "View collections and indexes.",
-	}, s.handleSchema)
-}
 
 func (s *MCPServer) ensureConnection(ctx context.Context) error {
 	s.mu.Lock()
@@ -81,37 +60,17 @@ func (s *MCPServer) ensureConnection(ctx context.Context) error {
 		}
 	}
 
-	client, err := mongo.Connect(ctx, options.Client().ApplyURI(s.config.GetConnectionString()))
+	client, err := mongo.Connect(ctx, options.Client().ApplyURI(s.config.MongoURL))
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to connect to mongodb: %w", err)
 	}
 
 	s.client = client
 	s.db = client.Database(s.config.Database)
 	s.engine = migration.NewEngine(s.db, s.config.MigrationsCollection, migration.RegisteredMigrations())
+
+	s.logger.Info("connected to mongodb", "database", s.config.Database)
 	return nil
-}
-
-func (s *MCPServer) Close() error {
-	s.mu.Lock()
-	client := s.client
-	s.client = nil
-	cancel := s.cancel
-	s.cancel = nil
-	s.mu.Unlock()
-
-	if cancel != nil {
-		cancel()
-	}
-
-	var errs []error
-	if client != nil {
-		if err := client.Disconnect(context.Background()); err != nil {
-			errs = append(errs, fmt.Errorf("failed to disconnect mongo client: %w", err))
-		}
-	}
-
-	return errors.Join(errs...)
 }
 
 func (s *MCPServer) Start() error {
@@ -133,6 +92,7 @@ func (s *MCPServer) Start() error {
 		s.mu.Unlock()
 	}()
 
+	s.logger.Info("starting mcp server")
 	return s.Serve(ctx, os.Stdin, os.Stdout)
 }
 
@@ -141,6 +101,28 @@ func (s *MCPServer) Serve(ctx context.Context, r io.Reader, w io.Writer) error {
 		Reader: io.NopCloser(r),
 		Writer: nopWriteCloser{Writer: w},
 	})
+}
+
+func (s *MCPServer) Close(ctx context.Context) error {
+	s.mu.Lock()
+	client := s.client
+	s.client = nil
+	cancel := s.cancel
+	s.cancel = nil
+	s.mu.Unlock()
+
+	if cancel != nil {
+		cancel()
+	}
+
+	var errs []error
+	if client != nil {
+		if err := client.Disconnect(ctx); err != nil {
+			errs = append(errs, fmt.Errorf("failed to disconnect mongo client: %w", err))
+		}
+	}
+
+	return errors.Join(errs...)
 }
 
 type nopWriteCloser struct {

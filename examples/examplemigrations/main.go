@@ -5,7 +5,9 @@ import (
 )
 
 func init() { //nolint:gochecknoinits // init functions are used for migration registration
-	migration.Register(&AddUserIndexesMigration{})
-	migration.Register(&TransformUserDataMigration{})
-	migration.Register(&CreateAuditCollectionMigration{})
+	migration.MustRegister(
+		&AddUserIndexesMigration{},
+		&TransformUserDataMigration{},
+		&CreateAuditCollectionMigration{},
+	)
 }

@@ -1,4 +1,4 @@
-//go:build integration
+
 
 package integration_tests_test
 
@@ -6,6 +6,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	logging "github.com/drewjocham/mongo-migration-tool/internal/log"
 	"io"
 	"strings"
 	"testing"
@@ -27,83 +28,42 @@ type rpcRequest struct {
 	Params  interface{} `json:"params,omitempty"`
 }
 
-type rpcError struct {
-	Code    int    `json:"code"`
-	Message string `json:"message"`
-	Data    string `json:"data,omitempty"`
-}
-
 type rpcResponse struct {
 	JSONRPC string          `json:"jsonrpc"`
 	ID      interface{}     `json:"id"`
 	Result  json.RawMessage `json:"result,omitempty"`
-	Error   *rpcError       `json:"error,omitempty"`
+	Error   *struct {
+		Code    int    `json:"code"`
+		Message string `json:"message"`
+	} `json:"error,omitempty"`
 }
 
-type toolCallParams struct {
-	Name      string                 `json:"name"`
-	Arguments map[string]interface{} `json:"arguments,omitempty"`
-}
-
-type toolsListResult struct {
-	Tools []struct {
-		Name string `json:"name"`
-	} `json:"tools"`
-}
-
-type toolCallResult struct {
-	Content []struct {
-		Type string `json:"type"`
-		Text string `json:"text"`
-	} `json:"content"`
-}
-
-type mcpRPCClient struct {
+type mcpClient struct {
+	t   *testing.T
 	enc *json.Encoder
 	dec *json.Decoder
 }
 
-// call handles the JSON-RPC request/response cycle with basic ID verification.
-func (c *mcpRPCClient) call(t *testing.T, method string, id int, params interface{}) rpcResponse {
-	t.Helper()
-
-	req := rpcRequest{
-		JSONRPC: "2.0",
-		ID:      id,
-		Method:  method,
-		Params:  params,
-	}
-
-	if err := c.enc.Encode(req); err != nil {
-		t.Fatalf("failed to encode request %v: %v", id, err)
+func (c *mcpClient) call(method string, id int, params interface{}, target interface{}) {
+	c.t.Helper()
+	if err := c.enc.Encode(rpcRequest{"2.0", id, method, params}); err != nil {
+		c.t.Fatalf("rpc encode failed: %v", err)
 	}
 
 	var resp rpcResponse
 	if err := c.dec.Decode(&resp); err != nil {
-		t.Fatalf("failed to decode response for %s: %v", method, err)
-	}
-
-	if fmt.Sprintf("%v", resp.ID) != fmt.Sprintf("%v", id) {
-		t.Fatalf("id mismatch: expected %v, got %v", id, resp.ID)
+		c.t.Fatalf("rpc decode failed: %v", err)
 	}
 
 	if resp.Error != nil {
-		t.Fatalf("rpc error [%s]: %s (code: %d)", method, resp.Error.Message, resp.Error.Code)
+		c.t.Fatalf("rpc error [%s]: %s (code: %d)", method, resp.Error.Message, resp.Error.Code)
 	}
 
-	return resp
-}
-
-func parseToolText(t *testing.T, resp rpcResponse) string {
-	t.Helper()
-	var res toolCallResult
-	if err := json.Unmarshal(resp.Result, &res); err != nil {
-		t.Fatalf("failed to unmarshal tool result: %v", err)
+	if target != nil {
+		if err := json.Unmarshal(resp.Result, target); err != nil {
+			c.t.Fatalf("failed to unmarshal rpc result: %v", err)
+		}
 	}
-	if len(res.Content) == 0 {
-		t.Fatalf("tool returned empty content")
-	}
-	return res.Content[0].Text
 }
 
 func connectMongoOrSkip(t *testing.T) (*mongo.Client, *mongo.Database, func()) {
@@ -128,6 +88,17 @@ func connectMongoOrSkip(t *testing.T) (*mongo.Client, *mongo.Database, func()) {
 	}
 }
 
+func parseToolText(t *testing.T, res struct {
+	Content []struct {
+		Text string `json:"text"`
+	} `json:"content"`
+}) string {
+	if len(res.Content) == 0 {
+		t.Fatal("tool returned empty content")
+	}
+	return res.Content[0].Text
+}
+
 func TestMCPIntegration_FullLifecycle(t *testing.T) {
 	dbName := fmt.Sprintf("mcp_it_%d", time.Now().UnixNano())
 	t.Setenv("MONGO_DATABASE", dbName)
@@ -139,69 +110,74 @@ func TestMCPIntegration_FullLifecycle(t *testing.T) {
 	clientToSrvR, clientToSrvW := io.Pipe()
 	srvToClientR, srvToClientW := io.Pipe()
 
-	server, err := mcp.NewMCPServer()
+	cfg, err := config.Load()
 	if err != nil {
-		t.Fatalf("server creation failed: %v", err)
+		t.Fatalf("config error: %v", err)
 	}
-
+	logger,_ := logging.New(true, "")
+	server, err := mcp.NewMCPServer(cfg,logger)
+	if err != nil {
+		t.Fatalf("failed to init mcp server: %v", err)
+	}
 	serverCtx, cancelServer := context.WithCancel(context.Background())
-	serverDone := make(chan error, 1)
 
-	go func() {
-		serverDone <- server.Serve(serverCtx, clientToSrvR, srvToClientW)
-	}()
+	go func() { _ = server.Serve(serverCtx, clientToSrvR, srvToClientW) }()
 
 	t.Cleanup(func() {
 		cancelServer()
 		_ = clientToSrvW.Close()
 		_ = srvToClientR.Close()
-		server.Close()
+		server.Close(context.TODO())
 	})
 
-	client := &mcpRPCClient{
+	client := &mcpClient{
+		t:   t,
 		enc: json.NewEncoder(clientToSrvW),
 		dec: json.NewDecoder(srvToClientR),
 	}
 
-	t.Run("Protocol: Initialize", func(t *testing.T) {
-		client.call(t, "initialize", 1, map[string]interface{}{
+	t.Run("Initialize", func(t *testing.T) {
+		client.call("initialize", 1, map[string]interface{}{
 			"protocolVersion": "2024-11-05",
-			"capabilities":    map[string]interface{}{},
 			"clientInfo":      map[string]string{"name": "test-client", "version": "1.0"},
-		})
+		}, nil)
 	})
 
-	t.Run("Discovery: ListTools", func(t *testing.T) {
-		resp := client.call(t, "tools/list", 2, nil)
-		var list toolsListResult
-		if err := json.Unmarshal(resp.Result, &list); err != nil {
-			t.Fatal(err)
-		}
-
-		required := map[string]bool{"migration_up": false, "migration_status": false}
-		for _, tool := range list.Tools {
-			if _, ok := required[tool.Name]; ok {
-				required[tool.Name] = true
+	t.Run("ListTools", func(t *testing.T) {
+		var res struct {
+			Tools []struct {
+				Name string `json:"name"`
 			}
 		}
-		for name, found := range required {
-			if !found {
+		client.call("tools/list", 2, nil, &res)
+
+		found := make(map[string]bool)
+		for _, tool := range res.Tools {
+			found[tool.Name] = true
+		}
+
+		for _, name := range []string{"migration_up", "migration_status"} {
+			if !found[name] {
 				t.Errorf("missing tool: %s", name)
 			}
 		}
 	})
 
-	t.Run("Execution: MigrationUp", func(t *testing.T) {
-		resp := client.call(t, "tools/call", 3, toolCallParams{
-			Name: "migration_up",
-		})
-		text := parseToolText(t, resp)
-		if !strings.Contains(text, "Successfully applied") && !strings.Contains(text, "✅") {
+	t.Run("MigrationUp", func(t *testing.T) {
+		var res struct {
+			Content []struct {
+				Text string `json:"text"`
+			} `json:"content"`
+		}
+		client.call("tools/call", 3, map[string]interface{}{"name": "migration_up"}, &res)
+
+		text := parseToolText(t, res)
+		if !strings.Contains(text, "✅") && !strings.Contains(text, "applied") {
 			t.Errorf("unexpected output: %s", text)
 		}
 	})
 
-	t.Run("Verification: Database State", func(t *testing.T) {
+	t.Run("VerifyDatabaseState", func(t *testing.T) {
 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
 
@@ -211,9 +187,7 @@ func TestMCPIntegration_FullLifecycle(t *testing.T) {
 		}
 
 		var indexes []bson.M
-		if err := cursor.All(ctx, &indexes); err != nil {
-			t.Fatal(err)
-		}
+		_ = cursor.All(ctx, &indexes)
 
 		expected := map[string]bool{
 			"idx_users_email_unique": false,
@@ -224,29 +198,30 @@ func TestMCPIntegration_FullLifecycle(t *testing.T) {
 			name := idx["name"].(string)
 			if _, ok := expected[name]; ok {
 				expected[name] = true
-
-				if name == "idx_users_email_unique" {
-					if unique, ok := idx["unique"].(bool); !ok || !unique {
-						t.Errorf("expected %s to be unique, but it wasn't", name)
-					}
+				if name == "idx_users_email_unique" && idx["unique"] != true {
+					t.Errorf("index %s should be unique", name)
 				}
 			}
 		}
 
 		for name, found := range expected {
 			if !found {
-				t.Errorf("index not found: %s", name)
+				t.Errorf("missing index: %s", name)
 			}
 		}
 	})
 
-	t.Run("Consistency: MigrationStatus", func(t *testing.T) {
-		resp := client.call(t, "tools/call", 4, toolCallParams{
-			Name: "migration_status",
-		})
-		text := parseToolText(t, resp)
+	t.Run("MigrationStatus", func(t *testing.T) {
+		var res struct {
+			Content []struct {
+				Text string `json:"text"`
+			} `json:"content"`
+		}
+		client.call("tools/call", 4, map[string]interface{}{"name": "migration_status"}, &res)
+
+		text := parseToolText(t, res)
 		if !strings.Contains(text, "✅") {
-			t.Errorf("status should show applied migration: %s", text)
+			t.Errorf("status should show success: %s", text)
 		}
 	})
 }

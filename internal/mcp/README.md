@@ -1,38 +1,38 @@
 # MCP Client Examples
 
-This directory contains examples and configurations for connecting your mongo-essential MCP server to various AI assistants and tools.
+This directory contains examples and configurations for connecting your mmt MCP server to various AI agents and tools.
 
 ## Prerequisites
 
-1. **Build the tool**: Make sure you have built mongo-essential with MCP support:
-   ```bash
+1. **Build the tool**: Make sure you have built mmt (mmt) with MCP support:
+ ```bash
    make build
-   ```
+```
 
 2. **Configure MongoDB**: Set up your MongoDB connection:
-   ```bash
+```bash
    export MONGO_URI="mongodb://localhost:27017"
    export MONGO_DATABASE="your_database"
    export MIGRATIONS_COLLECTION="schema_migrations"
-   ```
+```
 
 3. **Start MongoDB**: Ensure MongoDB is running (for testing):
-   ```bash
+```bash
    make db-up
-   ```
+```
 
 ## Testing the MCP Server
 
 ### Basic Test
 Test the MCP server directly:
 ```bash
-make mcp-test
+  make mcp-test
 ```
 
 ### Interactive Test
 Test the MCP server interactively:
 ```bash
-make mcp-client-test
+  make mcp-client-test
 ```
 
 Then type JSON-RPC commands like:
@@ -52,7 +52,7 @@ Create a configuration file for Ollama:
 ```json
 {
    "mongo-mcp": {
-      "command": "$GOBIN/mongo-essential",
+      "command": "$GOBIN/mmt",
       "args": [
          "mcp"
       ],
@@ -68,7 +68,7 @@ Create a configuration file for Ollama:
 
 Then start Ollama with MCP support:
 ```bash
-ollama serve --mcp-config ~/.config/ollama/mcp-config.json
+  ollama serve --mcp-config ~/.config/ollama/mcp-config.json
 ```
 
 Now you can ask Ollama to help with migrations:
@@ -84,10 +84,10 @@ Goose supports MCP through configuration files.
 ```json
 {
   "tools": {
-    "mongo-essential": {
+    "mmt": {
       "type": "mcp",
       "server": {
-        "command": "/path/to/mongo-essential",
+        "command": "/path/to/mmt",
         "args": ["mcp"],
         "cwd": "/path/to/your/project",
         "env": {
@@ -126,7 +126,7 @@ def run_mcp_command(method, params=None):
     
     # Start the MCP server
     process = subprocess.Popen(
-        ["/path/to/mongo-essential", "mcp", "--with-examples"],
+        ["/path/to/mmt", "mcp", "--with-examples"],
         stdin=subprocess.PIPE,
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
@@ -174,8 +174,8 @@ For Claude Desktop, add to your configuration:
 ```json
 {
   "mcpServers": {
-    "mongo-essential": {
-      "command": "/path/to/mongo-essential",
+    "mmt": {
+      "command": "/path/to/mmt",
       "args": ["mcp", "--with-examples"],
       "env": {
         "MONGO_URI": "mongodb://localhost:27017",
@@ -198,7 +198,7 @@ Create a VS Code task for MCP server:
     {
       "label": "Start MongoDB MCP Server",
       "type": "shell",
-      "command": "./build/mongo-essential",
+      "command": "./build/mmt",
       "args": ["mcp", "--with-examples"],
       "group": "build",
       "presentation": {
@@ -219,7 +219,7 @@ Create a VS Code task for MCP server:
 
 ## Available MCP Tools
 
-The mongo-essential MCP server exposes these tools:
+The mmt MCP server exposes these tools:
 
 ### 1. `migration_status`
 **Description**: Get the status of all migrations  
@@ -357,7 +357,7 @@ Here are some example prompts you can use with AI assistants:
 
 2. **Permission denied**: Ensure the binary is executable
    ```bash
-   chmod +x ./build/mongo-essential
+   chmod +x ./build/mmt
    ```
 
 3. **Environment variables**: Make sure MongoDB connection variables are set

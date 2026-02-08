@@ -3,12 +3,16 @@ package cli
 import (
 	"fmt"
 
+	"github.com/drewjocham/mongo-migration-tool/migration"
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
 )
 
 func newUpCmd() *cobra.Command {
-	var target string
+	var (
+		target string
+		dryRun bool
+	)
 
 	cmd := &cobra.Command{
 		Use:   "up",
@@ -19,10 +23,23 @@ func newUpCmd() *cobra.Command {
 				return err
 			}
 
+			plan, err := engine.Plan(cmd.Context(), migration.DirectionUp, target)
+			if err != nil {
+				return err
+			}
+			if dryRun {
+				renderPlan(cmd.OutOrStdout(), "up", plan)
+				return nil
+			}
+			if len(plan) == 0 {
+				fmt.Fprintln(cmd.OutOrStdout(), "Database is already up to date.")
+				return nil
+			}
+
 			logIntent(target)
 
 			if err := engine.Up(cmd.Context(), target); err != nil {
-				return fmt.Errorf("migration up failed: %w", err)
+				return fmt.Errorf("%s: %w", ErrFailedToRun, err)
 			}
 
 			fmt.Fprintln(cmd.OutOrStdout(), "✨ Database is up to date!")
@@ -31,6 +48,7 @@ func newUpCmd() *cobra.Command {
 	}
 
 	cmd.Flags().StringVar(&target, "target", "", "Target version to migrate up to")
+	cmd.Flags().BoolVar(&dryRun, "dry-run", false, "Print planned migrations without executing")
 	return cmd
 }
 

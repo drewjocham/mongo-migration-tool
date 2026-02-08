@@ -5,7 +5,6 @@ import (
 )
 
 func TestLoad(t *testing.T) {
-	// t.Setenv is cleaner: no manual Unsetenv or defer required
 	t.Setenv("MONGO_URL", "mongodb://testhost:27017")
 	t.Setenv("MONGO_DATABASE", "testdb")
 	t.Setenv("MIGRATIONS_COLLECTION", "test_migrations")
@@ -16,14 +15,12 @@ func TestLoad(t *testing.T) {
 		t.Fatalf("Load() failed: %v", err)
 	}
 
-	// Use simple comparisons
 	assert(t, cfg.MongoURL, "mongodb://testhost:27017", "MongoURL")
 	assert(t, cfg.Database, "testdb", "Database")
 	assert(t, cfg.MigrationsCollection, "test_migrations", "MigrationsCollection")
 }
 
 func TestLoadDefaults(t *testing.T) {
-	// Only set what is required
 	t.Setenv("MONGO_DATABASE", "default_test")
 
 	cfg, err := Load()
@@ -36,7 +33,6 @@ func TestLoadDefaults(t *testing.T) {
 }
 
 func TestValidate(t *testing.T) {
-	// Table-driven tests are perfect here
 	tests := []struct {
 		name    string
 		config  *Config

@@ -25,7 +25,7 @@ func newStatusCmd() *cobra.Command {
 
 			status, err := engine.GetStatus(cmd.Context())
 			if err != nil {
-				return fmt.Errorf("failed to get migration status: %w", err)
+				return fmt.Errorf("%s: %w", ErrFailedToGetStatus, err)
 			}
 
 			out := cmd.OutOrStdout()
@@ -54,7 +54,7 @@ func renderJSON(w io.Writer, status []migration.MigrationStatus) error {
 
 func renderTable(w io.Writer, status []migration.MigrationStatus) {
 	if len(status) == 0 {
-		fmt.Fprintln(w, "∅ No migrations found.")
+		fmt.Fprintln(w, "No migrations found.")
 		return
 	}
 
@@ -62,7 +62,7 @@ func renderTable(w io.Writer, status []migration.MigrationStatus) {
 
 	const (
 		iconPending = "  [ ]"
-		iconApplied = "  \033[32m[✓]\033[0m" // ANSI Green checkmark
+		iconApplied = "  \033[32m[✓]\033[0m"
 	)
 
 	fmt.Fprintln(tw, "STATE\tVERSION\tAPPLIED AT\tDESCRIPTION")

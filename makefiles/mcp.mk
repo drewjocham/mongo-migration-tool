@@ -59,7 +59,7 @@ mcp-config: mcp-build
 	@echo "{"
 	@echo "  \"mcpServers\": {"
 	@echo "    \"mongo-migration\": {"
-	@echo "      \"command\": \"$(shell pwd)/build/mongo-essential\","
+	@echo "      \"command\": \"$(shell pwd)/build/mmt\","
 	@echo "      \"args\": [\"mcp\"],"
 	@echo "      \"env\": {"
 	@echo "        \"MONGO_URI\": \"$(or $(MONGO_URI),mongodb://localhost:27017)\","

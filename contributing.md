@@ -66,26 +66,16 @@ We welcome pull requests for:
 
 ```bash
 # Fork the repository on GitHub, then clone your fork
-git clone https://github.com/YOUR_USERNAME/mongo-migration-tool.git
+git clone https://github.com/drewjocham/mongo-migration-tool.git
 cd mongo-migration-tool
 
 # Add the upstream remote
 git remote add upstream https://github.com/drewjocham/mongo-migration-tool.git
-
-# Install dependencies
-go mod tidy
-
-# Install development tools
-go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
-go install github.com/goreleaser/goreleaser@latest
 ```
 
 ### Build the Project
 
 ```bash
-# Download Dependence 
-make deps
-# Build the binary
 make build
 
 # Run the binary
@@ -101,11 +91,8 @@ make test
 # Run tests with coverage
 make test-coverage
 
-# Run integration tests (requires MongoDB)
+# Run integration tests
 make test-integration
-
-# Run tests with verbose output
-go test -v ./...
 ```
 
 ### MongoDB for Development
@@ -128,7 +115,7 @@ mongod --config /usr/local/etc/mongod.conf
 
 ```bash
 # Start MongoDB in Docker
-docker run --name mongo-dev -p 27017:27017 -d mongo:7
+docker run --name mongo-dev -p 27017:27017 -d mongo:8
 
 # Stop when done
 docker stop mongo-dev
@@ -159,7 +146,7 @@ MONGO_DATABASE=mongo_migration_tool_dev
 MIGRATIONS_PATH=./test-migrations
 MIGRATIONS_COLLECTION=schema_migrations
 
-# AI Agents (optional for development)
+# AI Agents (optional)
 AI_ENABLED=false
 # AI_PROVIDER=openai
 # OPENAI_API_KEY=your_key_here
