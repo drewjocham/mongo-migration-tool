@@ -1,232 +1,110 @@
-# GoReleaser configuration for mongo-migration
-# Documentation: https://goreleaser.com
-version: 2
+name: Release
 
-project_name: mongo-migration-tool
+on:
+  push:
+    tags:
+      - 'v*'
 
-before:
-  hooks:
-    - go mod tidy
-    - go mod download
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: true
 
-builds:
-  - id: mongo-migration
-    binary: mongo-migration
-    main: ./cmd
-    env:
-      - CGO_ENABLED=0
-    goos:
-      - linux
-      - darwin
-      - windows
-    goarch:
-      - amd64
-      - arm64
-      - arm
-    goarm:
-      - "7"
-    ignore:
-      - goos: windows
-        goarch: arm
-      - goos: windows
-        goarch: arm64
-    ldflags:
-      - -s -w
-      - -X main.version={{.Version}}
-      - -X main.commit={{.ShortCommit}}
-      - -X main.date={{.Date}}
-      - -X main.builtBy=goreleaser
+permissions:
+  actions: read
+  contents: write
+  packages: write
+  id-token: write
 
-archives:
-  - id: default
-    format: tar.gz
-    # Windows should use zip
-    format_overrides:
-      - goos: windows
-        format: zip
-    name_template: >-
-      {{ .ProjectName }}_
-      {{- title .Os }}_
-      {{- if eq .Arch "amd64" }}x86_64
-      {{- else if eq .Arch "386" }}i386
-      {{- else }}{{ .Arch }}{{ end }}
-      {{- if .Arm }}v{{ .Arm }}{{ end }}
-    files:
-      - readme.md
-      - LICENSE
-      - mcp.md
-      - .env.example
-      - examples/**/*
+env:
+  REGISTRY: ghcr.io
 
-checksum:
-  name_template: 'checksums.txt'
+jobs:
+  goreleaser:
+    name: Build & publish artifacts
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.meta.outputs.version }}
+      build-date: ${{ steps.meta.outputs.build-date }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-snapshot:
-  name_template: "{{ incpatch .Version }}-next"
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
 
-changelog:
-  sort: asc
-  use: github
-  filters:
-    exclude:
-      - '^docs:'
-      - '^test:'
-      - '^ci:'
-      - '^chore:'
-      - '^refactor:'
-      - '^style:'
-      - '^build:'
-  groups:
-    - title: Features
-      regexp: '^.*?feat(\(.+\))??!?:.+$'
-      order: 0
-    - title: 'Bug fixes'
-      regexp: '^.*?fix(\(.+\))??!?:.+$'
-      order: 1
-    - title: 'MCP Integration'
-      regexp: '^.*?mcp(\(.+\))??!?:.+$'
-      order: 2
-    - title: Others
-      order: 999
+      - name: Capture release metadata
+        id: meta
+        run: |
+          VERSION=${GITHUB_REF_NAME}
+          DATE=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "build-date=$DATE" >> "$GITHUB_OUTPUT"
+          {
+            echo "VERSION=$VERSION"
+            echo "COMMIT=${GITHUB_SHA}"
+            echo "BUILD_DATE=$DATE"
+          } >> "$GITHUB_ENV"
 
-brews:
-  - name: mongo-migration
-    repository:
-      owner: drewjocham
-      name: homebrew-mongo-migration
-      branch: main
-      token: "{{ .Env.HOMEBREW_TAP_TOKEN }}"
-    
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+        with:
+          platforms: linux/amd64,linux/arm64
 
-    directory: Formula
-    homepage: https://github.com/drewjocham/mongo-migration-tool
-    description: "MongoDB migration tool with and MCP support"
-    license: MIT
-    dependencies:
-      - name: mongodb/brew/mongodb-community
-        type: optional
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
 
-    install: |-
-      bin.install "mongo-migration"
-      
-      # Install example configurations
-      pkgshare.install ".env.example"
-      pkgshare.install "examples"
-      pkgshare.install "MCP.md"
+      - name: Log in to Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
-    test: |
-      system "#{bin}/mongo-migration --version"
-dockers:
-  - image_templates:
-      - "ghcr.io/drewjocham/mongo-migration-tool:{{ .Version }}-amd64"
-      - "ghcr.io/drewjocham/mongo-migration-tool:latest-amd64"
-    dockerfile: docker/Dockerfile.release
-    use: buildx
-    ids:
-      - mongo-migration
-    build_flag_templates:
-      - "--platform=linux/amd64"
-      - "--label=org.opencontainers.image.created={{.Date}}"
-      - "--label=org.opencontainers.image.title={{.ProjectName}}"
-      - "--label=org.opencontainers.image.revision={{.FullCommit}}"
-      - "--label=org.opencontainers.image.version={{.Version}}"
-      - "--label=org.opencontainers.image.source=https://github.com/drewjocham/mongo-migration-tool"
-      - "ghcr.io/drewjocham/mongo-migration-tool:{{ .Version }}-arm64"
-      - "ghcr.io/drewjocham/mongo-migration-tool:latest-arm64"
-    dockerfile: docker/Dockerfile.release
-    use: buildx
-    ids:
-      - mongo-migration
-    build_flag_templates:
-      - "--platform=linux/arm64"
-      - "--label=org.opencontainers.image.created={{.Date}}"
-      - "--label=org.opencontainers.image.title={{.ProjectName}}"
-      - "--label=org.opencontainers.image.revision={{.FullCommit}}"
-      - "--label=org.opencontainers.image.version={{.Version}}"
-      - "--label=org.opencontainers.image.source=https://github.com/drewjocham/mongo-migration-tool"
-    extra_files:
-      - go.mod
-      - go.sum
+      - name: Run GoReleaser
+        uses: goreleaser/goreleaser-action@v6
+        with:
+          distribution: goreleaser
+          version: '~> v2'
+          args: release --clean
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          HOMEBREW_TAP_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
 
-docker_manifests:
-  - name_template: "ghcr.io/drewjocham/mongo-migration-tool:{{ .Version }}"
-    image_templates:
-      - "ghcr.io/drewjocham/mongo-migration-tool:{{ .Version }}-amd64"
-      - "ghcr.io/drewjocham/mongo-migration-tool:{{ .Version }}-arm64"
-  
-  - name_template: "ghcr.io/drewjocham/mongo-migration-tool:latest"
-    image_templates:
-      - "ghcr.io/drewjocham/mongo-migration-tool:latest-amd64"
-      - "ghcr.io/drewjocham/mongo-migration-tool:latest-arm64"
+  provenance:
+    name: SLSA provenance
+    needs: goreleaser
+    permissions:
+      actions: read
+      contents: write
+      id-token: write
+    uses: slsa-framework/slsa-github-generator/.github/workflows/builder_go_slsa3.yml@v2.1.0
+    with:
+      config-file: .slsa-goreleaser.yml
+      evaluated-envs: VERSION:${{ needs.goreleaser.outputs.version }}, COMMIT:${{ github.sha }}, BUILD_DATE:${{ needs.goreleaser.outputs.build-date }}
+      go-version-file: go.mod
+    secrets: inherit
 
-release:
-  github:
-    owner: drewjocham
-    name: mongo-migration-tool
-  replace_existing_artifacts: true
-  
-  draft: false
-  prerelease: auto
-  
-  name_template: "Release v{{.Version}}"
+  post-release:
+    runs-on: ubuntu-latest
+    needs:
+      - goreleaser
+      - provenance
+    steps:
+      - name: Update pkg.go.dev
+        run: |
+          MODULE_PATH="github.com/drewjocham/mongo-migration-tool"
+          curl -sS "https://proxy.golang.org/${MODULE_PATH}/@v/${{ github.ref_name }}.info"
 
-  header: |
-    
-    Generated by GoReleaser for {{.ProjectName}}
-    
-    Happy to share the latest release of the MongoDB Migration Tool. 
-    
-    ### Getting Started
-
-    It's easy to get started with the MongoDB Migration Tool. Just follow the installation instructions 
-    below and run the `init` command to create a new configuration file.
-
-    ```sh
-    mongo-migration init
-    ```
-
-    ### Installation
-
-    #### Homebrew (macOS/Linux)
-    ```bash
-    brew tap drewjocham/mongo-migration
-    brew install mongo-migration
-    ```
-
-    #### Go Install
-    ```bash
-    go install github.com/drewjocham/mongo-migration-tool@v{{.Version}}
-    ```
-
-    #### Docker
-    ```bash
-    docker run --rm -v $(pwd):/app ghcr.io/drewjocham/mongo-migration-tool:{{.Version}} --help
-    ```
-
-    We welcome your feedback and contributions. Please feel free to open an issue or pull request on our [GitHub repository](https://github.com/drewjocham/mongo-migration-tool).
-  
-  footer: |
-    ## Thank You!
-
-    Thank you for trying out the MongoDB Migration Tool.
-    
-    For more detailed information, please see the [documentation](https://pkg.go.dev/github.com/drewjocham/mongo-migration-tool).
-
-nfpms:
-  - id: packages
-    package_name: mongo-migration
-    
-    homepage: https://github.com/drewjocham/mongo-migration-tool
-    description: MongoDB migration tool with MCP support
-    maintainer: Drew Jocham <mongo@jocham.io>
-    license: MIT
-    
-    formats:
-      - deb
-      - rpm
-      - apk
-    
-    bindir: /usr/bin
-
-announce:
-  skip: true
+      - name: Bump Homebrew formula
+        uses: dawidd6/action-homebrew-bump-formula@v3
+        with:
+          token: ${{ secrets.HOMEBREW_TAP_TOKEN }}
+          formula: mongo-migration
+          tap: drewjocham/homebrew-tap
+          tag: ${{ github.ref_name }}
+          revision: ${{ github.sha }}
