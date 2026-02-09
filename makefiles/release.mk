@@ -6,7 +6,7 @@ include $(MAKEFILES_DIR)/variables/vars.mk
 
 ROOT_DIR := $(REPO_ROOT)
 
-.PHONY: release release-check deploy-dev deploy-prod release-beta
+.PHONY: release release-check releaser-check deploy-dev deploy-prod release-beta sync-library
 
 deploy-dev: ## Deploy to development environment
 	@echo "$(GREEN)Deploying to development...$(NC)"
@@ -16,7 +16,7 @@ deploy-prod: ## Deploy to production environment
 	@echo "$(GREEN)Deploying to production...$(NC)"
 	REQUIRE_SIGNED_IMAGES=true $(ROOT_DIR)/scripts/deploy-migrations.sh auto
 
-releaser-check:
+release-check:
 	cd $(ROOT_DIR) && goreleaser release --skip=publish --skip=docker --snapshot --clean
 
 release:
@@ -27,7 +27,7 @@ release-beta: ## Create and release a new beta version
 	$(ROOT_DIR)/scripts/release-beta.sh
 
 sync-library:
-	MODULE=github.com/drewjocham/mongo-migration-tool
-	VERSION=v1.0.0
+	@MODULE=github.com/drewjocham/mongo-migration-tool; \
+	VERSION=v1.0.0; \
 	curl -sS "https://proxy.golang.org/${MODULE}/@v/${VERSION}.info"
 
