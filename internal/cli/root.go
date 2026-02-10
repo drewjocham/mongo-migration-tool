@@ -40,6 +40,8 @@ type Services struct {
 	MongoClient *mongo.Client
 }
 
+
+
 func Execute() error {
 	return newRootCmd().Execute()
 }
@@ -87,7 +89,10 @@ func newRootCmd() *cobra.Command {
 
 	cmd.AddCommand(
 		newUpCmd(), newDownCmd(), newForceCmd(), newUnlockCmd(),
-		newStatusCmd(), newOpslogCmd(), newCreateCmd(), newSchemaCmd(), NewMCPCmd(),
+		newStatusCmd(),
+		NewOplogCmd(),
+		NewDBCmd(),
+		newCreateCmd(), newSchemaCmd(), NewMCPCmd(),
 		versionCmd,
 	)
 
@@ -194,7 +199,12 @@ func isOffline(cmd *cobra.Command) bool {
 	if cmd.Annotations[annotationOffline] == "true" {
 		return true
 	}
-	return map[string]bool{"help": true, "version": true, "create": true, "config": true}[cmd.Name()]
+	offlineCommands := map[string]bool{
+		"help":    true,
+		"version": true,
+		"create":  true,
+	}
+	return offlineCommands[cmd.Name()]
 }
 
 func teardown(s *Services) {

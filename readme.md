@@ -72,7 +72,6 @@ If you want to run mmt on your local machine:
 ```
 * Check the staus and whether the library is installed
 ```shell
-# if installed via brew:
     mmt status
 ```
 * Access the shell (using authentication):
