@@ -108,12 +108,12 @@ brews:
       - name: mongodb/brew/mongodb-community
         type: optional
     install: |
-      bin.install "mongo-tool"
+      bin.install "mongo-migration"
       pkgshare.install ".env.example"
       pkgshare.install "examples"
       pkgshare.install "mcp.md"
     test: |
-      system "#{bin}/mongo-tool --version"
+      system "#{bin}/mongo-migration --version"
 
 dockers:
   - image_templates:
@@ -168,12 +168,12 @@ release:
     #### Homebrew (macOS/Linux)
     ```bash
     brew tap drewjocham/tap
-    brew install mongo-tool
+    brew install mongo-migration
     ```
 
     #### Go Install
     ```bash
-    go install [github.com/drewjocham/mongo-migration-tool/cmd@v](https://github.com/drewjocham/mongo-migration-tool/cmd@v){{.Version}}
+    go install [github.com/drewjocham/mongo-migration-tool@v](https://github.com/drewjocham/mongo-migration-tool@v){{.Version}}
     ```
 
     #### Docker
@@ -186,7 +186,7 @@ release:
 
 nfpms:
   - id: packages
-    package_name: mongo-tool
+    package_name: mongo-migration
     homepage: https://github.com/drewjocham/mongo-migration-tool
     description: MongoDB migration tool with MCP support
     maintainer: Drew Jocham <mongo@jocham.io>
