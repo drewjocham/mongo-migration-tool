@@ -8,8 +8,8 @@ before:
     - go mod download
 
 builds:
-  - id: mongo-migration
-    binary: mongo-migration
+  - id: mongo-tool
+    binary: mongo-tool
     main: ./cmd
     env:
       - CGO_ENABLED=0
@@ -94,7 +94,7 @@ changelog:
       order: 999
 
 brews:
-  - name: mongo-migration
+  - name: mongo-tool
     repository:
       owner: drewjocham
       name: homebrew-tap
@@ -108,12 +108,12 @@ brews:
       - name: mongodb/brew/mongodb-community
         type: optional
     install: |
-      bin.install "mongo-migration"
+      bin.install "mongo-tool"
       pkgshare.install ".env.example"
       pkgshare.install "examples"
       pkgshare.install "mcp.md"
     test: |
-      system "#{bin}/mongo-migration --version"
+      system "#{bin}/mongo-tool --version"
 
 dockers:
   - image_templates:
@@ -122,7 +122,7 @@ dockers:
     dockerfile: docker/Dockerfile.release
     use: buildx
     ids:
-      - mongo-migration
+      - mongo-tool
     build_flag_templates:
       - "--platform=linux/amd64"
       - "--label=org.opencontainers.image.created={{.Date}}"
@@ -136,7 +136,7 @@ dockers:
     dockerfile: docker/Dockerfile.release
     use: buildx
     ids:
-      - mongo-migration
+      - mongo-tool
     build_flag_templates:
       - "--platform=linux/arm64"
       - "--label=org.opencontainers.image.created={{.Date}}"
@@ -168,12 +168,12 @@ release:
     #### Homebrew (macOS/Linux)
     ```bash
     brew tap drewjocham/tap
-    brew install mongo-migration
+    brew install mongo-tool
     ```
 
     #### Go Install
     ```bash
-    go install [github.com/drewjocham/mongo-migration-tool@v](https://github.com/drewjocham/mongo-migration-tool@v){{.Version}}
+    go install [github.com/drewjocham/mongo-migration-tool/cmd@v](https://github.com/drewjocham/mongo-migration-tool/cmd@v){{.Version}}
     ```
 
     #### Docker
@@ -186,7 +186,7 @@ release:
 
 nfpms:
   - id: packages
-    package_name: mongo-migration
+    package_name: mongo-tool
     homepage: https://github.com/drewjocham/mongo-migration-tool
     description: MongoDB migration tool with MCP support
     maintainer: Drew Jocham <mongo@jocham.io>

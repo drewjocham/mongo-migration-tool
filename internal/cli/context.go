@@ -3,14 +3,17 @@ package cli
 import (
 	"context"
 	"fmt"
+
 	"github.com/drewjocham/mongo-migration-tool/internal/config"
 	"github.com/drewjocham/mongo-migration-tool/internal/migration"
 )
 
+type ctxKey string
+
 const (
-	ctxServicesKey = "services"
-	ctxConfigKey   = "config"
-	ctxEngineKey   = "engine"
+	ctxServicesKey ctxKey = "services"
+	ctxConfigKey   ctxKey = "config"
+	ctxEngineKey   ctxKey = "engine"
 )
 
 func getServices(ctx context.Context) (*Services, error) {

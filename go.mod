@@ -4,6 +4,7 @@ go 1.25
 
 require (
 	github.com/caarlos0/env/v11 v11.3.1
+	github.com/dustin/go-humanize v1.0.1
 	github.com/go-playground/validator/v10 v10.20.0
 	github.com/joho/godotenv v1.5.1
 	github.com/json-iterator/go v1.1.12
@@ -12,6 +13,7 @@ require (
 	github.com/stretchr/testify v1.11.1
 	github.com/testcontainers/testcontainers-go v0.40.0
 	github.com/testcontainers/testcontainers-go/modules/mongodb v0.40.0
+	github.com/tidwall/gjson v1.18.0
 	go.mongodb.org/mongo-driver/v2 v2.5.0
 	go.uber.org/zap v1.27.1
 )
@@ -65,6 +67,8 @@ require (
 	github.com/shirou/gopsutil/v4 v4.25.6 // indirect
 	github.com/sirupsen/logrus v1.9.3 // indirect
 	github.com/spf13/pflag v1.0.10 // indirect
+	github.com/tidwall/match v1.1.1 // indirect
+	github.com/tidwall/pretty v1.2.0 // indirect
 	github.com/tklauser/go-sysconf v0.3.12 // indirect
 	github.com/tklauser/numcpus v0.6.1 // indirect
 	github.com/xdg-go/pbkdf2 v1.0.0 // indirect

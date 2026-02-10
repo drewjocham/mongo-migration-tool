@@ -8,48 +8,26 @@ import (
 	"text/tabwriter"
 	"time"
 
-	"github.com/drewjocham/mongo-migration-tool/internal/jsonutil"
+	"github.com/drewjocham/mongo-migration-tool/internal/migration"
+	"github.com/dustin/go-humanize"
 	"github.com/spf13/cobra"
+	"github.com/tidwall/gjson"
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
-	"go.mongodb.org/mongo-driver/v2/mongo/options"
 )
 
-type healthReport struct {
-	Database        string             `json:"database"`
-	Role            string             `json:"role"`
-	IsReplicaSet    bool               `json:"is_replica_set"`
-	OplogWindow     string             `json:"oplog_window,omitempty"`
-	OplogFirst      *time.Time         `json:"oplog_first,omitempty"`
-	OplogLast       *time.Time         `json:"oplog_last,omitempty"`
-	OplogSizeBytes  int64              `json:"oplog_size_bytes,omitempty"`
-	Connections     map[string]float64 `json:"connections,omitempty"`
-	OpCounters      map[string]float64 `json:"op_counters,omitempty"`
-	MemberLagSecs   map[string]float64 `json:"member_lag_seconds,omitempty"`
-	Warnings        []string           `json:"warnings,omitempty"`
-	CollectionStats map[string]any     `json:"collection_stats,omitempty"`
-}
-
-type replMember struct {
-	Name     string `bson:"name"`
-	StateStr string `bson:"stateStr"`
-	Self     bool   `bson:"self"`
-	Health   int    `bson:"health"`
-	Optime   struct {
-		TS bson.Timestamp `bson:"ts"`
-	} `bson:"optime"`
-}
-
-type replStatus struct {
-	Set     string       `bson:"set"`
-	Members []replMember `bson:"members"`
+type HealthReport struct {
+	Database    string            `json:"database"`
+	Role        string            `json:"role"`
+	OplogWindow string            `json:"oplog_window"`
+	OplogSize   string            `json:"oplog_size"`
+	Connections string            `json:"connections"`
+	Lag         map[string]string `json:"lag,omitempty"`
+	Warnings    []string          `json:"warnings,omitempty"`
 }
 
 func NewDBCmd() *cobra.Command {
-	cmd := &cobra.Command{
-		Use:   "db",
-		Short: "Database utilities",
-	}
+	cmd := &cobra.Command{Use: "db", Short: "Database utilities"}
 	cmd.AddCommand(newDBHealthCmd())
 	return cmd
 }
@@ -58,25 +36,28 @@ func newDBHealthCmd() *cobra.Command {
 	var output string
 	cmd := &cobra.Command{
 		Use:   "health",
-		Short: "Show database health and oplog window",
+		Short: "Show database health and metrics",
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			s, err := getServices(cmd.Context())
-			if err != nil || s.MongoClient == nil {
-				return fmt.Errorf("mongo services unavailable")
+			if err != nil {
+				return err
 			}
 
-			report, err := buildHealthReport(cmd.Context(), s.MongoClient, s.Config.Database)
+			report, err := buildReport(cmd.Context(), s.MongoClient, s.Config.Database)
 			if err != nil {
 				return err
 			}
 
 			if strings.ToLower(output) == "json" {
-				enc := jsonutil.NewEncoder(cmd.OutOrStdout())
-				enc.SetIndent("", "  ")
-				return enc.Encode(report)
+				data, err := bson.MarshalExtJSONIndent(report, true, false, "", "  ")
+				if err != nil {
+					return fmt.Errorf("failed to marshal json: %w", err)
+				}
+				_, err = cmd.OutOrStdout().Write(data)
+				return err
 			}
 
-			renderHealthTable(cmd.OutOrStdout(), report)
+			RenderHealthTable(cmd.OutOrStdout(), report)
 			return nil
 		},
 	}
@@ -84,148 +65,112 @@ func newDBHealthCmd() *cobra.Command {
 	return cmd
 }
 
-func buildHealthReport(ctx context.Context, client *mongo.Client, dbName string) (healthReport, error) {
-	report := healthReport{
-		Database:      dbName,
-		Connections:   map[string]float64{},
-		OpCounters:    map[string]float64{},
-		MemberLagSecs: map[string]float64{},
+func buildReport(ctx context.Context, client *mongo.Client, dbName string) (HealthReport, error) {
+	var raw bson.M
+	if err := client.Database("admin").RunCommand(ctx, bson.D{{Key: "serverStatus", Value: 1}}).Decode(&raw); err != nil {
+		return HealthReport{}, err
 	}
 
-	admin := client.Database("admin")
+	data, _ := bson.MarshalExtJSON(raw, true, true)
+	json := gjson.ParseBytes(data)
 
-	var status replStatus
-	if err := admin.RunCommand(ctx, bson.D{{Key: "replSetGetStatus", Value: 1}}).Decode(&status); err == nil {
-		report.IsReplicaSet = true
-		report.Role = detectSelfRole(status.Members)
-		applyReplWarnings(&report, status.Members)
-	} else {
-		report.Role = "standalone/unknown"
-		report.Warnings = append(report.Warnings, "replSet status unavailable (standalone or permission denied)")
+	report := HealthReport{
+		Database: dbName,
+		Role:     json.Get("repl.me").String(),
+		Lag:      make(map[string]string),
 	}
 
-	var serverStatus bson.M
-	if err := admin.RunCommand(ctx, bson.D{{Key: "serverStatus", Value: 1}}).Decode(&serverStatus); err == nil {
-		report.Connections = flattenToFloatMap(serverStatus["connections"])
-		report.OpCounters = flattenToFloatMap(serverStatus["opcounters"])
+	curr := json.Get("connections.current").Int()
+	avail := json.Get("connections.available").Int()
+	report.Connections = fmt.Sprintf("%d / %d", curr, avail)
+
+	windowSecs := json.Get("oplog.windowSeconds").Float()
+	report.OplogWindow = (time.Duration(windowSecs) * time.Second).String()
+
+	sizeMB := json.Get("oplog.logSizeMB").Uint()
+	report.OplogSize = humanize.Bytes(sizeMB * 1024 * 1024)
+
+	members := json.Get("repl.members").Array()
+	if len(members) > 0 {
+		primaryTS := json.Get("repl.members.#(stateStr==\"PRIMARY\").optime.ts.t").Uint()
+		for _, m := range members {
+			name := m.Get("name").String()
+			state := m.Get("stateStr").String()
+			if m.Get("self").Bool() {
+				report.Role = state
+			}
+
+			ts := m.Get("optime.ts.t").Uint()
+			if lag := primaryTS - ts; lag > 0 {
+				report.Lag[name] = fmt.Sprintf("%ds", lag)
+				report.Warnings = append(report.Warnings, fmt.Sprintf("%s is %ds behind", name, lag))
+			}
+		}
 	}
 
-	if err := fillOplogStats(ctx, client, &report); err != nil {
-		report.Warnings = append(report.Warnings, fmt.Sprintf("oplog: %v", err))
+	if windowSecs < 21600 {
+		report.Warnings = append(report.Warnings, "Oplog window is under 6 hours")
 	}
 
 	return report, nil
 }
 
-func fillOplogStats(ctx context.Context, client *mongo.Client, report *healthReport) error {
-	db := client.Database("local")
-	coll := db.Collection("oplog.rs")
 
-	var first, last oplogEntry
-	if err := coll.FindOne(ctx, bson.D{}, options.FindOne().SetSort(
-		bson.D{{Key: "$natural", Value: 1}})).Decode(&first); err != nil { //nolint:lll
-		return fmt.Errorf("failed to read oplog start: %w", err)
-	}
-	if err := coll.FindOne(ctx, bson.D{}, options.FindOne().SetSort(
-		bson.D{{Key: "$natural", Value: -1}})).Decode(&last); err != nil { //nolint:lll
-		return fmt.Errorf("failed to read oplog end: %w", err)
+func RenderHealthTable(w io.Writer, r HealthReport) {
+	tw := tabwriter.NewWriter(w, 0, 0, 3, ' ', tabwriter.StripEscape)
+
+	fmt.Fprintf(w, "\n\033[1m--- MONGO HEALTH: %s ---\033[0m\n", strings.ToUpper(r.Database))
+	fmt.Fprintln(tw, "\033[1mMETRIC\tVALUE\033[0m")
+
+	roleColor := "\033[34m"
+	if strings.EqualFold(r.Role, "PRIMARY") {
+		roleColor = "\033[32m"
 	}
 
-	firstTime := time.Unix(int64(first.TS.T), 0)
-	lastTime := time.Unix(int64(last.TS.T), 0)
-	window := lastTime.Sub(firstTime)
+	fmt.Fprintf(tw, "Role\t%s%s\033[0m\n", roleColor, r.Role)
+	fmt.Fprintf(tw, "Connections\t%s\n", r.Connections)
+	fmt.Fprintf(tw, "Oplog Window\t%s\n", r.OplogWindow)
+	fmt.Fprintf(tw, "Oplog Size\t%s\n", r.OplogSize)
 
-	report.OplogFirst, report.OplogLast = &firstTime, &lastTime
-	report.OplogWindow = window.String()
+	for node, lag := range r.Lag {
+		fmt.Fprintf(tw, "Lag (%s)\t%s\n", node, lag)
+	}
+	tw.Flush()
 
-	var stats bson.M
-	if err := db.RunCommand(ctx, bson.D{{Key: "collStats", Value: "oplog.rs"}}).Decode(&stats); err == nil {
-		if size, ok := stats["size"].(float64); ok {
-			report.OplogSizeBytes = int64(size)
+	if len(r.Warnings) > 0 {
+		fmt.Fprintln(w, "\n\033[33m\033[1m⚠️  WARNINGS\033[0m")
+		for _, warn := range r.Warnings {
+			fmt.Fprintf(w, "  \033[33m!\033[0m %s\n", warn)
 		}
-		report.CollectionStats = stats
 	}
-
-	if window < (6 * time.Hour) {
-		report.Warnings = append(report.Warnings, fmt.Sprintf("short oplog window: %s", window))
-	}
-	return nil
 }
 
-// flattens nested BSON metrics into a float map for reporting
-func flattenToFloatMap(input any) map[string]float64 {
-	out := make(map[string]float64)
-	m, ok := input.(bson.M)
-	if !ok {
-		return out
+func RenderMigrationTable(w io.Writer, status []migration.MigrationStatus) {
+	if len(status) == 0 {
+		fmt.Fprintln(w, "No migrations found.")
+		return
 	}
-	for k, v := range m {
-		switch n := v.(type) {
-		case int32:
-			out[k] = float64(n)
-		case int64:
-			out[k] = float64(n)
-		case float64:
-			out[k] = n
-		}
-	}
-	return out
-}
 
-func detectSelfRole(members []replMember) string {
-	for _, m := range members {
-		if m.Self {
-			return strings.ToLower(m.StateStr)
-		}
-	}
-	return "unknown"
-}
+	tw := tabwriter.NewWriter(w, 0, 0, 3, ' ', tabwriter.StripEscape)
 
-func applyReplWarnings(report *healthReport, members []replMember) {
-	var primaryTS uint32
-	for _, m := range members {
-		if strings.EqualFold(m.StateStr, "PRIMARY") {
-			primaryTS = m.Optime.TS.T
-			break
-		}
-	}
-	for _, m := range members {
-		if m.Health != 1 {
-			report.Warnings = append(report.Warnings, fmt.Sprintf("member %s is unhealthy", m.Name))
-		}
-		if primaryTS > 0 {
-			lag := int64(primaryTS) - int64(m.Optime.TS.T)
-			if lag < 0 {
-				lag = 0
+	const (
+		iconPending = " [ ] PENDING"
+		iconApplied = " \033[32m[✓] APPLIED\033[0m"
+	)
+
+	fmt.Fprintln(tw, "\033[1mSTATE\tVERSION\tAPPLIED AT\tDESCRIPTION\033[0m")
+
+	for _, s := range status {
+		state := iconPending
+		appliedAt := "-"
+
+		if s.Applied {
+			state = iconApplied
+			if s.AppliedAt != nil {
+				appliedAt = s.AppliedAt.Format("2006-01-02 15:04")
 			}
-			report.MemberLagSecs[m.Name] = float64(lag)
 		}
+		fmt.Fprintf(tw, "%s\t%s\t%s\t%s\n", state, s.Version, appliedAt, s.Description)
 	}
-}
-
-func renderHealthTable(w io.Writer, report healthReport) {
-	tw := tabwriter.NewWriter(w, 0, 0, 3, ' ', 0)
-	defer tw.Flush()
-
-	fmt.Fprintf(tw, "--- DATABASE HEALTH: %s ---\n", report.Database)
-	fmt.Fprintf(tw, "METRIC\tVALUE\n")
-	fmt.Fprintf(tw, "Role\t%s\n", report.Role)
-	fmt.Fprintf(tw, "Oplog Window\t%s\n", report.OplogWindow)
-
-	if len(report.MemberLagSecs) > 0 {
-		for name, lag := range report.MemberLagSecs {
-			fmt.Fprintf(tw, "Member Lag (%s)\t%.0fs\n", name, lag)
-		}
-	}
-
-	if cur, ok := report.Connections["current"]; ok {
-		fmt.Fprintf(tw, "Connections (Active/Avail)\t%.0f / %.0f\n", cur, report.Connections["available"])
-	}
-
-	if len(report.Warnings) > 0 {
-		fmt.Fprintln(tw, "\n--- WARNINGS ---")
-		for _, w := range report.Warnings {
-			fmt.Fprintf(tw, "!\t%s\n", w)
-		}
-	}
+	tw.Flush()
 }

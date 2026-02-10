@@ -9,10 +9,10 @@ release:
   name_template: '{{ .Tag }}'
 
 builds:
-  - id: mongo-migration
+  - id: mongo-tool
     dir: .
     main: .
-    binary: mongo-migration
+    binary: mongo-tool
     env:
       - CGO_ENABLED=0
     goos:

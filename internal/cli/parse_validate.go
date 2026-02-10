@@ -69,7 +69,8 @@ func newValidateCmd() *cobra.Command {
 					return fmt.Errorf("no registered type: %s", typeName)
 				}
 				instance := ctor()
-				if err := parser.ParseInto(raw, instance, parser.WithFormat(parseFormat(format)), parser.WithValidation(true)); err != nil {
+				if err := parser.ParseInto(raw, instance, parser.WithFormat(
+					parseFormat(format)), parser.WithValidation(true)); err != nil {
 					return err
 				}
 				fmt.Fprintln(cmd.OutOrStdout(), "valid")

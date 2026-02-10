@@ -9,7 +9,7 @@ import (
 	"text/tabwriter"
 	"time"
 
-	"github.com/drewjocham/mongo-migration-tool/jsonutil"
+	"github.com/drewjocham/mongo-migration-tool/internal/jsonutil"
 	"github.com/spf13/cobra"
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
@@ -381,12 +381,6 @@ func bsonDToMap(d bson.D) bson.M {
 		out[elem.Key] = elem.Value
 	}
 	return out
-}
-
-func parseFilterFlag(jsonStr string) (bson.M, error) {
-	var result bson.M
-	err := bson.UnmarshalExtJSON([]byte(jsonStr), true, &result)
-	return result, err
 }
 
 func parseOps(raw string) ([]string, error) {

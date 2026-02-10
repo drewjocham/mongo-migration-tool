@@ -30,7 +30,7 @@ func main() {
 		log.Fatalf("Configuration error: %v", err)
 	}
 
-	client, err := mongo.Connect(ctx, options.Client().ApplyURI(cfg.GetConnectionString()))
+	client, err := mongo.Connect(options.Client().ApplyURI(cfg.GetConnectionString()))
 	if err != nil {
 		log.Fatalf("Failed to connect to MongoDB: %v", err)
 	}

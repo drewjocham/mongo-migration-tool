@@ -22,7 +22,7 @@ else
 endif
 
 # Build options
-export BINARY_NAME=mongo-migration
+export BINARY_NAME=mongo-tool
 export BUILD_DIR?=$(REPO_ROOT)/build
 # LDFLAGS=-ldflags "-X main.version=$(shell git describe --tags --always)" # Old LDFLAGS
 export LDFLAGS=-ldflags "\
@@ -33,7 +33,7 @@ export LDFLAGS=-ldflags "\
 export MAIN_PACKAGE?=./cmd
 
 # Docker options
-export DOCKER_IMAGE=mongo-migration
+export DOCKER_IMAGE=mongo-tool
 export DOCKER_TAG?=latest
 export DOCKERFILE_LOCAL?=$(REPO_ROOT)/$(DOCKER_DIR)/Dockerfile.local
 export DOCKERFILE_MCP?=$(REPO_ROOT)/$(DOCKER_DIR)/Dockerfile.mcp

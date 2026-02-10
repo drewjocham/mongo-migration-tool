@@ -47,8 +47,8 @@ func Execute() error {
 func newRootCmd() *cobra.Command {
 
 	cmd := &cobra.Command{
-		Use:     "mt",
-		Aliases: []string{"mmt"},
+		Use:     "mongo-tool",
+		Aliases: []string{"mt", "mmt"},
 		Short:   "MongoDB migration toolkit",
 		Version: fmt.Sprintf("%s (commit: %s, build date: %s)", appVersion, commit, date),
 		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {

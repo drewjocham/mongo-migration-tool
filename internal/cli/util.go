@@ -3,10 +3,9 @@ package cli
 import (
 	"bufio"
 	"fmt"
-	"strings"
-
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
+	"strings"
 )
 
 func promptConfirmation(cmd *cobra.Command, message string) bool {
@@ -22,3 +21,4 @@ func promptConfirmation(cmd *cobra.Command, message string) bool {
 	response := strings.ToLower(strings.TrimSpace(input))
 	return response == "y" || response == "yes"
 }
+

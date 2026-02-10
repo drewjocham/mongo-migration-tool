@@ -109,7 +109,7 @@ func loadConfig() (*config.Config, error) {
 	}
 
 	if err := cfg.Validate(); err != nil {
-		return nil, fmt.Errorf("Validation failed: %w", err)
+		return nil, fmt.Errorf("validation failed: %w", err)
 	}
 	return cfg, nil
 }
@@ -119,16 +119,16 @@ func connectToMongoDB(ctx context.Context, cfg *config.Config) (*mongo.Client, *
 	defer cancel()
 
 	fmt.Printf("🔗 Connecting to: %s/%s\n", cfg.MongoURL, cfg.Database)
-	client, err := mongo.Connect(connCtx, options.Client().ApplyURI(cfg.GetConnectionString()))
+	client, err := mongo.Connect(options.Client().ApplyURI(cfg.GetConnectionString()))
 	if err != nil {
-		return nil, nil, fmt.Errorf("Connection failed: %w", err)
+		return nil, nil, fmt.Errorf("connection failed: %w", err)
 	}
 
 	if err = client.Ping(connCtx, nil); err != nil {
-		return nil, nil, fmt.Errorf("Ping failed: %w", err)
+		return nil, nil, fmt.Errorf("ping failed: %w", err)
 	}
 
-	fmt.Println("✅ Connected successfully")
+	fmt.Println("Connected successfully")
 	return client, client.Database(cfg.Database), nil
 }
 

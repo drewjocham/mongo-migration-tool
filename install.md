@@ -1,6 +1,6 @@
 # Installation Guide
 
-This guide covers all the ways you can install and use mmt: as a CLI tool via Homebrew, as a standalone binary, as a Docker container, or as a Go library.
+This guide covers all the ways you can install and use mongo-tool: as a CLI tool via Homebrew, as a standalone binary, as a Docker container, or as a Go library.
 
 ## Table of Contents
 
@@ -14,7 +14,7 @@ This guide covers all the ways you can install and use mmt: as a CLI tool via Ho
 
 ## Homebrew Installation (macOS/Linux)
 
-The easiest way to install mmt on macOS and Linux is via Homebrew.
+The easiest way to install mongo-tool on macOS and Linux is via Homebrew.
 
 ### Prerequisites
 
@@ -24,30 +24,30 @@ The easiest way to install mmt on macOS and Linux is via Homebrew.
 
 ```bash
 # Add our custom Homebrew tap
-brew tap drewjocham/mmt
+brew tap drewjocham/mongo-migration-tool
 
-# Install mmt
-brew install mmt
+# Install mongo-tool
+brew install mongo-tool
 
 # Verify installation
-mmt version
+mongo-tool version
 ```
 
 ### Upgrade
 
 ```bash
 # Upgrade to the latest version
-brew upgrade mmt
+brew upgrade mongo-tool
 ```
 
 ### Uninstall
 
 ```bash
-# Uninstall mmt
-brew uninstall mmt
+# Uninstall mongo-tool
+brew uninstall mongo-tool
 
 # Remove the tap (optional)
-brew untap drewjocham/mmt
+brew untap drewjocham/mongo-migration-tool
 ```
 
 ## Binary Installation
@@ -65,17 +65,17 @@ Download pre-built binaries for your platform from our [GitHub Releases](https:/
 
 ```bash
 # Download the latest release (adjust URL for your platform)
-curl -LO https://github.com/drewjocham/mongo-migration-tool/releases/latest/download/mmt_linux_amd64.tar.gz
+curl -LO https://github.com/drewjocham/mongo-migration-tool/releases/latest/download/mongo-tool_linux_amd64.tar.gz
 
 # Extract the binary
-tar -xzf mmt_linux_amd64.tar.gz
+tar -xzf mongo-tool_linux_amd64.tar.gz
 
 # Make executable and move to PATH
-chmod +x mmt
-sudo mv mmt /usr/local/bin/
+chmod +x mongo-tool
+sudo mv mongo-tool /usr/local/bin/
 
 # Verify installation
-mmt version
+mongo-tool version
 ```
 
 ### Windows
@@ -83,18 +83,18 @@ mmt version
 1. Download the Windows binary from the [releases page](https://github.com/drewjocham/mongo-migration-tool/releases)
 2. Extract the `.zip` file
 3. Add the binary location to your system PATH
-4. Open a new command prompt and verify: `mmt version`
+4. Open a new command prompt and verify: `mongo-tool version`
 
 ### Installing Specific Versions
 
 ```bash
 # Install specific version (replace v1.2.3 with desired version)
-curl -LO https://github.com/drewjocham/mongo-migration-tool/releases/download/v1.2.3/mmt_linux_am
+curl -LO https://github.com/drewjocham/mongo-migration-tool/releases/download/v1.2.3/mongo-tool_linux_am
 ```
 
 ## Docker Installation
 
-mmt is available as a Docker image for containerized environments.
+mongo-tool is available as a Docker image for containerized environments.
 
 ### Available Images
 
@@ -131,7 +131,7 @@ Create a `docker-compose.yml` file:
 version: '3.8'
 
 services:
-  mmt:
+  mongo-tool:
     image: ghcr.io/drewjocham/mongo-migration-tool:latest
     environment:
       - MONGO_URL=mongodb://mongodb:27017
@@ -158,12 +158,12 @@ volumes:
 Run with:
 
 ```bash
-docker-compose up mmt
+docker-compose up mongo-tool
 ```
 
 ## Go Library Installation
 
-Use mmt as a library in your Go projects.
+Use mongo-tool as a library in your Go projects.
 
 ### Prerequisites
 
@@ -227,7 +227,7 @@ For detailed library usage, see [LIBRARY.md](LIBRARY.md).
 
 ## Building from Source
 
-Build mmt from source code.
+Build mongo-tool from source code.
 
 ### Prerequisites
 
@@ -242,13 +242,13 @@ git clone https://github.com/drewjocham/mongo-migration-tool.git
 cd mongo-migration-tool
 
 # Build for your current platform
-go build -o mmt ./cmd/mmt
+go build -o mongo-tool ./cmd
 
 # Or use make
 make build
 
 # Install to GOPATH/bin
-go install ./cmd/mmt
+go install ./cmd
 
 # Build for all platforms (requires goreleaser)
 make build-all
@@ -281,7 +281,7 @@ make build-all
 
 ```bash
 # Build with debug information
-go build -ldflags "-X main.version=dev" -o mmt ./cmd/mmt
+go build -ldflags "-X main.version=dev" -o mongo-tool ./cmd
 
 # Run tests
 make test
@@ -292,7 +292,7 @@ make lint
 
 ## Configuration
 
-mmt can be configured through environment variables or configuration files.
+mongo-tool can be configured through environment variables or configuration files.
 
 ### Environment Variables
 
@@ -358,16 +358,16 @@ Configuration is loaded in the following order (later sources override earlier o
 
 ```bash
 # Check version
-mmt version
+mongo-tool version
 
 # Check available commands
-mmt help
+mongo-tool help
 
 # Test connection (requires configuration)
-mmt status
+mongo-tool status
 
 # Show the effective configuration (secrets masked)
-mmt --config .env --show-config
+mongo-tool --config .env --show-config
 ```
 
 ### Verify Docker Installation
@@ -416,16 +416,16 @@ go run test.go
 
 - **Preview without running**:
   ```bash
-  mmt up --dry-run
-  mmt down --dry-run --target 20240101_001
+  mongo-tool up --dry-run
+  mongo-tool down --dry-run --target 20240101_001
   ```
 - **Release a stuck lock** (only if you are sure no other process is running):
   ```bash
-  mmt unlock --yes
+  mongo-tool unlock --yes
   ```
 - **View expected indexes registered in code**:
   ```bash
-  mmt schema indexes
+  mongo-tool schema indexes
   ```
 
 ## Troubleshooting
@@ -448,7 +448,7 @@ rm -rf $(brew --cache)
 
 ```bash
 # Make binary executable
-chmod +x mmt
+chmod +x mongo-tool
 
 # If "command not found"
 echo $PATH
@@ -463,7 +463,7 @@ docker logout ghcr.io
 docker login ghcr.io
 
 # Check if image exists
-docker images | grep mmt
+docker images | grep mongo-tool
 ```
 
 #### Go Module Issues
@@ -487,7 +487,7 @@ go mod download
 
 After installation, you might want to:
 
-1. **Create your first migration**: `mmt create add_user_index`
+1. **Create your first migration**: `mongo-tool create add_user_index`
 2. **Set up your project**: Create migrations directory and configure environment
 3. **Explore examples**: Check the [examples directory](examples/) in the repository
 4. **Read the library documentation**: See [LIBRARY.md](LIBRARY.md) for Go library usage

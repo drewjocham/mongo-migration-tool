@@ -99,6 +99,13 @@ func TestCLICommands(t *testing.T) {
 			},
 		},
 		{
+			name: "Users indexes exist after migrations",
+			args: []string{"status"},
+			assert: func(t *testing.T, env *TestEnv, _ string) {
+				requireUsersIndexes(t, env)
+			},
+		},
+		{
 			name: "Opslog table output",
 			args: []string{"opslog"},
 			assert: func(t *testing.T, _ *TestEnv, output string) {
@@ -227,7 +234,7 @@ func setupIntegrationEnv(t *testing.T, ctx context.Context) *TestEnv {
 func (e *TestEnv) RunCLI(t *testing.T, args ...string) string {
 	t.Helper()
 	oldArgs := os.Args
-	os.Args = append([]string{"mt", "--config", e.ConfigPath}, args...)
+	os.Args = append([]string{"mongo-tool", "--config", e.ConfigPath}, args...)
 	defer func() { os.Args = oldArgs }()
 
 	stdout, stderr, err := captureOutput(cli.Execute)
@@ -296,6 +303,28 @@ func assertVersionState(t *testing.T, output, version, state string) {
 		}
 	}
 	assert.True(t, found)
+}
+
+func requireUsersIndexes(t *testing.T, env *TestEnv) {
+	t.Helper()
+	ctx := context.Background()
+	coll := env.MongoClient.Database(env.DBName).Collection("users")
+	cursor, err := coll.Indexes().List(ctx)
+	require.NoError(t, err)
+
+	var indexes []bson.M
+	require.NoError(t, cursor.All(ctx, &indexes))
+
+	names := make(map[string]struct{}, len(indexes))
+	for _, idx := range indexes {
+		if name, ok := idx["name"].(string); ok && name != "" {
+			names[name] = struct{}{}
+		}
+	}
+
+	require.Contains(t, names, "idx_users_email_unique")
+	require.Contains(t, names, "idx_users_created_at")
+	require.Contains(t, names, "idx_users_status_created_at")
 }
 
 func sortedMigrationVersions() []string {

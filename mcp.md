@@ -1,10 +1,10 @@
 # MCP Integration Guide
 
-This document explains how to use mmt as a Model Context Protocol (MCP) server for AI assistants like Ollama, Goose, Claude Desktop, and others.
+This document explains how to use mongo-tool as a Model Context Protocol (MCP) server for AI assistants like Ollama, Goose, Claude Desktop, and others.
 
 ## What is MCP?
 
-The Model Context Protocol (MCP) allows AI agents to connect to external data sources and tools. With the use of these agents mmt can be aided with your permission, to manage MongoDB migrations, answer questions or offer advice using natural language.
+The Model Context Protocol (MCP) allows AI agents to connect to external data sources and tools. With the use of these agents mongo-tool can be aided with your permission to manage MongoDB migrations, answer questions, or offer advice using natural language.
 
 ## Quick Start
 
@@ -32,10 +32,10 @@ export MIGRATIONS_COLLECTION="schema_migrations"
 ### 4. Start MCP Server
 ```bash
 # Start with your own migrations
-./build/mmt mcp
+./build/mongo-tool mcp
 
 # Start with example migrations for testing
-./build/mmt mcp --with-examples
+./build/mongo-tool mcp --with-examples
 ```
 
 ## AI Assistant Integration
@@ -54,8 +54,8 @@ mkdir -p ~/.config/ollama
 cat > ~/.config/ollama/mcp-config.json << EOF
 {
   "mcpServers": {
-    "mmt": {
-      "command": "$(pwd)/build/mmt",
+    "mongo-tool": {
+      "command": "$(pwd)/build/mongo-tool",
       "args": ["mcp"],
       "env": {
         "MONGO_URI": "mongodb://localhost:27017",
@@ -84,8 +84,8 @@ EOF
    ```json
    {
      "mcpServers": {
-       "mmt": {
-         "command": "/absolute/path/to/mmt",
+       "mongo-tool": {
+         "command": "/absolute/path/to/mongo-tool",
          "args": ["mcp"],
          "env": {
            "MONGO_URI": "mongodb://localhost:27017",
@@ -104,10 +104,10 @@ EOF
    ```json
    {
      "tools": {
-       "mmt": {
+       "mongo-tool": {
          "type": "mcp",
          "server": {
-           "command": "/path/to/mmt",
+           "command": "/path/to/mongo-tool",
            "args": ["mcp"],
            "env": {
              "MONGO_URI": "mongodb://localhost:27017",
@@ -259,7 +259,7 @@ Your database is now back to the previous state. You can review and fix the migr
 2. **Test MCP server directly**:
    ```bash
    # Basic test
-   echo '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{}}' | ./build/mmt mcp --with-examples
+echo '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{}}' | ./build/mongo-tool mcp --with-examples
 
    # Interactive test
    make mcp-client-test
@@ -308,7 +308,7 @@ To add custom tools to the MCP server:
 Enable debug logging:
 ```bash
 export LOG_LEVEL=debug
-./build/mmt mcp --with-examples
+./build/mongo-tool mcp --with-examples
 ```
 
 ## Contributing

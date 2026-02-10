@@ -11,7 +11,7 @@ import (
 	"time"
 
 	"github.com/drewjocham/mongo-migration-tool/internal/cli"
-	"github.com/drewjocham/mongo-migration-tool/jsonutil"
+	"github.com/drewjocham/mongo-migration-tool/internal/jsonutil"
 	jsoniter "github.com/json-iterator/go"
 	"github.com/stretchr/testify/require"
 )
