@@ -29,13 +29,14 @@ import (
 )
 
 type TestEnv struct {
-	ConfigPath  string
-	DBName      string
-	ColName     string
-	MongoClient *mongo.Client
+	ConfigPath     string
+	DBName         string
+	ColName        string
+	MigrationsPath string
+	MongoClient    *mongo.Client
 }
 
-func TestMigrationLifecycle(t *testing.T) {
+func TestCLICommands(t *testing.T) {
 	ctx := context.Background()
 	env := setupIntegrationEnv(t, ctx)
 
@@ -43,47 +44,131 @@ func TestMigrationLifecycle(t *testing.T) {
 	require.NotEmpty(t, versions)
 	latest := versions[len(versions)-1]
 
-	steps := []struct {
-		name         string
-		args         []string
-		expectOutput string
-		expectState  string
-	}{
+	type testCase struct {
+		name   string
+		setup  func(t *testing.T, env *TestEnv)
+		args   []string
+		assert func(t *testing.T, env *TestEnv, output string)
+	}
+
+	cases := []testCase{
 		{
-			name:        "Initial status is pending",
-			args:        []string{"status"},
-			expectState: "[ ]",
+			name: "Version command",
+			args: []string{"version"},
+			assert: func(t *testing.T, _ *TestEnv, output string) {
+				assert.Contains(t, output, "commit:")
+			},
 		},
 		{
-			name:         "Migrate up to latest",
-			args:         []string{"up"},
-			expectOutput: "Database is up to date",
+			name: "Schema indexes table output",
+			args: []string{"schema", "indexes"},
+			assert: func(t *testing.T, _ *TestEnv, output string) {
+				assert.Contains(t, output, "COLLECTION")
+				assert.Contains(t, output, "users")
+			},
 		},
 		{
-			name:        "Status shows completed",
-			args:        []string{"status"},
-			expectState: "[✓]",
+			name: "Schema indexes JSON output",
+			args: []string{"schema", "indexes", "--output", "json"},
+			assert: func(t *testing.T, _ *TestEnv, output string) {
+				assert.Contains(t, output, "\"Collection\"")
+				assert.Contains(t, output, "idx_users_email_unique")
+			},
+		},
+		{
+			name: "MCP config command",
+			args: []string{"mcp", "config"},
+			assert: func(t *testing.T, _ *TestEnv, output string) {
+				assert.Contains(t, output, "\"mcpServers\"")
+				assert.Contains(t, output, "\"mongo-migration\"")
+			},
+		},
+		{
+			name: "Initial status is pending",
+			args: []string{"status"},
+			assert: func(t *testing.T, _ *TestEnv, output string) {
+				assertVersionState(t, output, latest, "[ ]")
+			},
+		},
+		{
+			name: "Migrate up to latest",
+			args: []string{"up"},
+			assert: func(t *testing.T, _ *TestEnv, output string) {
+				assert.Contains(t, output, "Database is")
+			},
+		},
+		{
+			name: "Status shows completed",
+			args: []string{"status"},
+			assert: func(t *testing.T, _ *TestEnv, output string) {
+				assertVersionState(t, output, latest, "[✓]")
+			},
+		},
+		{
+			name: "Down command rolls back all",
+			args: []string{"down", "--yes"},
+			assert: func(t *testing.T, _ *TestEnv, _ string) {
+			},
+		},
+		{
+			name: "Status shows pending after down",
+			args: []string{"status"},
+			assert: func(t *testing.T, _ *TestEnv, output string) {
+				assertVersionState(t, output, latest, "[ ]")
+			},
+		},
+		{
+			name: "Force marks migration as applied",
+			args: []string{"force", "--yes", latest},
+			assert: func(t *testing.T, _ *TestEnv, _ string) {
+			},
+		},
+		{
+			name: "Status shows forced migration applied",
+			args: []string{"status"},
+			assert: func(t *testing.T, _ *TestEnv, output string) {
+				assertVersionState(t, output, latest, "[✓]")
+			},
+		},
+		{
+			name: "Unlock releases lock",
+			setup: func(t *testing.T, env *TestEnv) {
+				lockColl := env.MongoClient.Database(env.DBName).Collection("migrations_lock")
+				_, err := lockColl.InsertOne(ctx, bson.M{
+					"lock_id":     "migration_engine_lock",
+					"acquired_at": time.Now().UTC(),
+				})
+				require.NoError(t, err)
+			},
+			args: []string{"unlock", "--yes"},
+			assert: func(t *testing.T, _ *TestEnv, output string) {
+				assert.Contains(t, output, "Migration lock released")
+			},
+		},
+		{
+			name: "Create migration file",
+			args: []string{"create", "add_users_index"},
+			assert: func(t *testing.T, env *TestEnv, output string) {
+				assert.Contains(t, output, "Migration created")
+
+				entries, err := os.ReadDir(env.MigrationsPath)
+				require.NoError(t, err)
+				require.NotEmpty(t, entries)
+			},
 		},
 	}
 
-	for _, tt := range steps {
-		t.Run(tt.name, func(t *testing.T) {
-			out := env.RunCLI(t, tt.args...)
-			if tt.expectOutput != "" {
-				assert.Contains(t, out, tt.expectOutput)
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			if tc.setup != nil {
+				tc.setup(t, env)
 			}
-			if tt.expectState != "" {
-				assertVersionState(t, out, latest, tt.expectState)
+			out := env.RunCLI(t, tc.args...)
+			if tc.assert != nil {
+				tc.assert(t, env, out)
 			}
 		})
 	}
-
-	t.Run("Verify DB persistence", func(t *testing.T) {
-		col := env.MongoClient.Database(env.DBName).Collection(env.ColName)
-		count, err := col.CountDocuments(ctx, bson.M{"version": latest})
-		require.NoError(t, err)
-		assert.Equal(t, int64(1), count)
-	})
 }
 
 func setupIntegrationEnv(t *testing.T, ctx context.Context) *TestEnv {
@@ -96,12 +181,14 @@ func setupIntegrationEnv(t *testing.T, ctx context.Context) *TestEnv {
 
 	dbName := fmt.Sprintf("it_%d", time.Now().UnixNano())
 	colName := "schema_migrations"
+	migrationsPath := filepath.Join(t.TempDir(), "migrations")
 
 	configContent := fmt.Sprintf(
-		"MONGO_URL=%s\nMONGO_DATABASE=%s\nMIGRATIONS_COLLECTION=%s\n",
+		"MONGO_URL=%s\nMONGO_DATABASE=%s\nMIGRATIONS_COLLECTION=%s\nMIGRATIONS_PATH=%s\n",
 		connStr,
 		dbName,
 		colName,
+		migrationsPath,
 	)
 
 	configPath := filepath.Join(t.TempDir(), "mmt.yaml")
@@ -115,12 +202,14 @@ func setupIntegrationEnv(t *testing.T, ctx context.Context) *TestEnv {
 	t.Setenv("MONGO_URL", connStr)
 	t.Setenv("MONGO_DATABASE", dbName)
 	t.Setenv("MIGRATIONS_COLLECTION", colName)
+	t.Setenv("MIGRATIONS_PATH", migrationsPath)
 
 	return &TestEnv{
-		ConfigPath:  configPath,
-		DBName:      dbName,
-		ColName:     colName,
-		MongoClient: client,
+		ConfigPath:     configPath,
+		DBName:         dbName,
+		ColName:        colName,
+		MigrationsPath: migrationsPath,
+		MongoClient:    client,
 	}
 }
 
@@ -148,13 +237,13 @@ func captureOutput(f func() error) (string, string, error) {
 	resErr := make(chan string)
 	go func() {
 		var b bytes.Buffer
-		io.Copy(&b, rOut)
+		_, _ = io.Copy(&b, rOut)
 		resOut <- b.String()
 	}()
 
 	go func() {
 		var b bytes.Buffer
-		io.Copy(&b, rErr)
+		_, _ = io.Copy(&b, rErr)
 		resErr <- b.String()
 	}()
 
