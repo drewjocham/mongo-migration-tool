@@ -86,6 +86,21 @@ func (e *Engine) Down(ctx context.Context, target string) error {
 	return e.run(ctx, DirectionDown, target)
 }
 
+func (e *Engine) ListApplied(ctx context.Context) ([]MigrationRecord, error) {
+	coll := e.db.Collection(e.coll)
+	cur, err := coll.Find(ctx, bson.D{}, options.Find().SetSort(bson.D{{Key: "applied_at", Value: -1}}))
+	if err != nil {
+		return nil, fmt.Errorf("%w: %w", ErrFailedToReadMigrations, err)
+	}
+	defer cur.Close(ctx)
+
+	var records []MigrationRecord
+	if err := cur.All(ctx, &records); err != nil {
+		return nil, fmt.Errorf("%w: %w", ErrFailedToReadMigrations, err)
+	}
+	return records, nil
+}
+
 func (e *Engine) Force(ctx context.Context, version string) error {
 	m, ok := e.migrations[version]
 	if !ok {

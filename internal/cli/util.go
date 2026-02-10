@@ -36,6 +36,14 @@ func getConfig(ctx context.Context) (*config.Config, error) {
 	return cfg, nil
 }
 
+func getServices(ctx context.Context) (*Services, error) {
+	s, ok := ctx.Value(ctxServicesKey).(*Services)
+	if !ok || s == nil {
+		return nil, fmt.Errorf("internal error: services not found in context")
+	}
+	return s, nil
+}
+
 func promptConfirmation(cmd *cobra.Command, message string) bool {
 	fmt.Fprint(cmd.OutOrStdout(), message)
 

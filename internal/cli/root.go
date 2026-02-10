@@ -87,7 +87,7 @@ func newRootCmd() *cobra.Command {
 
 	cmd.AddCommand(
 		newUpCmd(), newDownCmd(), newForceCmd(), newUnlockCmd(),
-		newStatusCmd(), newCreateCmd(), newSchemaCmd(), NewMCPCmd(),
+		newStatusCmd(), newOpslogCmd(), newCreateCmd(), newSchemaCmd(), NewMCPCmd(),
 		versionCmd,
 	)
 

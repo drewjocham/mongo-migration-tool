@@ -98,6 +98,21 @@ func TestCLICommands(t *testing.T) {
 			},
 		},
 		{
+			name: "Opslog table output",
+			args: []string{"opslog"},
+			assert: func(t *testing.T, _ *TestEnv, output string) {
+				assert.Contains(t, output, "APPLIED AT")
+				assert.Contains(t, output, latest)
+			},
+		},
+		{
+			name: "Opslog JSON output with search",
+			args: []string{"opslog", "--output", "json", "--search", latest},
+			assert: func(t *testing.T, _ *TestEnv, output string) {
+				assert.Contains(t, output, latest)
+			},
+		},
+		{
 			name: "Status shows completed",
 			args: []string{"status"},
 			assert: func(t *testing.T, _ *TestEnv, output string) {
