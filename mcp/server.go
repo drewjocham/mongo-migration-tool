@@ -16,7 +16,7 @@ import (
 	"time"
 
 	"github.com/drewjocham/mongo-migration-tool/internal/config"
-	"github.com/drewjocham/mongo-migration-tool/migration"
+	"github.com/drewjocham/mongo-migration-tool/internal/migration"
 	"github.com/modelcontextprotocol/go-sdk/mcp"
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
@@ -69,7 +69,6 @@ func NewMCPServer(cfg *config.Config, logger *slog.Logger) (*MCPServer, error) {
 	return srv, nil
 }
 
-
 func (s *MCPServer) ensureConnection(ctx context.Context) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -104,7 +103,7 @@ func formatData(m bson.M, maxLen int) string {
 			continue
 		}
 		parts = append(parts, fmt.Sprintf("%s: %v", k, v))
-		if len(parts) > 3 { // Fewer fields for MCP clarity
+		if len(parts) > 3 {
 			parts = append(parts, "...")
 			break
 		}

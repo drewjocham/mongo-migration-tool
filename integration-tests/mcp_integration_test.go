@@ -163,7 +163,7 @@ func startCLIMCPServer(t *testing.T, env *TestEnv) (*mcpClient, func()) {
 	oldIn := os.Stdin
 	oldOut := os.Stdout
 
-	os.Args = []string{"mmt", "--config", env.ConfigPath, "mcp"}
+	os.Args = []string{"mt", "--config", env.ConfigPath, "mcp"}
 	os.Stdin = clientToSrvR
 	os.Stdout = srvToClientW
 

@@ -46,5 +46,5 @@ func renderSuccess(path, version string) {
 	fmt.Printf("\n✨ Migration created: %s\n", displayPath)
 	fmt.Printf("\nNext steps:\n")
 	fmt.Printf("  1. Edit logic: code %s\n", displayPath)
-	fmt.Printf("  2. Test run:   mmt up --target %s\n\n", version)
+	fmt.Printf("  2. Test run:   mt up --target %s\n\n", version)
 }

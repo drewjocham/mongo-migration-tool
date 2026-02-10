@@ -14,7 +14,7 @@ import (
 	"go.mongodb.org/mongo-driver/v2/mongo/options"
 
 	"github.com/drewjocham/mongo-migration-tool/internal/config"
-	"github.com/drewjocham/mongo-migration-tool/migration"
+	"github.com/drewjocham/mongo-migration-tool/internal/migration"
 )
 
 const connectionTimeout = 10 * time.Second
@@ -109,7 +109,7 @@ func loadConfig() (*config.Config, error) {
 	}
 
 	if err := cfg.Validate(); err != nil {
-		return nil, fmt.Errorf("❌ Validation failed: %w", err)
+		return nil, fmt.Errorf("Validation failed: %w", err)
 	}
 	return cfg, nil
 }
@@ -121,11 +121,11 @@ func connectToMongoDB(ctx context.Context, cfg *config.Config) (*mongo.Client, *
 	fmt.Printf("🔗 Connecting to: %s/%s\n", cfg.MongoURL, cfg.Database)
 	client, err := mongo.Connect(connCtx, options.Client().ApplyURI(cfg.GetConnectionString()))
 	if err != nil {
-		return nil, nil, fmt.Errorf("❌ Connection failed: %w", err)
+		return nil, nil, fmt.Errorf("Connection failed: %w", err)
 	}
 
 	if err = client.Ping(connCtx, nil); err != nil {
-		return nil, nil, fmt.Errorf("❌ Ping failed: %w", err)
+		return nil, nil, fmt.Errorf("Ping failed: %w", err)
 	}
 
 	fmt.Println("✅ Connected successfully")

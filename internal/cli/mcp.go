@@ -9,11 +9,11 @@ import (
 
 	"github.com/drewjocham/mongo-migration-tool/internal/jsonutil"
 	logging "github.com/drewjocham/mongo-migration-tool/internal/log"
-	"github.com/drewjocham/mongo-migration-tool/internal/mcp"
+	"github.com/drewjocham/mongo-migration-tool/mcp"
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
 
-	_ "github.com/drewjocham/mongo-migration-tool/migrations"
+	_ "github.com/drewjocham/mongo-migration-tool/internal/migrations"
 )
 
 func NewMCPCmd() *cobra.Command {
@@ -94,7 +94,7 @@ func runMCPConfig(cmd *cobra.Command, _ []string) error {
 
 	config := map[string]any{
 		"mcpServers": map[string]any{
-			"mongo-migration": map[string]any{
+			"mt": map[string]any{
 				"command": exePath,
 				"args":    []string{"mcp"},
 				"env": map[string]string{

@@ -4,7 +4,7 @@ package cli
 
 import (
 	"github.com/drewjocham/mongo-migration-tool/examples/examplemigrations"
-	"github.com/drewjocham/mongo-migration-tool/migration"
+	"github.com/drewjocham/mongo-migration-tool/internal/migration"
 )
 
 func registerExampleMigrations() error {

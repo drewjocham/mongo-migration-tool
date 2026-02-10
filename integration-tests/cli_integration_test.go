@@ -24,8 +24,8 @@ import (
 	"go.mongodb.org/mongo-driver/v2/mongo/options"
 
 	"github.com/drewjocham/mongo-migration-tool/internal/cli"
-	"github.com/drewjocham/mongo-migration-tool/migration"
-	_ "github.com/drewjocham/mongo-migration-tool/migrations"
+	"github.com/drewjocham/mongo-migration-tool/internal/migration"
+	_ "github.com/drewjocham/mongo-migration-tool/internal/migrations"
 )
 
 type TestEnv struct {
@@ -80,7 +80,7 @@ func TestCLICommands(t *testing.T) {
 			args: []string{"mcp", "config"},
 			assert: func(t *testing.T, _ *TestEnv, output string) {
 				assert.Contains(t, output, "\"mcpServers\"")
-				assert.Contains(t, output, "\"mongo-migration\"")
+				assert.Contains(t, output, "\"mt\"")
 			},
 		},
 		{
@@ -95,6 +95,7 @@ func TestCLICommands(t *testing.T) {
 			args: []string{"up"},
 			assert: func(t *testing.T, _ *TestEnv, output string) {
 				assert.Contains(t, output, "Database is")
+				assertMigrationRecordExists(t, env, latest)
 			},
 		},
 		{
@@ -152,6 +153,7 @@ func TestCLICommands(t *testing.T) {
 			args: []string{"unlock", "--yes"},
 			assert: func(t *testing.T, _ *TestEnv, output string) {
 				assert.Contains(t, output, "Migration lock released")
+				assertLockReleased(t, env)
 			},
 		},
 		{
@@ -200,7 +202,7 @@ func setupIntegrationEnv(t *testing.T, ctx context.Context) *TestEnv {
 		migrationsPath,
 	)
 
-	configPath := filepath.Join(t.TempDir(), "mmt.yaml")
+	configPath := filepath.Join(t.TempDir(), "mongo-tool.yaml")
 	err = os.WriteFile(configPath, []byte(configContent), 0644)
 	require.NoError(t, err)
 
@@ -225,7 +227,7 @@ func setupIntegrationEnv(t *testing.T, ctx context.Context) *TestEnv {
 func (e *TestEnv) RunCLI(t *testing.T, args ...string) string {
 	t.Helper()
 	oldArgs := os.Args
-	os.Args = append([]string{"mmt", "--config", e.ConfigPath}, args...)
+	os.Args = append([]string{"mt", "--config", e.ConfigPath}, args...)
 	defer func() { os.Args = oldArgs }()
 
 	stdout, stderr, err := captureOutput(cli.Execute)
@@ -263,6 +265,23 @@ func captureOutput(f func() error) (string, string, error) {
 	stdout, stderr := <-resOut, <-resErr
 	os.Stdout, os.Stderr = oldOut, oldErr
 	return stdout, stderr, fErr
+}
+
+func assertMigrationRecordExists(t *testing.T, env *TestEnv, version string) {
+	t.Helper()
+	coll := env.MongoClient.Database(env.DBName).Collection(env.ColName)
+	ctx := context.Background()
+	err := coll.FindOne(ctx, bson.M{"version": version}).Err()
+	require.NoError(t, err)
+}
+
+func assertLockReleased(t *testing.T, env *TestEnv) {
+	t.Helper()
+	coll := env.MongoClient.Database(env.DBName).Collection("migrations_lock")
+	ctx := context.Background()
+	count, err := coll.CountDocuments(ctx, bson.M{"lock_id": "migration_engine_lock"})
+	require.NoError(t, err)
+	assert.Zero(t, count)
 }
 
 func assertVersionState(t *testing.T, output, version, state string) {
