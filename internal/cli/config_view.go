@@ -1,11 +1,11 @@
 package cli
 
 import (
-	"encoding/json"
 	"fmt"
 	"io"
 
 	"github.com/drewjocham/mongo-migration-tool/internal/config"
+	"github.com/drewjocham/mongo-migration-tool/internal/jsonutil"
 )
 
 type safeConfig struct {
@@ -26,7 +26,7 @@ type safeConfig struct {
 }
 
 func renderConfig(out io.Writer, cfg *config.Config) error {
-	enc := json.NewEncoder(out)
+	enc := jsonutil.NewEncoder(out)
 	enc.SetIndent("", "  ")
 	safe := safeConfig{
 		MongoURL:             cfg.MongoURL,

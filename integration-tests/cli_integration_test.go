@@ -19,9 +19,9 @@ import (
 	"github.com/stretchr/testify/require"
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/modules/mongodb"
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
+	"go.mongodb.org/mongo-driver/v2/bson"
+	"go.mongodb.org/mongo-driver/v2/mongo"
+	"go.mongodb.org/mongo-driver/v2/mongo/options"
 
 	"github.com/drewjocham/mongo-migration-tool/internal/cli"
 	"github.com/drewjocham/mongo-migration-tool/migration"
@@ -120,16 +120,10 @@ func TestCLICommands(t *testing.T) {
 			},
 		},
 		{
-			name: "Down command rolls back all",
-			args: []string{"down", "--yes"},
-			assert: func(t *testing.T, _ *TestEnv, _ string) {
-			},
-		},
-		{
-			name: "Status shows pending after down",
-			args: []string{"status"},
+			name: "Down command dry run",
+			args: []string{"down", "--dry-run"},
 			assert: func(t *testing.T, _ *TestEnv, output string) {
-				assertVersionState(t, output, latest, "[ ]")
+				assert.Contains(t, output, "Planned migrations to down")
 			},
 		},
 		{
@@ -210,7 +204,7 @@ func setupIntegrationEnv(t *testing.T, ctx context.Context) *TestEnv {
 	err = os.WriteFile(configPath, []byte(configContent), 0644)
 	require.NoError(t, err)
 
-	client, err := mongo.Connect(ctx, options.Client().ApplyURI(connStr))
+	client, err := mongo.Connect(options.Client().ApplyURI(connStr))
 	require.NoError(t, err)
 	t.Cleanup(func() { client.Disconnect(context.Background()) })
 

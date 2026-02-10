@@ -5,9 +5,9 @@ package examplemigrations
 import (
 	"context"
 
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
+	"go.mongodb.org/mongo-driver/v2/bson"
+	"go.mongodb.org/mongo-driver/v2/mongo"
+	"go.mongodb.org/mongo-driver/v2/mongo/options"
 )
 
 // AddUserIndexesMigration adds indexes to the users collection
@@ -86,7 +86,7 @@ func (m *AddUserIndexesMigration) Down(
 
 	for _, indexName := range indexNames {
 		// Ignore errors when dropping indexes - they might not exist
-		_, _ = collection.Indexes().DropOne(ctx, indexName)
+		_ = collection.Indexes().DropOne(ctx, indexName)
 	}
 
 	return nil

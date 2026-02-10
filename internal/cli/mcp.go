@@ -1,14 +1,14 @@
 package cli
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
-	logging "github.com/drewjocham/mongo-migration-tool/internal/log"
 	"io"
 	"os"
 	"strings"
 
+	"github.com/drewjocham/mongo-migration-tool/internal/jsonutil"
+	logging "github.com/drewjocham/mongo-migration-tool/internal/log"
 	"github.com/drewjocham/mongo-migration-tool/internal/mcp"
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
@@ -105,7 +105,7 @@ func runMCPConfig(cmd *cobra.Command, _ []string) error {
 		},
 	}
 
-	enc := json.NewEncoder(cmd.OutOrStdout())
+	enc := jsonutil.NewEncoder(cmd.OutOrStdout())
 	enc.SetIndent("", "  ")
 	return enc.Encode(config)
 }

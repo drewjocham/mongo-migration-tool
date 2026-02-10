@@ -10,10 +10,10 @@ import (
 	"io"
 	"time"
 
-	"github.com/drewjocham/mongo-migration-tool/migration"
+	"github.com/drewjocham/mongo-migration-tool/internal/migration"
 	"github.com/spf13/cobra"
-	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
+	"go.mongodb.org/mongo-driver/v2/mongo"
+	"go.mongodb.org/mongo-driver/v2/mongo/options"
 	"go.uber.org/zap"
 )
 
@@ -39,8 +39,6 @@ type Services struct {
 	Engine      *migration.Engine
 	MongoClient *mongo.Client
 }
-
-
 
 func Execute() error {
 	return newRootCmd().Execute()
@@ -89,9 +87,10 @@ func newRootCmd() *cobra.Command {
 
 	cmd.AddCommand(
 		newUpCmd(), newDownCmd(), newForceCmd(), newUnlockCmd(),
-		newStatusCmd(),
+		newStatusCmd(), newOpslogCmd(),
 		NewOplogCmd(),
 		NewDBCmd(),
+		newParseCmd(), newValidateCmd(),
 		newCreateCmd(), newSchemaCmd(), NewMCPCmd(),
 		versionCmd,
 	)
@@ -143,7 +142,7 @@ func dial(ctx context.Context, cfg *config.Config) (*mongo.Client, error) {
 		opts.SetTLSConfig(&tls.Config{InsecureSkipVerify: cfg.SSLInsecure})
 	}
 
-	client, err := mongo.Connect(ctx, opts)
+	client, err := mongo.Connect(opts)
 	if err != nil {
 		return nil, err
 	}

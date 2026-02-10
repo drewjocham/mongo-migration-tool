@@ -1,7 +1,6 @@
 package cli
 
 import (
-	"encoding/json"
 	"fmt"
 	"io"
 	"regexp"
@@ -9,7 +8,8 @@ import (
 	"text/tabwriter"
 	"time"
 
-	"github.com/drewjocham/mongo-migration-tool/migration"
+	"github.com/drewjocham/mongo-migration-tool/internal/jsonutil"
+	"github.com/drewjocham/mongo-migration-tool/internal/migration"
 	"github.com/spf13/cobra"
 )
 
@@ -146,7 +146,7 @@ func parseOpslogTime(value string) (time.Time, error) {
 }
 
 func renderOpslogJSON(w io.Writer, records []migration.MigrationRecord) error {
-	encoder := json.NewEncoder(w)
+	encoder := jsonutil.NewEncoder(w)
 	encoder.SetIndent("", "  ")
 	return encoder.Encode(records)
 }

@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/drewjocham/mongo-migration-tool/migration"
+	"github.com/drewjocham/mongo-migration-tool/internal/migration"
 
-	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/v2/bson"
 )
 
 func formatStatusTable(status []migration.MigrationStatus) string {

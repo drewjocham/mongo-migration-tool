@@ -2,18 +2,18 @@ package cli
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"io"
+	"os"
 	"strings"
 	"text/tabwriter"
 	"time"
 
+	"github.com/drewjocham/mongo-migration-tool/jsonutil"
 	"github.com/spf13/cobra"
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/bson/primitive"
-	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
+	"go.mongodb.org/mongo-driver/v2/bson"
+	"go.mongodb.org/mongo-driver/v2/mongo"
+	"go.mongodb.org/mongo-driver/v2/mongo/options"
 )
 
 // Centralized Operation Metadata for DRY mapping
@@ -26,25 +26,26 @@ var operations = struct {
 }
 
 type oplogConfig struct {
-	output    string
-	namespace string
-	regex     string
-	ops       string
-	objectID  string
-	from      string
-	to        string
-	limit     int64
-	follow    bool
-	fullDoc   bool
+	output     string
+	namespace  string
+	regex      string
+	ops        string
+	objectID   string
+	from       string
+	to         string
+	limit      int64
+	follow     bool
+	fullDoc    bool
+	resumeFile string
 }
 
 type oplogEntry struct {
-	TS   primitive.Timestamp `bson:"ts"`
-	Op   string              `bson:"op"`
-	NS   string              `bson:"ns"`
-	Wall *time.Time          `bson:"wall,omitempty"`
-	O    bson.M              `bson:"o"`
-	O2   bson.M              `bson:"o2,omitempty"`
+	TS   bson.Timestamp `bson:"ts"`
+	Op   string         `bson:"op"`
+	NS   string         `bson:"ns"`
+	Wall *time.Time     `bson:"wall,omitempty"`
+	O    bson.M         `bson:"o"`
+	O2   bson.M         `bson:"o2,omitempty"`
 }
 
 type oplogOutput struct {
@@ -109,12 +110,16 @@ func NewOplogCmd() *cobra.Command {
 	f.Int64Var(&cfg.limit, "limit", 50, "Limit results")
 	f.BoolVar(&cfg.follow, "follow", false, "Tail entries in real-time")
 	f.BoolVar(&cfg.fullDoc, "full-document", false, "Include full document on updates")
+	f.StringVar(&cfg.resumeFile, "resume-file", "", "File to store/read the resume token for persistent tailing")
 	return cmd
 }
 
 func runOplog(ctx context.Context, w io.Writer, client *mongo.Client, cfg oplogConfig) error {
 	if cfg.namespace != "" && cfg.regex != "" {
 		return fmt.Errorf("use --namespace or --regex, not both")
+	}
+	if cfg.follow && cfg.to != "" {
+		return fmt.Errorf("--to is not supported with --follow")
 	}
 
 	render := func(entries []oplogEntry) error {
@@ -123,7 +128,7 @@ func runOplog(ctx context.Context, w io.Writer, client *mongo.Client, cfg oplogC
 			for i, e := range entries {
 				out[i] = e.ToOutput()
 			}
-			enc := json.NewEncoder(w)
+			enc := jsonutil.NewEncoder(w)
 			enc.SetIndent("", "  ")
 			return enc.Encode(out)
 		}
@@ -168,25 +173,22 @@ func buildFilter(cfg oplogConfig) (bson.D, error) {
 		add("ns", cfg.namespace)
 	}
 	if cfg.regex != "" {
-		add("ns", primitive.Regex{Pattern: cfg.regex})
+		add("ns", bson.Regex{Pattern: cfg.regex})
 	}
 
 	if cfg.ops != "" {
-		var codes []string
-		for _, op := range strings.Split(cfg.ops, ",") {
-			op = strings.TrimSpace(strings.ToLower(op))
-			if code, ok := operations.names[op]; ok {
-				codes = append(codes, code)
-			} else {
-				codes = append(codes, op)
-			}
+		codes, err := parseOps(cfg.ops)
+		if err != nil {
+			return nil, err
 		}
-		add("op", bson.M{"$in": codes})
+		if len(codes) > 0 {
+			add("op", bson.M{"$in": codes})
+		}
 	}
 
 	if cfg.objectID != "" {
 		var id interface{} = cfg.objectID
-		if oid, err := primitive.ObjectIDFromHex(cfg.objectID); err == nil {
+		if oid, err := bson.ObjectIDFromHex(cfg.objectID); err == nil {
 			id = oid
 		}
 		add("$or", bson.A{bson.M{"o._id": id}, bson.M{"o2._id": id}})
@@ -214,8 +216,10 @@ func buildFilter(cfg oplogConfig) (bson.D, error) {
 }
 
 func fetchOplog(ctx context.Context, client *mongo.Client, filter bson.D, limit int64) ([]oplogEntry, error) {
-	db := client.Database("local")
-	coll := db.Collection("oplog.rs")
+	coll, err := oplogCollection(client)
+	if err != nil {
+		return nil, err
+	}
 
 	findOpts := options.Find().SetSort(bson.D{{Key: "ts", Value: -1}})
 	if limit > 0 {
@@ -244,10 +248,20 @@ func streamOplog(ctx context.Context, client *mongo.Client, cfg oplogConfig, ren
 	}
 	if cfg.objectID != "" {
 		var id interface{} = cfg.objectID
-		if oid, err := primitive.ObjectIDFromHex(cfg.objectID); err == nil {
+		if oid, err := bson.ObjectIDFromHex(cfg.objectID); err == nil {
 			id = oid
 		}
 		match["documentKey._id"] = id
+	}
+	if cfg.ops != "" {
+		codes, err := parseOps(cfg.ops)
+		if err != nil {
+			return err
+		}
+		names := mapOpsToNames(codes)
+		if len(names) > 0 {
+			match["operationType"] = bson.M{"$in": names}
+		}
 	}
 	if len(match) > 0 {
 		pipeline = append(pipeline, bson.D{{Key: "$match", Value: match}})
@@ -257,12 +271,20 @@ func streamOplog(ctx context.Context, client *mongo.Client, cfg oplogConfig, ren
 	if cfg.fullDoc {
 		opts.SetFullDocument(options.UpdateLookup)
 	}
+	if cfg.resumeFile != "" {
+		if token, err := os.ReadFile(cfg.resumeFile); err == nil && len(token) > 0 {
+			opts.SetResumeAfter(bson.Raw(token))
+		}
+	}
 
 	// watch the whole cluster or specific DB based on namespace
 	var stream *mongo.ChangeStream
 	var err error
 	if cfg.namespace != "" {
 		parts := strings.SplitN(cfg.namespace, ".", 2)
+		if len(parts) != 2 || parts[0] == "" || parts[1] == "" {
+			return fmt.Errorf("invalid namespace: %s (expected db.collection)", cfg.namespace)
+		}
 		stream, err = client.Database(parts[0]).Collection(parts[1]).Watch(ctx, pipeline, opts)
 	} else {
 		stream, err = client.Watch(ctx, pipeline, opts)
@@ -279,21 +301,34 @@ func streamOplog(ctx context.Context, client *mongo.Client, cfg oplogConfig, ren
 			return err
 		}
 
-		// convert ChangeEvent back to pseudo-oplogEntry
-		entry := oplogEntry{
-			Op: opFromType(event["operationType"].(string)),
-			NS: fmt.Sprintf("%v.%v", event["ns"].(bson.M)["db"], event["ns"].(bson.M)["coll"]),
+		entry := oplogEntry{}
+		if opType, ok := event["operationType"].(string); ok {
+			entry.Op = opFromType(opType)
 		}
-		if doc, ok := event["fullDocument"].(bson.M); ok {
+		if ns := formattedNamespace(event["ns"]); ns != "" {
+			entry.NS = ns
+		}
+		if doc, ok := toBsonM(event["fullDocument"]); ok {
 			entry.O = doc
 		}
-		if key, ok := event["documentKey"].(bson.M); ok {
+		if key, ok := toBsonM(event["documentKey"]); ok {
 			entry.O2 = key
 		}
-		if wall, ok := event["wallTime"].(primitive.DateTime); ok {
+		if clusterTime, ok := event["clusterTime"].(bson.Timestamp); ok {
+			entry.TS = clusterTime
+		}
+		if wall, ok := event["wallTime"].(bson.DateTime); ok {
 			t := wall.Time()
 			entry.Wall = &t
-			entry.TS = primitive.Timestamp{T: uint32(t.Unix())}
+			if entry.TS.T == 0 && entry.TS.I == 0 {
+				entry.TS = bson.Timestamp{T: uint32(t.Unix())}
+			}
+		}
+
+		if cfg.resumeFile != "" {
+			if token := stream.ResumeToken(); len(token) > 0 {
+				_ = os.WriteFile(cfg.resumeFile, token, 0o644)
+			}
 		}
 
 		if err := render([]oplogEntry{entry}); err != nil {
@@ -310,11 +345,103 @@ func opFromType(st string) string {
 	return st
 }
 
-func parseTime(v string) (primitive.Timestamp, error) {
-	for _, f := range []string{time.RFC3339, "2006-01-02"} {
-		if t, err := time.Parse(f, v); err == nil {
-			return primitive.Timestamp{T: uint32(t.Unix())}, nil
+func formattedNamespace(raw interface{}) string {
+	if ns, ok := toBsonM(raw); ok {
+		db, _ := ns["db"].(string)
+		coll, _ := ns["coll"].(string)
+		if db != "" && coll != "" {
+			return fmt.Sprintf("%s.%s", db, coll)
 		}
 	}
-	return primitive.Timestamp{}, fmt.Errorf("invalid time: %s", v)
+	return ""
+}
+
+func toBsonM(val interface{}) (bson.M, bool) {
+	if val == nil {
+		return nil, false
+	}
+	switch v := val.(type) {
+	case bson.M:
+		return v, true
+	case bson.D:
+		return bsonDToMap(v), true
+	case map[string]interface{}:
+		return bson.M(v), true
+	default:
+		return nil, false
+	}
+}
+
+func bsonDToMap(d bson.D) bson.M {
+	if len(d) == 0 {
+		return bson.M{}
+	}
+	out := make(bson.M, len(d))
+	for _, elem := range d {
+		out[elem.Key] = elem.Value
+	}
+	return out
+}
+
+func parseFilterFlag(jsonStr string) (bson.M, error) {
+	var result bson.M
+	err := bson.UnmarshalExtJSON([]byte(jsonStr), true, &result)
+	return result, err
+}
+
+func parseOps(raw string) ([]string, error) {
+	clean := strings.Split(strings.ReplaceAll(raw, " ", ""), ",")
+	out := make([]string, 0, len(clean))
+	for _, item := range clean {
+		if item == "" {
+			continue
+		}
+		item = strings.ToLower(item)
+		if _, ok := operations.codes[item]; ok {
+			out = append(out, item)
+			continue
+		}
+		if code, ok := operations.names[item]; ok {
+			out = append(out, code)
+			continue
+		}
+		return nil, fmt.Errorf("unsupported op: %s", item)
+	}
+	return out, nil
+}
+
+func mapOpsToNames(codes []string) []string {
+	out := make([]string, 0, len(codes))
+	for _, code := range codes {
+		if name, ok := operations.codes[code]; ok {
+			out = append(out, name)
+		}
+	}
+	return out
+}
+
+func parseTime(v string) (bson.Timestamp, error) {
+	for _, f := range []string{time.RFC3339, "2006-01-02"} {
+		if t, err := time.Parse(f, v); err == nil {
+			return bson.Timestamp{T: uint32(t.Unix())}, nil
+		}
+	}
+	return bson.Timestamp{}, fmt.Errorf("invalid time: %s", v)
+}
+
+func oplogCollection(client *mongo.Client) (*mongo.Collection, error) {
+	localDB := client.Database("local")
+	names, err := localDB.ListCollectionNames(context.Background(), bson.D{})
+	if err != nil {
+		return nil, fmt.Errorf("failed to list local collections: %w", err)
+	}
+	for _, name := range names {
+		if name == "oplog.rs" {
+			return localDB.Collection("oplog.rs"), nil
+		}
+		if name == "oplog.$main" {
+			return localDB.Collection("oplog.$main"), nil
+		}
+	}
+	return nil, fmt.Errorf("oplog collection not found (requires replica set)")
 }

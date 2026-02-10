@@ -2,18 +2,17 @@ package cli
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"io"
 	"strings"
 	"text/tabwriter"
 	"time"
 
+	"github.com/drewjocham/mongo-migration-tool/internal/jsonutil"
 	"github.com/spf13/cobra"
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/bson/primitive"
-	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
+	"go.mongodb.org/mongo-driver/v2/bson"
+	"go.mongodb.org/mongo-driver/v2/mongo"
+	"go.mongodb.org/mongo-driver/v2/mongo/options"
 )
 
 type healthReport struct {
@@ -37,7 +36,7 @@ type replMember struct {
 	Self     bool   `bson:"self"`
 	Health   int    `bson:"health"`
 	Optime   struct {
-		TS primitive.Timestamp `bson:"ts"`
+		TS bson.Timestamp `bson:"ts"`
 	} `bson:"optime"`
 }
 
@@ -72,7 +71,7 @@ func newDBHealthCmd() *cobra.Command {
 			}
 
 			if strings.ToLower(output) == "json" {
-				enc := json.NewEncoder(cmd.OutOrStdout())
+				enc := jsonutil.NewEncoder(cmd.OutOrStdout())
 				enc.SetIndent("", "  ")
 				return enc.Encode(report)
 			}

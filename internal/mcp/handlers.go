@@ -9,8 +9,10 @@ import (
 	"strings"
 	"time"
 
+	"github.com/drewjocham/mongo-migration-tool/internal/jsonutil"
+	"github.com/drewjocham/mongo-migration-tool/internal/parser"
 	"github.com/modelcontextprotocol/go-sdk/mcp"
-	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/v2/bson"
 )
 
 func (s *MCPServer) registerTools() {
@@ -38,6 +40,16 @@ func (s *MCPServer) registerTools() {
 		Name:        "database_schema",
 		Description: "View collections and indexes.",
 	}, s.handleSchema)
+
+	mcp.AddTool(s.mcpServer, &mcp.Tool{
+		Name:        "parse_payload",
+		Description: "Parse JSON or BSON payload into normalized JSON.",
+	}, s.handleParsePayload)
+
+	mcp.AddTool(s.mcpServer, &mcp.Tool{
+		Name:        "validate_payload",
+		Description: "Parse and validate payload using registered types.",
+	}, s.handleValidatePayload)
 }
 
 func newMessageResult(text string) (*mcp.CallToolResult, messageOutput) {
@@ -108,6 +120,7 @@ func (s *MCPServer) handleSchema(
 	return res, out, nil
 }
 
+
 func (s *MCPServer) handleCreate(
 	ctx context.Context, _ *mcp.CallToolRequest, args createMigrationArgs,
 ) (*mcp.CallToolResult, messageOutput, error) {
@@ -161,4 +174,74 @@ func (s *MCPServer) appendCollectionSchema(b *strings.Builder, ctx context.Conte
 		fmt.Fprintf(b, "| `%v` | `%s` | %s |\n", idx["name"], formatIndexKeys(idx["key"]), unique)
 	}
 	b.WriteString("\n")
+}
+
+func (s *MCPServer) handleParsePayload(
+	ctx context.Context, _ *mcp.CallToolRequest, args parsePayloadArgs,
+) (*mcp.CallToolResult, messageOutput, error) {
+	format := strings.ToLower(args.Format)
+	if format == "" {
+		format = "json"
+	}
+
+	raw, err := parser.DecodePayload(args.Payload, parser.Format(format))
+	if err != nil {
+		return nil, messageOutput{}, err
+	}
+
+	parsed, err := parser.ParseMap(raw, parser.WithFormat(parser.Format(format)))
+	if err != nil {
+		return nil, messageOutput{}, err
+	}
+
+	outBytes, err := jsonutil.MarshalIndent(parsed, "", "  ")
+	if err != nil {
+		return nil, messageOutput{}, err
+	}
+
+	res, out := newMessageResult(string(outBytes))
+	return res, out, nil
+}
+
+func (s *MCPServer) handleValidatePayload(
+	ctx context.Context, _ *mcp.CallToolRequest, args parsePayloadArgs,
+) (*mcp.CallToolResult, messageOutput, error) {
+	format := strings.ToLower(args.Format)
+	if format == "" {
+		format = "json"
+	}
+
+	raw, err := parser.DecodePayload(args.Payload, parser.Format(format))
+	if err != nil {
+		return nil, messageOutput{}, err
+	}
+
+	if args.TypeName == "" && args.TypeField == "" {
+		return nil, messageOutput{}, fmt.Errorf("type or typeField is required")
+	}
+
+	if args.TypeName != "" {
+		ctor := parser.DefaultRegistry[strings.ToLower(args.TypeName)]
+		if ctor == nil {
+			return nil, messageOutput{}, fmt.Errorf("no registered type: %s", args.TypeName)
+		}
+		instance := ctor()
+		if err := parser.ParseInto(raw, instance,
+			parser.WithFormat(parser.Format(format)),
+			parser.WithValidation(true),
+		); err != nil {
+			return nil, messageOutput{}, err
+		}
+		res, out := newMessageResult("valid")
+		return res, out, nil
+	}
+
+	if _, err := parser.ParseByType(raw, args.TypeField, parser.DefaultRegistry,
+		parser.WithFormat(parser.Format(format)),
+		parser.WithValidation(true),
+	); err != nil {
+		return nil, messageOutput{}, err
+	}
+	res, out := newMessageResult("valid")
+	return res, out, nil
 }

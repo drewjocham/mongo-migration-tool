@@ -3,7 +3,7 @@ package cli
 import (
 	"fmt"
 
-	"github.com/drewjocham/mongo-migration-tool/migration"
+	"github.com/drewjocham/mongo-migration-tool/internal/migration"
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
 )

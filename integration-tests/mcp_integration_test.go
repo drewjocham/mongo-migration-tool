@@ -4,16 +4,16 @@ package integration_tests_test
 
 import (
 	"context"
-	"encoding/json"
 	"io"
 	"os"
 	"strings"
 	"testing"
 	"time"
 
-	"github.com/stretchr/testify/require"
-
 	"github.com/drewjocham/mongo-migration-tool/internal/cli"
+	"github.com/drewjocham/mongo-migration-tool/jsonutil"
+	jsoniter "github.com/json-iterator/go"
+	"github.com/stretchr/testify/require"
 )
 
 type rpcRequest struct {
@@ -24,9 +24,9 @@ type rpcRequest struct {
 }
 
 type rpcResponse struct {
-	JSONRPC string          `json:"jsonrpc"`
-	ID      interface{}     `json:"id"`
-	Result  json.RawMessage `json:"result,omitempty"`
+	JSONRPC string              `json:"jsonrpc"`
+	ID      interface{}         `json:"id"`
+	Result  jsonutil.RawMessage `json:"result,omitempty"`
 	Error   *struct {
 		Code    int    `json:"code"`
 		Message string `json:"message"`
@@ -35,8 +35,8 @@ type rpcResponse struct {
 
 type mcpClient struct {
 	t   *testing.T
-	enc *json.Encoder
-	dec *json.Decoder
+	enc *jsoniter.Encoder
+	dec *jsoniter.Decoder
 }
 
 func (c *mcpClient) call(method string, id int, params interface{}, target interface{}) {
@@ -55,7 +55,7 @@ func (c *mcpClient) call(method string, id int, params interface{}, target inter
 	}
 
 	if target != nil {
-		if err := json.Unmarshal(resp.Result, target); err != nil {
+		if err := jsonutil.Unmarshal(resp.Result, target); err != nil {
 			c.t.Fatalf("failed to unmarshal rpc result: %v", err)
 		}
 	}
@@ -172,8 +172,8 @@ func startCLIMCPServer(t *testing.T, env *TestEnv) (*mcpClient, func()) {
 
 	client := &mcpClient{
 		t:   t,
-		enc: json.NewEncoder(clientToSrvW),
-		dec: json.NewDecoder(srvToClientR),
+		enc: jsonutil.NewEncoder(clientToSrvW),
+		dec: jsonutil.NewDecoder(srvToClientR),
 	}
 
 	stop := func() {
