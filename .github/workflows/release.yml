@@ -9,23 +9,10 @@ permissions:
   contents: write
   packages: write
   id-token: write
-  actions: read
 
 jobs:
-  provenance:
-    permissions:
-      id-token: write
-      contents: write
-      actions: read
-    uses: slsa-framework/slsa-github-generator/.github/workflows/builder_go_slsa3.yml@v2.1.0
-    with:
-      config-file: .slsa-goreleaser.yml
-      go-version-file: go.mod
-      evaluated-envs: "GO_LDFLAG_VERSION=${{ github.ref_name }}, GO_LDFLAG_COMMIT=${{ github.sha }}"
-
   goreleaser:
-    name: Release Orchestration
-    needs: provenance
+    name: Release
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -57,7 +44,7 @@ jobs:
 
   post-release:
     runs-on: ubuntu-latest
-    needs: [provenance, goreleaser]
+    needs: goreleaser
     steps:
       - name: Update pkg.go.dev
         run: |
