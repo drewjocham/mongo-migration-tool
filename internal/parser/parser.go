@@ -52,6 +52,15 @@ func WithValidator(v *validator.Validate) Option {
 	}
 }
 
+// ToConcreteType unmarshals raw JSON bytes directly into a concrete type T
+func ToConcreteType[T any](rawPayload []byte) (*T, error) {
+	out := new(T)
+	if err := jsonutil.Unmarshal(rawPayload, out); err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func Parse[T any](raw []byte, opts ...Option) (*T, error) {
 	var out T
 	if err := ParseInto(raw, &out, opts...); err != nil {

@@ -1,48 +1,59 @@
 package jsonutil
 
 import (
-	"bytes"
 	"io"
-	"sync"
 
-	jsoniter "github.com/json-iterator/go"
+	"github.com/bytedance/sonic"
+	"github.com/bytedance/sonic/decoder"
+	"github.com/bytedance/sonic/encoder"
 )
 
-var JSON = jsoniter.ConfigCompatibleWithStandardLibrary
+var json = sonic.ConfigFastest
 
-type RawMessage = jsoniter.RawMessage
+type RawMessage = []byte
 
-var bufferPool = sync.Pool{
-	New: func() any {
-		return &bytes.Buffer{}
-	},
+func Marshal(v any) ([]byte, error)                              { return json.Marshal(v) }
+func MarshalIndent(v any, prefix, indent string) ([]byte, error) { return json.MarshalIndent(v, prefix, indent) }
+func Unmarshal(data []byte, v any) error                         { return json.Unmarshal(data, v) }
+
+// Encoder wraps sonic's streaming encoder with SetIndent support.
+type Encoder struct {
+	w      io.Writer
+	prefix string
+	indent string
 }
 
-func Marshal(v any) ([]byte, error) { return encodeWithIndent(v, "", "") }
-func MarshalIndent(v any, prefix, indent string) ([]byte, error) {
-	return encodeWithIndent(v, prefix, indent)
+func NewEncoder(w io.Writer) *Encoder {
+	return &Encoder{w: w}
 }
-func Unmarshal(data []byte, v any) error       { return JSON.Unmarshal(data, v) }
-func NewEncoder(w io.Writer) *jsoniter.Encoder { return JSON.NewEncoder(w) }
-func NewDecoder(r io.Reader) *jsoniter.Decoder { return JSON.NewDecoder(r) }
 
-func encodeWithIndent(v any, prefix, indent string) ([]byte, error) {
-	buf := bufferPool.Get().(*bytes.Buffer)
-	buf.Reset()
-	defer bufferPool.Put(buf)
+func (e *Encoder) SetIndent(prefix, indent string) {
+	e.prefix = prefix
+	e.indent = indent
+}
 
-	enc := JSON.NewEncoder(buf)
-	if indent != "" || prefix != "" {
-		enc.SetIndent(prefix, indent)
+func (e *Encoder) Encode(v any) error {
+	var data []byte
+	var err error
+	if e.indent != "" || e.prefix != "" {
+		data, err = encoder.EncodeIndented(v, e.prefix, e.indent, 0)
+	} else {
+		data, err = encoder.Encode(v, 0)
 	}
-	if err := enc.Encode(v); err != nil {
-		return nil, err
+	if err != nil {
+		return err
 	}
-	b := buf.Bytes()
-	if len(b) > 0 && b[len(b)-1] == '\n' {
-		b = b[:len(b)-1]
+	_, err = e.w.Write(data)
+	if err != nil {
+		return err
 	}
-	out := make([]byte, len(b))
-	copy(out, b)
-	return out, nil
+	_, err = e.w.Write([]byte("\n"))
+	return err
+}
+
+// Decoder wraps sonic's streaming decoder.
+type Decoder = decoder.StreamDecoder
+
+func NewDecoder(r io.Reader) *Decoder {
+	return decoder.NewStreamDecoder(r)
 }
