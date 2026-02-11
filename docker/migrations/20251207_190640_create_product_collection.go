@@ -4,9 +4,9 @@ import (
 	"context"
 	"fmt"
 
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
+	"go.mongodb.org/mongo-driver/v2/bson"
+	"go.mongodb.org/mongo-driver/v2/mongo"
+	"go.mongodb.org/mongo-driver/v2/mongo/options"
 )
 
 // Migration20251207_190640CreateProductCollection create-product-collection
@@ -45,8 +45,7 @@ func (m *Migration20251207_190640CreateProductCollection) Down(
 	ctx context.Context, db *mongo.Database,
 ) error {
 	collection := db.Collection("product")
-	_, err := collection.Indexes().DropOne(ctx, "_id_nat_idx")
-	if err != nil {
+	if err := collection.Indexes().DropOne(ctx, "_id_nat_idx"); err != nil {
 		// Log the error but don't fail the migration if the index doesn't exist
 		fmt.Printf("Could not drop index _id_nat_idx (it may not exist): %v\n", err)
 	}

@@ -21,16 +21,15 @@ RUN --mount=type=cache,target=/root/.cache/go-build \
         -X github.com/drewjocham/mongo-migration-tool/internal/cli.appVersion=${VERSION} \
         -X github.com/drewjocham/mongo-migration-tool/internal/cli.commit=${COMMIT} \
         -X github.com/drewjocham/mongo-migration-tool/internal/cli.date=${DATE}" \
-    -o /app/mongo-migration ./cmd/
+    -o /app/mongo-tool ./cmd/
 
 FROM mongodb/mongodb-mcp-server:1.3.1
 
 USER root
 WORKDIR /app
 
-COPY --from=builder /app/mongo-migration /app/mongo-migration
-RUN chmod +x /app/mongo-migration && \
-    ln -s /app/mongo-migration /usr/local/bin/mongo-migration
+COPY --from=builder /app/mongo-tool /app/mongo-tool
+RUN chmod +x /app/mongo-tool && \
+    ln -s /app/mongo-tool /usr/local/bin/mongo-tool
 
-
-ENTRYPOINT ["/app/mongo-migration", "mcp"]
+ENTRYPOINT ["/app/mongo-tool", "mcp"]

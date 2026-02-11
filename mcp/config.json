@@ -1,0 +1,76 @@
+{
+  "name": "mongo-migration",
+  "description": "MongoDB migration tool with MCP support for AI assistants",
+  "version": "1.0.0",
+  "protocol": "2024-11-05",
+  "capabilities": {
+    "tools": true,
+    "resources": false,
+    "prompts": false,
+    "logging": true
+  },
+  "tools": [
+    {
+      "name": "migration_status",
+      "description": "Get the status of all migrations - shows which migrations are applied and when",
+      "parameters": {
+        "type": "object",
+        "properties": {}
+      }
+    },
+    {
+      "name": "migration_up",
+      "description": "Apply migrations up to a specific version or all pending migrations",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "version": {
+            "type": "string",
+            "description": "Migration version to migrate up to (optional - if not provided, applies all pending migrations)"
+          }
+        }
+      }
+    },
+    {
+      "name": "migration_down", 
+      "description": "Roll back migrations down to a specific version or roll back the last migration",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "version": {
+            "type": "string",
+            "description": "Migration version to roll back to (optional - if not provided, rolls back the last applied migration)"
+          }
+        }
+      }
+    },
+    {
+      "name": "migration_create",
+      "description": "Create a new migration file with a given name and description",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Name for the migration (will be used to generate filename)",
+            "required": true
+          },
+          "description": {
+            "type": "string",
+            "description": "Description of what the migration does",
+            "required": true
+          }
+        },
+        "required": ["name", "description"]
+      }
+    },
+    {
+      "name": "migration_list",
+      "description": "List all registered migrations with their versions and descriptions",
+      "parameters": {
+        "type": "object",
+        "properties": {}
+      }
+    }
+  ]
+}

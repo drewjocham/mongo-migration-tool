@@ -1,13 +1,13 @@
 package cli
 
 import (
-	"encoding/json"
 	"fmt"
 	"io"
 	"strings"
 	"text/tabwriter"
 
-	"github.com/drewjocham/mongo-migration-tool/migration"
+	"github.com/drewjocham/mongo-migration-tool/internal/jsonutil"
+	"github.com/drewjocham/mongo-migration-tool/internal/migration"
 	"github.com/spf13/cobra"
 )
 
@@ -47,7 +47,7 @@ func newStatusCmd() *cobra.Command {
 }
 
 func renderJSON(w io.Writer, status []migration.MigrationStatus) error {
-	encoder := json.NewEncoder(w)
+	encoder := jsonutil.NewEncoder(w)
 	encoder.SetIndent("", "  ")
 	return encoder.Encode(status)
 }

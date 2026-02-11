@@ -4,9 +4,9 @@ import (
 	"context"
 	"log/slog"
 
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
+	"go.mongodb.org/mongo-driver/v2/bson"
+	"go.mongodb.org/mongo-driver/v2/mongo"
+	"go.mongodb.org/mongo-driver/v2/mongo/options"
 )
 
 type Migration_20260208_030133_example1 struct{}
@@ -38,6 +38,5 @@ func (m *Migration_20260208_030133_example1) Down(ctx context.Context, db *mongo
 
 	coll := db.Collection("users")
 
-	_, err := coll.Indexes().DropOne(ctx, "idx_address")
-	return err
+	return coll.Indexes().DropOne(ctx, "idx_address")
 }

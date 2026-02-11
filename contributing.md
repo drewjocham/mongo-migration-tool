@@ -416,6 +416,24 @@ We use [Semantic Versioning](https://semver.org/):
    - Build and push Docker images
    - Update Homebrew formula
 
+### Manual Homebrew Update (if needed)
+
+If the Homebrew formula does not update automatically, you can update it by hand:
+
+1. Open the tap repo: `https://github.com/drewjocham/homebrew-mongo-migration-tool`
+2. Update the formula file (typically `Formula/mongo-migration-tool.rb`) with:
+   - The new version
+   - The release asset URLs
+   - The SHA256 for each asset (download the assets and run `shasum -a 256 <file>`)
+3. Commit and push the tap repo changes.
+
+Users can then run:
+
+```bash
+brew update
+brew upgrade mongo-migration-tool
+```
+
 ### Changelog Format
 
 ```markdown

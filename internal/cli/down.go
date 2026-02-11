@@ -3,7 +3,7 @@ package cli
 import (
 	"fmt"
 
-	"github.com/drewjocham/mongo-migration-tool/migration"
+	"github.com/drewjocham/mongo-migration-tool/internal/migration"
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
 )
@@ -19,8 +19,8 @@ func newDownCmd() *cobra.Command {
 		Use:   "down",
 		Short: "Roll back migrations",
 		Long:  "Roll back applied migrations in reverse order. Use --target to stop before a specific version.",
-		Example: `  mmt down --target 20240101_001
-  mmt down --yes  # Rollback ALL migrations without prompting`,
+		Example: `  mt down --target 20240101_001
+  mt down --yes  # Rollback ALL migrations without prompting`,
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			engine, err := getEngine(cmd.Context())
 			if err != nil {

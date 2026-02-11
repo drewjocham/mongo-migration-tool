@@ -1,13 +1,13 @@
 package cli
 
 import (
-	"encoding/json"
 	"fmt"
 	"io"
 	"strings"
 	"text/tabwriter"
 
-	"github.com/drewjocham/mongo-migration-tool/schema"
+	"github.com/drewjocham/mongo-migration-tool/internal/jsonutil"
+	"github.com/drewjocham/mongo-migration-tool/internal/schema"
 	"github.com/spf13/cobra"
 )
 
@@ -47,7 +47,7 @@ func newSchemaIndexesCmd() *cobra.Command {
 }
 
 func renderIndexesJSON(w io.Writer) error {
-	encoder := json.NewEncoder(w)
+	encoder := jsonutil.NewEncoder(w)
 	encoder.SetIndent("", "  ")
 	return encoder.Encode(schema.Indexes())
 }

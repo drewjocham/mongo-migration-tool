@@ -8,8 +8,8 @@ before:
     - go mod download
 
 builds:
-  - id: mongo-migration
-    binary: mongo-migration
+  - id: mongo-tool
+    binary: mongo-tool
     main: ./cmd
     env:
       - CGO_ENABLED=0
@@ -94,7 +94,7 @@ changelog:
       order: 999
 
 brews:
-  - name: mongo-migration
+  - name: mongo-tool
     repository:
       owner: drewjocham
       name: homebrew-tap
@@ -122,7 +122,7 @@ dockers:
     dockerfile: docker/Dockerfile.release
     use: buildx
     ids:
-      - mongo-migration
+      - mongo-tool
     build_flag_templates:
       - "--platform=linux/amd64"
       - "--label=org.opencontainers.image.created={{.Date}}"
@@ -136,7 +136,7 @@ dockers:
     dockerfile: docker/Dockerfile.release
     use: buildx
     ids:
-      - mongo-migration
+      - mongo-tool
     build_flag_templates:
       - "--platform=linux/arm64"
       - "--label=org.opencontainers.image.created={{.Date}}"

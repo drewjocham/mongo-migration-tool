@@ -10,10 +10,10 @@ import (
 	"io"
 	"time"
 
-	"github.com/drewjocham/mongo-migration-tool/migration"
+	"github.com/drewjocham/mongo-migration-tool/internal/migration"
 	"github.com/spf13/cobra"
-	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
+	"go.mongodb.org/mongo-driver/v2/mongo"
+	"go.mongodb.org/mongo-driver/v2/mongo/options"
 	"go.uber.org/zap"
 )
 
@@ -47,7 +47,8 @@ func Execute() error {
 func newRootCmd() *cobra.Command {
 
 	cmd := &cobra.Command{
-		Use:     "mmt",
+		Use:     "mongo-tool",
+		Aliases: []string{"mt", "mmt"},
 		Short:   "MongoDB migration toolkit",
 		Version: fmt.Sprintf("%s (commit: %s, build date: %s)", appVersion, commit, date),
 		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
@@ -87,7 +88,11 @@ func newRootCmd() *cobra.Command {
 
 	cmd.AddCommand(
 		newUpCmd(), newDownCmd(), newForceCmd(), newUnlockCmd(),
-		newStatusCmd(), newCreateCmd(), newSchemaCmd(), NewMCPCmd(),
+		newStatusCmd(), newOpslogCmd(),
+		NewOplogCmd(),
+		NewDBCmd(),
+		newParseCmd(), newValidateCmd(),
+		newCreateCmd(), newSchemaCmd(), NewMCPCmd(),
 		versionCmd,
 	)
 
@@ -138,7 +143,7 @@ func dial(ctx context.Context, cfg *config.Config) (*mongo.Client, error) {
 		opts.SetTLSConfig(&tls.Config{InsecureSkipVerify: cfg.SSLInsecure})
 	}
 
-	client, err := mongo.Connect(ctx, opts)
+	client, err := mongo.Connect(opts)
 	if err != nil {
 		return nil, err
 	}
@@ -194,7 +199,12 @@ func isOffline(cmd *cobra.Command) bool {
 	if cmd.Annotations[annotationOffline] == "true" {
 		return true
 	}
-	return map[string]bool{"help": true, "version": true, "create": true, "config": true}[cmd.Name()]
+	offlineCommands := map[string]bool{
+		"help":    true,
+		"version": true,
+		"create":  true,
+	}
+	return offlineCommands[cmd.Name()]
 }
 
 func teardown(s *Services) {

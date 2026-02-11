@@ -1,0 +1,25 @@
+package migrations
+
+import (
+    "context"
+    "go.mongodb.org/mongo-driver/mongo"
+    "github.com/drewjocham/mongo-migration-tool/internal/migration" // Adjust path
+)
+
+func init() {
+    migration.MustRegister(&{{.StructName}}{})
+}
+
+// {{.StructName}} Migration: {{.Description}}
+type {{.StructName}} struct{}
+
+func (m *{{.StructName}}) Version() string     { return "{{.Version}}" }
+func (m *{{.StructName}}) Description() string { return "{{.Description}}" }
+
+func (m *{{.StructName}}) Up(ctx context.Context, db *mongo.Database) error {
+    return nil
+}
+
+func (m *{{.StructName}}) Down(ctx context.Context, db *mongo.Database) error {
+    return nil
+}

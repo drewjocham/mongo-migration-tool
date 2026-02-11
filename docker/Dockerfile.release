@@ -6,9 +6,9 @@ RUN apk --no-cache add ca-certificates tzdata \
 
 WORKDIR /app
 
-COPY mongo-migration /usr/local/bin/mongo-migration
+COPY mongo-tool /usr/local/bin/mongo-tool
 
 USER migration
 
-ENTRYPOINT ["/usr/local/bin/mongo-migration"]
+ENTRYPOINT ["/usr/local/bin/mongo-tool"]
 CMD ["--help"]

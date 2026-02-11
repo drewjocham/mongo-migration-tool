@@ -11,9 +11,9 @@ import (
 	_ "github.com/drewjocham/mongo-migration-tool/examples/examplemigrations"
 
 	"github.com/drewjocham/mongo-migration-tool/internal/config"
-	"github.com/drewjocham/mongo-migration-tool/migration"
-	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
+	"github.com/drewjocham/mongo-migration-tool/internal/migration"
+	"go.mongodb.org/mongo-driver/v2/mongo"
+	"go.mongodb.org/mongo-driver/v2/mongo/options"
 )
 
 func main() {
@@ -30,7 +30,7 @@ func main() {
 		log.Fatalf("Configuration error: %v", err)
 	}
 
-	client, err := mongo.Connect(ctx, options.Client().ApplyURI(cfg.GetConnectionString()))
+	client, err := mongo.Connect(options.Client().ApplyURI(cfg.GetConnectionString()))
 	if err != nil {
 		log.Fatalf("Failed to connect to MongoDB: %v", err)
 	}

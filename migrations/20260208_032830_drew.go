@@ -3,11 +3,11 @@ package migrations
 import (
 	"context"
 	"fmt"
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/mongo/options"
+	"go.mongodb.org/mongo-driver/v2/bson"
+	"go.mongodb.org/mongo-driver/v2/mongo/options"
 	"log/slog"
 
-	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/v2/mongo"
 )
 
 type Migration_20260208_032830_drew struct{}
@@ -76,11 +76,12 @@ func (m *Migration_20260208_032830_drew) Up(ctx context.Context, db *mongo.Datab
 
 	var toCreate []mongo.IndexModel
 	for _, idx := range indexes {
-		if idx.Options == nil || idx.Options.Name == nil {
+		name, ok := indexName(idx.Options)
+		if !ok {
 			toCreate = append(toCreate, idx)
 			continue
 		}
-		if _, exists := existing[*idx.Options.Name]; !exists {
+		if _, exists := existing[name]; !exists {
 			toCreate = append(toCreate, idx)
 		}
 	}
@@ -98,7 +99,7 @@ func (m *Migration_20260208_032830_drew) Down(ctx context.Context, db *mongo.Dat
 	collection := db.Collection("drews")
 
 	for _, idx := range []string{"idx_drews_email_unique", "idx_drews_status_created_at"} {
-		if _, err := collection.Indexes().DropOne(ctx, idx); err != nil {
+		if err := collection.Indexes().DropOne(ctx, idx); err != nil {
 			return fmt.Errorf("drop index %s failed: %w", idx, err)
 		}
 	}

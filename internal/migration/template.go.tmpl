@@ -1,0 +1,63 @@
+package {{.PackageName}}
+
+import (
+    "context"
+    "log/slog"
+
+    "github.com/drewjocham/mongo-migration-tool/internal/migration"
+    "go.mongodb.org/mongo-driver/bson"
+    "go.mongodb.org/mongo-driver/mongo"
+)
+
+func init() {
+    migration.MustRegister(&{{.StructName}}{})
+}
+
+type {{.StructName}} struct{}
+
+func (m *{{.StructName}}) Version() string { return "{{.Version}}" }
+
+func (m *{{.StructName}}) Description() string { return "{{.Description}}" }
+
+func (m *{{.StructName}}) Up(ctx context.Context, db *mongo.Database) error {
+    slog.Info("Running migration UP", "version", m.Version())
+    // Example: ensure collection, add validation, and create indexes.
+    // validator := migration.Schema().
+    //     Required("email", "created_at").
+    //     Field("email", migration.Schema().String()).
+    //     Field("created_at", migration.Schema().Date()).
+    //     Build()
+    // collection, err := migration.EnsureCollection(ctx, db, "example",
+    //     migration.WithValidator(validator),
+    //     migration.WithValidationLevel("strict"),
+    //     migration.WithValidationAction("error"),
+    // )
+    // if err != nil {
+    //     return err
+    // }
+    // if err := migration.CreateIndexesWithOptions(ctx, collection, []migration.IndexCreateOption{
+    //     migration.WithIndexNamePrefix("app_"),
+    // }, 
+    //     migration.Index(migration.Asc("email")).Unique(),
+    //     migration.Index(migration.Desc("created_at")),
+    //     migration.Index(migration.Asc("expires_at")).TTL(3600),
+    // ); err != nil {
+    //     return err
+    // }
+    // if err := migration.CreateIndexes(ctx, collection,
+    //     migration.Index(migration.Asc("email")).Unique(),
+    //     migration.Index(migration.Desc("created_at")),
+    //     migration.Index(migration.Asc("expires_at")).TTL(3600),
+    // ); err != nil {
+    //     return err
+    // }
+    return nil
+}
+
+func (m *{{.StructName}}) Down(ctx context.Context, db *mongo.Database) error {
+    slog.Info("Running migration DOWN", "version", m.Version())
+    // Example rollback:
+    // collection := db.Collection("example")
+    // return migration.DropIndexes(ctx, collection, "email_1_unique", "created_at_-1")
+    return nil
+}

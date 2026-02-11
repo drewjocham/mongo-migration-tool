@@ -27,7 +27,7 @@ import (
     "go.mongodb.org/mongo-driver/mongo/options"
 
     "github.com/drewjocham/mongo-migration-tool/config"
-    "github.com/drewjocham/mongo-migration-tool/migration"
+    "github.com/drewjocham/mongo-migration-tool/internal/migration"
 )
 
 func main() {
@@ -379,7 +379,7 @@ import (
     
     "go.mongodb.org/mongo-driver/mongo/integration/mtest"
     
-    "github.com/drewjocham/mongo-migration-tool/migration"
+    "github.com/drewjocham/mongo-migration-tool/internal/migration"
 )
 
 func TestAddUserIndexesMigration(t *testing.T) {

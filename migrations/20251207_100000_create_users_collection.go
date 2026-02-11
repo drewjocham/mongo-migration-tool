@@ -3,9 +3,9 @@ package migrations
 import (
 	"context"
 
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
+	"go.mongodb.org/mongo-driver/v2/bson"
+	"go.mongodb.org/mongo-driver/v2/mongo"
+	"go.mongodb.org/mongo-driver/v2/mongo/options"
 )
 
 // CreateUsersCollectionMigration creates the users collection
@@ -82,11 +82,12 @@ func (m *CreateUsersCollectionMigration) Up(
 
 	var toCreate []mongo.IndexModel
 	for _, idx := range indexes {
-		if idx.Options == nil || idx.Options.Name == nil {
+		name, ok := indexName(idx.Options)
+		if !ok {
 			toCreate = append(toCreate, idx)
 			continue
 		}
-		if _, exists := existing[*idx.Options.Name]; !exists {
+		if _, exists := existing[name]; !exists {
 			toCreate = append(toCreate, idx)
 		}
 	}
