@@ -48,7 +48,7 @@ func (m *ExampleMigration) Up(ctx context.Context, db *mongo.Database) error {
 		return fmt.Errorf("failed to create index: %w", err)
 	}
 
-	fmt.Println("✅ Created sample_collection with index")
+	fmt.Println("Created sample_collection with index")
 	return nil
 }
 
@@ -58,12 +58,12 @@ func (m *ExampleMigration) Down(ctx context.Context, db *mongo.Database) error {
 		return fmt.Errorf("failed to drop collection: %w", err)
 	}
 
-	fmt.Println("✅ Dropped sample_collection")
+	fmt.Println("Dropped sample_collection")
 	return nil
 }
 
 func main() {
-	fmt.Println("🚀 mongo-migration Library Example")
+	fmt.Println("mongo-migration Library Example")
 	fmt.Println("=====================================")
 
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
@@ -92,7 +92,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	fmt.Println("\n🎉 Example completed successfully!")
+	fmt.Println("\nExample completed successfully!")
 }
 
 func loadConfig() (*config.Config, error) {
@@ -103,9 +103,9 @@ func loadConfig() (*config.Config, error) {
 			Database:             "standalone_example",
 			MigrationsCollection: "schema_migrations",
 		}
-		fmt.Println("ℹ️  Using default configuration")
+		fmt.Println("Using default configuration")
 	} else {
-		fmt.Println("ℹ️  Loaded configuration from .env file")
+		fmt.Println("Loaded configuration from .env file")
 	}
 
 	if err := cfg.Validate(); err != nil {
@@ -118,7 +118,7 @@ func connectToMongoDB(ctx context.Context, cfg *config.Config) (*mongo.Client, *
 	connCtx, cancel := context.WithTimeout(ctx, connectionTimeout)
 	defer cancel()
 
-	fmt.Printf("🔗 Connecting to: %s/%s\n", cfg.MongoURL, cfg.Database)
+	fmt.Printf("Connecting to: %s/%s\n", cfg.MongoURL, cfg.Database)
 	client, err := mongo.Connect(options.Client().ApplyURI(cfg.GetConnectionString()))
 	if err != nil {
 		return nil, nil, fmt.Errorf("connection failed: %w", err)
@@ -133,22 +133,22 @@ func connectToMongoDB(ctx context.Context, cfg *config.Config) (*mongo.Client, *
 }
 
 func runExampleFlow(ctx context.Context, engine *migration.Engine) error {
-	fmt.Println("\n📊 Initial Status:")
+	fmt.Println("\nInitial Status:")
 	if err := showStatus(ctx, engine); err != nil {
 		return err
 	}
 
-	fmt.Println("\n⬆️  Migrating Up...")
+	fmt.Println("\nMigrating Up...")
 	if err := engine.Up(ctx, ""); err != nil {
 		return err
 	}
 
-	fmt.Println("\n📊 Updated Status:")
+	fmt.Println("\nUpdated Status:")
 	if err := showStatus(ctx, engine); err != nil {
 		return err
 	}
 
-	fmt.Println("\n⬇️  Rolling Back...")
+	fmt.Println("\nRolling Back...")
 	status, err := engine.GetStatus(ctx)
 	if err != nil {
 		return err
@@ -159,7 +159,7 @@ func runExampleFlow(ctx context.Context, engine *migration.Engine) error {
 			if err := engine.Down(ctx, status[i].Version); err != nil {
 				return err
 			}
-			fmt.Printf("✅ Rolled back: %s\n", status[i].Version)
+			fmt.Printf("Rolled back: %s\n", status[i].Version)
 			break
 		}
 	}
@@ -178,9 +178,9 @@ func showStatus(ctx context.Context, engine *migration.Engine) error {
 	}
 
 	for _, s := range status {
-		applied := "❌ No"
+		applied := "No"
 		if s.Applied {
-			applied = "✅ Yes"
+			applied = "Yes"
 		}
 		fmt.Printf("   %-15s %-8s %s\n", s.Version, applied, s.Description)
 	}

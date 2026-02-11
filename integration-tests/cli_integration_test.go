@@ -25,7 +25,7 @@ import (
 
 	"github.com/drewjocham/mongo-migration-tool/internal/cli"
 	"github.com/drewjocham/mongo-migration-tool/internal/migration"
-	_ "github.com/drewjocham/mongo-migration-tool/internal/migrations"
+	_ "github.com/drewjocham/mongo-migration-tool/migrations"
 )
 
 type TestEnv struct {

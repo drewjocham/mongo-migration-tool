@@ -7,6 +7,7 @@ x-dev-base: &base
 services:
   mongo-cli:
     <<: *base
+    image: drewjocham/mongo-cli:latest
     build:
       context: ..
       dockerfile: ./docker/Dockerfile.local
@@ -27,11 +28,12 @@ services:
 
   mongo-mcp:
     <<: *base
+    image: drewjocham/mongo-mcp:latest
     build:
       context: ..
       dockerfile: ./docker/Dockerfile.mcp
     environment:
-      - MONGO_URL=${MONGO_URL:-mongodb://mongo-mcp:27017}
+      - MONGO_URL=mongodb://admin:password@mongo-db:27017/test_db?authSource=admin
       - MONGO_DATABASE=${MONGO_DATABASE:-test_db}test_db
       - MIGRATIONS_PATH=${MIGRATIONS_PATH:-./app/migrations}
       - MIGRATIONS_COLLECTION=${MIGRATIONS_COLLECTION:-schema_migrations}
@@ -76,4 +78,5 @@ volumes:
 
 networks:
   mcp_network:
+    name: mcp_network
     driver: bridge

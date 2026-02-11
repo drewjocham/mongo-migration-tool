@@ -13,7 +13,7 @@ import (
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
 
-	_ "github.com/drewjocham/mongo-migration-tool/internal/migrations"
+	_ "github.com/drewjocham/mongo-migration-tool/migrations"
 )
 
 func NewMCPCmd() *cobra.Command {
