@@ -9,9 +9,14 @@ permissions:
   contents: write
   packages: write
   id-token: write
+  actions: read
 
 jobs:
   provenance:
+    permissions:
+      id-token: write
+      contents: write
+      actions: read
     uses: slsa-framework/slsa-github-generator/.github/workflows/builder_go_slsa3.yml@v2.1.0
     with:
       config-file: .slsa-goreleaser.yml
