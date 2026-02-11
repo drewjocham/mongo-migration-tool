@@ -21,10 +21,7 @@ jobs:
     with:
       config-file: .slsa-goreleaser.yml
       go-version-file: go.mod
-      evaluated-envs: |
-        GO_LDFLAG_VERSION=${{ github.ref_name }}
-        GO_LDFLAG_COMMIT=${{ github.sha }}
-        GO_LDFLAG_BUILD_DATE=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+      evaluated-envs: "GO_LDFLAG_VERSION=${{ github.ref_name }}, GO_LDFLAG_COMMIT=${{ github.sha }}"
 
   goreleaser:
     name: Release Orchestration
