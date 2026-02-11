@@ -53,13 +53,6 @@ archives:
 checksum:
   name_template: 'checksums.txt'
 
-signs:
-  - id: slsa
-    artifacts: checksum
-    signature: "${artifact}.intoto.jsonl"
-    cmd: /bin/bash
-    args: ["-c", "echo 'SLSA provenance attached'"]
-
 snapshot:
   name_template: "{{ incpatch .Version }}-next"
 
